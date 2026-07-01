@@ -1,0 +1,1 @@
+Read MNEMOS_SPEC.md before any task. Follow phases sequentially.

@@ -1,0 +1,24 @@
+À quoi sert Mnemos
+
+Le problème de fond : un LLM n'a pas de mémoire. Chaque conversation repart de zéro — tout ce qu'il « sait » de toi tient dans la fenêtre de contexte, qui est finie et jetée à la fin de la session. Les solutions actuelles (le RAG classique, Mem0, la mémoire de ChatGPT) entassent tout dans un seul store vectoriel, ce qui produit des pathologies connues : quand tu dis « je bosse chez Y maintenant », l'ancien « je bosse chez X » reste dans la base et les deux ressortent mélangés ; les souvenirs anodins noient les importants ; rien n'est jamais oublié donc tout se dégrade.
+
+La réponse de Mnemos : imiter l'architecture de la mémoire humaine plutôt qu'un simple moteur de recherche. C'est un serveur local (tout tourne sur ta machine via Ollama, rien ne part dans le cloud) qui donne à n'importe quel agent LLM quatre mémoires distinctes :
+
+- Working — le fil de la conversation en cours, volatile, comme ta mémoire de travail.
+- Épisodique — « ce qui s'est passé » : les événements bruts, horodatés, avec leur contexte. C'est elle qui répond à « qu'est-ce que je t'ai dit mardi dernier ? ».
+- Sémantique — « ce qui est vrai » : des faits structurés et versionnés. Quand tu changes de boulot, l'ancien fait n'est pas effacé ni dupliqué : il est invalidé avec une date de fin et chaîné au nouveau. On peut demander l'état courant ou l'historique complet.
+- Procédurale — « comment faire » : des skills réutilisables (embryonnaire dans le MVP).
+
+Et deux mécanismes inspirés de la neuroscience : un tagger de saillance qui note chaque message (est-ce surprenant ? émotionnel ? révélateur sur l'utilisateur ?) pour décider ce qui mérite d'être retenu — l'analogue de l'amygdale qui marque les souvenirs importants — et une boucle de consolidation qui, en tâche de fond, distille les épisodes marquants en faits durables pendant que les épisodes insignifiants s'estompent — l'analogue de ce que fait le sommeil. L'oubli n'est pas un bug ici, c'est la fonctionnalité : c'est lui qui empêche la base de devenir une décharge.
+
+À quoi il pourrait servir
+
+Usages directs, une fois le MVP livré :
+
+- Un assistant personnel qui te connaît vraiment — brancher Mnemos sur un chatbot local, et il se souvient de tes préférences, ton contexte, tes projets à travers les mois, en sachant distinguer « ce qui était vrai » de « ce qui l'est encore ». Le tout 100 % privé, sur ta 3070 Ti.
+- Backend mémoire pour n'importe quel agent — l'API HTTP est agnostique : un agent Claude Code, un bot Discord, un NPC de jeu (le nom PulseWorld dans le spec suggère que c'est une des origines du projet), un outil de journaling... tout ce qui parle HTTP peut lire/écrire des souvenirs.
+- Mémoire d'équipe ou de projet — ingérer les décisions et discussions d'un projet ; le versioning des faits gère naturellement « on avait choisi PostgreSQL » → « finalement on est passés à SQLite » sans que les deux se contredisent en récupération.
+
+Plus loin, si le projet dépasse le MVP : serveur MCP pour brancher la mémoire nativement dans Claude ou d'autres clients, personnages persistants pour la fiction interactive (la mémoire épisodique + l'oubli saillance-modulé donnent des personnages qui se souviennent comme des personnes — flou sur l'anodin, précis sur le marquant), ou base d'expérimentation pour l'agenda de recherche en mémoire d'agents, un des sujets chauds du moment.
+
+En une phrase : Mnemos transforme un LLM amnésique en interlocuteur qui a un passé — et sa vraie originalité par rapport aux systèmes existants, c'est qu'il sait à la fois oublier et se souvenir que les choses changent.
