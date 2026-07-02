@@ -1,7 +1,7 @@
 """Write path API (§18 Phase 3, §19.2).
 
 Deux niveaux :
-- sans Ollama : app avec stub embedder/tagger sur DB tmp — logique complète
+- sans Ollama : app stub (conftest.make_stub_app) — logique complète
   (201, salience null puis mise à jour, 422, 401, 404) ;
 - avec Ollama (requires_ollama) : latence POST /v1/episodes p50 < 500 ms
   (bge-m3 réel) et salience réelle mise à jour après coup.
@@ -10,16 +10,15 @@ Deux niveaux :
 from __future__ import annotations
 
 import asyncio
-import json
 import statistics
 import time
 from collections.abc import AsyncIterator
-from hashlib import blake2b
 from pathlib import Path
 
 import httpx
 import pytest
 from sqlalchemy import text
+from tests.conftest import make_stub_app
 
 from mnemos.clock import Clock
 from mnemos.config import Settings
@@ -28,55 +27,22 @@ from mnemos.llm.model_manager import ModelManager
 from mnemos.llm.ollama_client import OllamaClient
 from mnemos.models.base import make_async_engine
 from mnemos.models.episodic import EPISODIC_SCHEMA_SQL
+from mnemos.models.semantic import SEMANTIC_SCHEMA_SQL
 from mnemos.server import create_app
 from mnemos.stores.episodic import EpisodicStore
+from mnemos.stores.semantic import SemanticStore
 from mnemos.tagger.salience import SalienceTagger, ScoringQueue
-
-
-class StubEmbedder:
-    async def embed(self, content: str) -> list[float]:
-        seed = blake2b(content.encode(), digest_size=8).digest()
-        return ([(b / 255.0) - 0.5 for b in seed] * 128)[:1024]
-
-
-class StubManager:
-    """Salience canned + health ok — pas d'Ollama."""
-
-    async def generate(self, prompt: str, model: str, **kwargs: object) -> str:
-        return json.dumps(
-            {"surprise": 0.2, "arousal": 0.1, "self_ref": 0.8, "recurrence": 0.0}
-        )
-
-    async def health_check(self) -> bool:
-        return True
-
-
-async def _make_engine(tmp_path: Path) -> object:
-    engine = make_async_engine(tmp_path / "episodic.db")
-    async with engine.begin() as conn:
-        for stmt in EPISODIC_SCHEMA_SQL:
-            await conn.execute(text(stmt))
-    return engine
 
 
 @pytest.fixture
 async def stub_client(tmp_path: Path) -> AsyncIterator[httpx.AsyncClient]:
-    settings = Settings(_env_file=None, EPISODIC_DB=tmp_path / "episodic.db")
-    engine = await _make_engine(tmp_path)
-    app = create_app(settings)
-    manager = StubManager()
-    store = EpisodicStore(engine, StubEmbedder(), Clock(), settings)  # type: ignore[arg-type]
-    app.state.engine = engine
-    app.state.manager = manager
-    app.state.store = store
-    app.state.queue = ScoringQueue(
-        SalienceTagger(manager, settings), store  # type: ignore[arg-type]
-    )
+    app, engines = await make_stub_app(tmp_path)
     async with app.router.lifespan_context(app):
         transport = httpx.ASGITransport(app=app)
         async with httpx.AsyncClient(transport=transport, base_url="http://t") as client:
             yield client
-    await engine.dispose()  # type: ignore[attr-defined]
+    for engine in engines:
+        await engine.dispose()
 
 
 async def test_post_episode_201_salience_null_puis_scoree(
@@ -137,18 +103,12 @@ async def test_health(stub_client: httpx.AsyncClient) -> None:
 
 async def test_auth_api_key(tmp_path: Path) -> None:
     settings = Settings(
-        _env_file=None, EPISODIC_DB=tmp_path / "episodic.db", API_KEY="secret"
+        _env_file=None,
+        EPISODIC_DB=tmp_path / "episodic.db",
+        SEMANTIC_DB=tmp_path / "semantic.db",
+        API_KEY="secret",
     )
-    engine = await _make_engine(tmp_path)
-    app = create_app(settings)
-    manager = StubManager()
-    store = EpisodicStore(engine, StubEmbedder(), Clock(), settings)  # type: ignore[arg-type]
-    app.state.engine = engine
-    app.state.manager = manager
-    app.state.store = store
-    app.state.queue = ScoringQueue(
-        SalienceTagger(manager, settings), store  # type: ignore[arg-type]
-    )
+    app, engines = await make_stub_app(tmp_path, settings=settings)
     async with app.router.lifespan_context(app):
         transport = httpx.ASGITransport(app=app)
         async with httpx.AsyncClient(transport=transport, base_url="http://t") as client:
@@ -158,7 +118,8 @@ async def test_auth_api_key(tmp_path: Path) -> None:
                 "/v1/episodes", json=payload, headers={"X-API-Key": "secret"}
             )
             assert ok.status_code == 201
-    await engine.dispose()  # type: ignore[attr-defined]
+    for engine in engines:
+        await engine.dispose()
 
 
 # ── Avec Ollama réel : latence + salience réelle (§18 Phase 3) ────────────────
@@ -166,15 +127,30 @@ async def test_auth_api_key(tmp_path: Path) -> None:
 
 @pytest.mark.requires_ollama
 async def test_write_path_reel_sous_500ms_et_salience_apres_coup(tmp_path: Path) -> None:
-    settings = Settings(_env_file=None, EPISODIC_DB=tmp_path / "episodic.db")
-    engine = await _make_engine(tmp_path)
+    settings = Settings(
+        _env_file=None,
+        EPISODIC_DB=tmp_path / "episodic.db",
+        SEMANTIC_DB=tmp_path / "semantic.db",
+    )
+    epi_engine = make_async_engine(settings.EPISODIC_DB)
+    sem_engine = make_async_engine(settings.SEMANTIC_DB)
+    async with epi_engine.begin() as conn:
+        for stmt in EPISODIC_SCHEMA_SQL:
+            await conn.execute(text(stmt))
+    async with sem_engine.begin() as conn:
+        for stmt in SEMANTIC_SCHEMA_SQL:
+            await conn.execute(text(stmt))
     app = create_app(settings)
     client_ollama = OllamaClient(settings)
     manager = ModelManager(settings, client_ollama)
-    store = EpisodicStore(engine, DenseEmbedder(manager, settings), Clock(), settings)  # type: ignore[arg-type]
-    app.state.engine = engine
+    embedder = DenseEmbedder(manager, settings)
+    clock = Clock()
+    store = EpisodicStore(epi_engine, embedder, clock, settings)
+    app.state.engine = epi_engine
+    app.state.semantic_engine = sem_engine
     app.state.manager = manager
     app.state.store = store
+    app.state.semantic = SemanticStore(sem_engine, embedder, clock, settings)
     app.state.queue = ScoringQueue(SalienceTagger(manager, settings), store)
     async with app.router.lifespan_context(app):
         transport = httpx.ASGITransport(app=app)
@@ -214,5 +190,6 @@ async def test_write_path_reel_sous_500ms_et_salience_apres_coup(tmp_path: Path)
                 await asyncio.sleep(1)
             assert salience is not None, "scoring async jamais passé"
             assert salience >= 0.5  # révélation perso → boost-floor self_ref
-    await engine.dispose()  # type: ignore[attr-defined]
+    await epi_engine.dispose()
+    await sem_engine.dispose()
     await client_ollama.aclose()

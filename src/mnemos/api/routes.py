@@ -11,20 +11,31 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
-from mnemos.api.deps import get_queue, get_store, require_api_key
-from mnemos.api.schemas import EpisodeCreate, EpisodeOut, HealthOut, ScoredEpisodeOut
+from mnemos.api.deps import get_orchestrator, get_queue, get_store, get_wm, require_api_key
+from mnemos.api.schemas import (
+    EpisodeCreate,
+    EpisodeOut,
+    HealthOut,
+    QueryIn,
+    QueryResultOut,
+    ScoredEpisodeOut,
+)
+from mnemos.router.orchestrator import RouterOrchestrator
 from mnemos.stores.episodic import EpisodicStore
+from mnemos.stores.working import WorkingMemoryRegistry
 from mnemos.tagger.salience import ScoringJob, ScoringQueue
 
 router = APIRouter(prefix="/v1", dependencies=[Depends(require_api_key)])
 
 StoreDep = Annotated[EpisodicStore, Depends(get_store)]
 QueueDep = Annotated[ScoringQueue, Depends(get_queue)]
+WMDep = Annotated[WorkingMemoryRegistry, Depends(get_wm)]
+OrchestratorDep = Annotated[RouterOrchestrator, Depends(get_orchestrator)]
 
 
 @router.post("/episodes", status_code=201)
 async def create_episode(
-    payload: EpisodeCreate, store: StoreDep, queue: QueueDep
+    payload: EpisodeCreate, store: StoreDep, queue: QueueDep, wm: WMDep
 ) -> EpisodeOut:
     # Historique AVANT le write : le nouvel épisode ne doit pas être
     # son propre contexte de scoring (§13.2).
@@ -35,7 +46,22 @@ async def create_episode(
     queue.enqueue(
         ScoringJob(episode_id=episode.id, content=episode.content, recent_history=history)
     )
+    if payload.session_id is not None:
+        wm.get_or_create(payload.session_id).push(
+            episode.content, episode.role, episode.created_at
+        )
     return EpisodeOut.from_episode(episode)
+
+
+@router.post("/query")
+async def query(payload: QueryIn, orchestrator: OrchestratorDep) -> QueryResultOut:
+    result = await orchestrator.query(payload.q, session_id=payload.session_id, k=payload.k)
+    return QueryResultOut.from_result(result)
+
+
+@router.post("/sessions/{session_id}/reset", status_code=204)
+async def reset_session(session_id: str, wm: WMDep) -> None:
+    wm.reset(session_id)  # idempotent : session inconnue = no-op (§16.1)
 
 
 @router.get("/episodes/search")

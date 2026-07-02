@@ -20,7 +20,10 @@ from mnemos.llm.model_manager import ModelManager
 from mnemos.llm.ollama_client import OllamaClient
 from mnemos.logging import configure_logging, get_logger
 from mnemos.models.base import make_async_engine
+from mnemos.router.orchestrator import RouterOrchestrator
 from mnemos.stores.episodic import EpisodicStore
+from mnemos.stores.semantic import SemanticStore
+from mnemos.stores.working import WorkingMemoryRegistry
 from mnemos.tagger.salience import SalienceTagger, ScoringQueue
 
 logger = get_logger(__name__)
@@ -35,10 +38,16 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
         client = OllamaClient(settings)
         state.client = client
         state.manager = ModelManager(settings, client)
+        embedder = DenseEmbedder(state.manager, settings)
+        clock = Clock()
         state.engine = make_async_engine(settings.EPISODIC_DB)
-        state.store = EpisodicStore(
-            state.engine, DenseEmbedder(state.manager, settings), Clock(), settings
-        )
+        state.semantic_engine = make_async_engine(settings.SEMANTIC_DB)
+        state.store = EpisodicStore(state.engine, embedder, clock, settings)
+        state.semantic = SemanticStore(state.semantic_engine, embedder, clock, settings)
+    if not hasattr(state, "wm"):
+        state.wm = WorkingMemoryRegistry()
+    if not hasattr(state, "orchestrator"):
+        state.orchestrator = RouterOrchestrator(state.store, state.semantic, state.wm)
     if not hasattr(state, "queue"):
         tagger = SalienceTagger(state.manager, settings)
         state.queue = ScoringQueue(tagger, state.store)
@@ -48,6 +57,7 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     await state.queue.stop()
     if owns_engine:
         await state.engine.dispose()
+        await state.semantic_engine.dispose()
         await state.client.aclose()
     logger.info("server_stopped")
 

@@ -7,7 +7,11 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from mnemos.models.episodic import Episode
+from mnemos.models.semantic import Fact
+from mnemos.router.orchestrator import QueryResult
 from mnemos.stores.episodic import ScoredEpisode
+from mnemos.stores.semantic import ScoredFact
+from mnemos.stores.working import WMItem
 
 
 class EpisodeCreate(BaseModel):
@@ -70,6 +74,77 @@ class ScoredEpisodeOut(BaseModel):
             dense_sim=s.dense_sim,
             sparse_sim=s.sparse_sim,
             recency=s.recency,
+        )
+
+
+class QueryIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    q: str = Field(min_length=1, max_length=4_000)
+    session_id: str | None = Field(default=None, max_length=256)
+    k: int = Field(default=10, ge=1, le=100)
+
+
+class FactOut(BaseModel):
+    id: str
+    subject: str
+    predicate: str
+    object: str
+    valid_from: int
+    valid_until: int | None
+    confidence: float
+    superseded_by: str | None
+
+    @classmethod
+    def from_fact(cls, f: Fact) -> FactOut:
+        return cls(
+            id=f.id,
+            subject=f.subject,
+            predicate=f.predicate,
+            object=f.object,
+            valid_from=f.valid_from,
+            valid_until=f.valid_until,
+            confidence=f.confidence,
+            superseded_by=f.superseded_by,
+        )
+
+
+class ScoredFactOut(BaseModel):
+    fact: FactOut
+    score: float
+
+    @classmethod
+    def from_scored(cls, s: ScoredFact) -> ScoredFactOut:
+        return cls(fact=FactOut.from_fact(s.fact), score=s.score)
+
+
+class WMItemOut(BaseModel):
+    content: str
+    role: str
+    timestamp_ms: int
+
+    @classmethod
+    def from_item(cls, item: WMItem) -> WMItemOut:
+        return cls(content=item.content, role=item.role, timestamp_ms=item.timestamp_ms)
+
+
+class QueryResultOut(BaseModel):
+    type: str
+    episodes: list[ScoredEpisodeOut]
+    facts: list[ScoredFactOut]
+    history: list[FactOut]
+    working: list[WMItemOut]
+    procedural: list[str]
+
+    @classmethod
+    def from_result(cls, r: QueryResult) -> QueryResultOut:
+        return cls(
+            type=r.type.value,
+            episodes=[ScoredEpisodeOut.from_scored(e) for e in r.episodes],
+            facts=[ScoredFactOut.from_scored(f) for f in r.facts],
+            history=[FactOut.from_fact(f) for f in r.history],
+            working=[WMItemOut.from_item(w) for w in r.working],
+            procedural=r.procedural,
         )
 
 

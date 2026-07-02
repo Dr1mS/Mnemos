@@ -9,7 +9,9 @@ from __future__ import annotations
 from fastapi import Header, HTTPException, Request
 
 from mnemos.config import Settings
+from mnemos.router.orchestrator import RouterOrchestrator
 from mnemos.stores.episodic import EpisodicStore
+from mnemos.stores.working import WorkingMemoryRegistry
 from mnemos.tagger.salience import ScoringQueue
 
 
@@ -26,6 +28,16 @@ def get_store(request: Request) -> EpisodicStore:
 def get_queue(request: Request) -> ScoringQueue:
     queue: ScoringQueue = request.app.state.queue
     return queue
+
+
+def get_wm(request: Request) -> WorkingMemoryRegistry:
+    wm: WorkingMemoryRegistry = request.app.state.wm
+    return wm
+
+
+def get_orchestrator(request: Request) -> RouterOrchestrator:
+    orchestrator: RouterOrchestrator = request.app.state.orchestrator
+    return orchestrator
 
 
 async def require_api_key(
