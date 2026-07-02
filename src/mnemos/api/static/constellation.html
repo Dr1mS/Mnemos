@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mnemos — Memory Constellation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style></style>
+
+
+
+
+
+<style>
+  :root{
+    --bg:#05060d;
+    --panel:rgba(10,13,26,.78);
+    --line:rgba(150,160,255,.14);
+    --txt:#c8cde8;
+    --txt-dim:#7a80a8;
+    --violet:#9d7bff;
+    --cyan:#55e0f2;
+    --ambre:#ffbe6b;
+    --magenta:#e07bdc;
+    --ghost:#8b90a3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
+    font-family:'Space Grotesk',sans-serif;font-size:14px}
+  #graph{position:fixed;inset:0}
+  /* vignette */
+  #vignette{position:fixed;inset:0;pointer-events:none;z-index:2;
+    background:radial-gradient(ellipse at center,transparent 55%,rgba(2,3,8,.55) 100%)}
+
+  /* ---------- top bar ---------- */
+  #topbar{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;gap:22px;
+    padding:14px 22px;background:linear-gradient(180deg,rgba(5,6,13,.85),rgba(5,6,13,0));
+    pointer-events:none}
+  #topbar>*{pointer-events:auto}
+  #brand{display:flex;flex-direction:column;gap:1px}
+  #brand .t{font-weight:600;font-size:17px;letter-spacing:.14em;color:#e8e6ff}
+  #brand .t em{font-style:normal;color:var(--violet)}
+  #brand .s{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--txt-dim)}
+  #counters{display:flex;gap:10px}
+  .counter{display:flex;align-items:baseline;gap:7px;padding:7px 13px;border:1px solid var(--line);
+    border-radius:999px;background:var(--panel);backdrop-filter:blur(10px)}
+  .counter b{font-size:15px;font-weight:600;color:#fff}
+  .counter span{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--txt-dim)}
+  .counter i{width:7px;height:7px;border-radius:50%;align-self:center}
+  #searchwrap{margin-left:auto;position:relative}
+  #search{width:230px;padding:9px 14px 9px 34px;border-radius:999px;border:1px solid var(--line);
+    background:var(--panel);backdrop-filter:blur(10px);color:#fff;font:inherit;outline:none;
+    transition:border-color .25s,box-shadow .25s}
+  #search::placeholder{color:var(--txt-dim)}
+  #search:focus{border-color:rgba(157,123,255,.55);box-shadow:0 0 18px rgba(157,123,255,.18)}
+  #searchwrap::before{content:'';position:absolute;left:13px;top:50%;width:11px;height:11px;
+    transform:translateY(-62%);border:1.5px solid var(--txt-dim);border-radius:50%}
+  #searchwrap::after{content:'';position:absolute;left:23px;top:60%;width:6px;height:1.5px;
+    background:var(--txt-dim);transform:rotate(45deg)}
+
+  /* ---------- filtres ---------- */
+  #filters{position:fixed;top:64px;right:22px;z-index:10;display:flex;flex-direction:column;gap:10px;
+    padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--panel);
+    backdrop-filter:blur(12px);width:212px}
+  #filters h3{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--txt-dim);font-weight:500}
+  .toggles{display:flex;flex-wrap:wrap;gap:6px}
+  .tog{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;cursor:pointer;
+    border:1px solid var(--line);background:rgba(255,255,255,.02);font-size:11.5px;color:var(--txt);
+    user-select:none;transition:all .2s}
+  .tog i{width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 6px var(--c)}
+  .tog.off{opacity:.35;filter:saturate(0)}
+  .tog:hover{border-color:rgba(157,123,255,.4)}
+  #impwrap{display:flex;flex-direction:column;gap:6px;margin-top:2px}
+  #impwrap label{font-size:11px;color:var(--txt-dim);display:flex;justify-content:space-between}
+  #impwrap label b{color:var(--ambre);font-weight:500}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:2px;
+    background:linear-gradient(90deg,var(--violet),var(--ambre));outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:13px;height:13px;border-radius:50%;
+    background:#fff;box-shadow:0 0 10px rgba(157,123,255,.8);cursor:pointer}
+
+  /* ---------- légende ---------- */
+  #legend{position:fixed;left:22px;bottom:20px;z-index:10;padding:13px 16px;border:1px solid var(--line);
+    border-radius:14px;background:var(--panel);backdrop-filter:blur(12px);display:flex;flex-direction:column;gap:7px;
+    font-size:11.5px;color:var(--txt-dim)}
+  #legend .row{display:flex;align-items:center;gap:9px}
+  #legend .dot{width:9px;height:9px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);flex:none}
+  #legend .dust{width:5px;height:5px;margin:2px}
+  #legend .ghostd{box-shadow:none;opacity:.5}
+  #legend .link{width:16px;height:2px;border-radius:2px;background:var(--c);box-shadow:0 0 6px var(--c);flex:none}
+  #legend .dash{background:repeating-linear-gradient(90deg,var(--ghost) 0 3px,transparent 3px 6px);box-shadow:none}
+  #status{display:flex;align-items:center;gap:7px;margin-top:3px;padding-top:8px;border-top:1px solid var(--line);
+    font-size:10.5px;letter-spacing:.08em}
+  #status i{width:6px;height:6px;border-radius:50%;background:var(--ambre);box-shadow:0 0 8px var(--ambre)}
+  #status.live i{background:#5ef2a0;box-shadow:0 0 8px #5ef2a0}
+
+  /* ---------- tooltip ---------- */
+  #tip{position:fixed;z-index:20;pointer-events:none;opacity:0;transform:translate(-50%,calc(-100% - 16px)) scale(.96);
+    transition:opacity .15s,transform .15s;padding:9px 13px;border-radius:10px;background:rgba(8,10,22,.92);
+    border:1px solid rgba(157,123,255,.3);backdrop-filter:blur(8px);max-width:260px;
+    box-shadow:0 8px 30px rgba(0,0,0,.5),0 0 20px rgba(157,123,255,.08)}
+  #tip.on{opacity:1;transform:translate(-50%,calc(-100% - 12px)) scale(1)}
+  #tip .k{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:3px}
+  #tip .l{font-size:13.5px;color:#fff;font-weight:500}
+  #tip .d{font-size:11px;color:var(--txt-dim);margin-top:3px}
+
+  /* ---------- inspecteur ---------- */
+  #inspector{position:fixed;top:64px;right:22px;bottom:20px;width:320px;z-index:11;
+    border:1px solid var(--line);border-radius:16px;background:rgba(8,10,22,.9);backdrop-filter:blur(16px);
+    transform:translateX(calc(100% + 30px));transition:transform .35s cubic-bezier(.22,1,.36,1);
+    display:flex;flex-direction:column;overflow:hidden;box-shadow:-10px 0 50px rgba(0,0,0,.4)}
+  #inspector.open{transform:translateX(0)}
+  #insp-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+  #insp-kind{font-size:10px;letter-spacing:.22em;text-transform:uppercase;margin-bottom:5px}
+  #insp-title{font-size:19px;font-weight:600;color:#fff;line-height:1.25}
+  #insp-close{position:absolute;top:14px;right:14px;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);
+    background:none;color:var(--txt-dim);cursor:pointer;font-size:13px;line-height:1;transition:all .2s}
+  #insp-close:hover{color:#fff;border-color:rgba(157,123,255,.5)}
+  #insp-body{padding:16px 20px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px}
+  #insp-body::-webkit-scrollbar{width:4px}
+  #insp-body::-webkit-scrollbar-thumb{background:rgba(157,123,255,.3);border-radius:2px}
+  .meta{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:11px;color:var(--txt-dim)}
+  .chip b{color:var(--txt);font-weight:500}
+  .bar{display:flex;flex-direction:column;gap:5px}
+  .bar label{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--txt-dim);
+    display:flex;justify-content:space-between}
+  .bar .track{height:4px;border-radius:2px;background:rgba(255,255,255,.06);overflow:hidden}
+  .bar .fill{height:100%;border-radius:2px;background:var(--c);box-shadow:0 0 8px var(--c)}
+  .sect{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--txt-dim);
+    padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .factrow{display:flex;flex-direction:column;gap:2px;padding:9px 11px;border-radius:10px;
+    background:rgba(255,255,255,.025);border:1px solid transparent;cursor:pointer;transition:all .2s}
+  .factrow:hover{border-color:rgba(157,123,255,.35)}
+  .factrow .p{font-size:12.5px;color:#fff}
+  .factrow .p em{font-style:normal;color:var(--c)}
+  .factrow .w{font-size:10.5px;color:var(--txt-dim)}
+  /* chronologie */
+  .timeline{display:flex;flex-direction:column}
+  .tl{display:grid;grid-template-columns:14px 1fr;gap:0 12px;position:relative;padding-bottom:16px}
+  .tl:last-child{padding-bottom:2px}
+  .tl::before{content:'';position:absolute;left:6px;top:14px;bottom:0;width:1px;
+    background:repeating-linear-gradient(180deg,rgba(139,144,163,.4) 0 3px,transparent 3px 7px)}
+  .tl:last-child::before{display:none}
+  .tl .n{width:13px;height:13px;border-radius:50%;margin-top:2px;background:var(--c);box-shadow:0 0 10px var(--c)}
+  .tl.past .n{background:transparent;border:1.5px solid var(--ghost);box-shadow:none}
+  .tl .v{font-size:13.5px;color:#fff;font-weight:500}
+  .tl.past .v{color:var(--ghost);font-weight:400}
+  .tl .dates{font-size:11px;color:var(--txt-dim);margin-top:1px}
+  .tl .tag{display:inline-block;margin-top:4px;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+    padding:2px 8px;border-radius:999px;border:1px solid rgba(139,144,163,.35);color:var(--ghost)}
+  .memtext{font-size:13px;line-height:1.55;color:var(--txt)}
+
+  @media (max-width:900px){
+    #counters .counter span{display:none}
+    #search{width:150px}
+    #filters{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div id="graph"></div>
+<div id="vignette"></div>
+
+<header id="topbar">
+  <div id="brand">
+    <div class="t">MNE<em>MOS</em></div>
+    <div class="s">constellation de mémoire</div>
+  </div>
+  <div id="counters">
+    <div class="counter"><i style="background:var(--violet);box-shadow:0 0 7px var(--violet)"></i><b id="c-faits">0</b><span>faits</span></div>
+    <div class="counter"><i style="background:var(--cyan);box-shadow:0 0 7px var(--cyan)"></i><b id="c-entites">0</b><span>entités</span></div>
+    <div class="counter"><i style="background:var(--ambre);box-shadow:0 0 7px var(--ambre)"></i><b id="c-souvenirs">0</b><span>souvenirs</span></div>
+    <div class="counter"><i style="background:var(--ghost);box-shadow:0 0 7px var(--ghost)"></i><b id="c-perimes">0</b><span>périmés</span></div>
+  </div>
+  <div id="searchwrap"><input id="search" type="text" placeholder="Rechercher dans la mémoire…" autocomplete="off"></div>
+</header>
+
+<aside id="filters">
+  <h3>Filtres</h3>
+  <div class="toggles">
+    <div class="tog" data-f="personne" style="--c:var(--ambre)"><i></i>Personnes</div>
+    <div class="tog" data-f="lieu" style="--c:var(--cyan)"><i></i>Lieux</div>
+    <div class="tog" data-f="projet" style="--c:var(--violet)"><i></i>Projets</div>
+    <div class="tog" data-f="organisation" style="--c:var(--magenta)"><i></i>Organisations</div>
+    <div class="tog" data-f="memory" style="--c:#aebcff"><i></i>Souvenirs</div>
+    <div class="tog" data-f="ghost" style="--c:var(--ghost)"><i></i>Périmés</div>
+  </div>
+  <div id="impwrap">
+    <label>Importance minimum <b id="impval">0%</b></label>
+    <input id="imp" type="range" min="0" max="100" value="0">
+  </div>
+</aside>
+
+<aside id="legend">
+  <div class="row"><span class="dot" style="--c:#ffe6b8"></span>toi — le centre</div>
+  <div class="row"><span class="dot" style="--c:var(--ambre)"></span>personne&nbsp;&nbsp;<span class="dot" style="--c:var(--cyan)"></span>lieu&nbsp;&nbsp;<span class="dot" style="--c:var(--violet)"></span>projet&nbsp;&nbsp;<span class="dot" style="--c:var(--magenta)"></span>organisation</div>
+  <div class="row"><span class="link" style="--c:var(--violet)"></span>fait (couleur = type de relation)</div>
+  <div class="row"><span class="dot ghostd" style="--c:var(--ghost)"></span><span class="link dash"></span>fait périmé, retenu à sa version actuelle</div>
+  <div class="row"><span class="dot dust" style="--c:#aebcff"></span>souvenir — opacité = fraîcheur, halo = émotion</div>
+  <div id="status"><i></i><span id="status-txt">démo hors-ligne — données d'exemple</span></div>
+</aside>
+
+<div id="tip"></div>
+
+<aside id="inspector">
+  <button id="insp-close" title="Fermer">✕</button>
+  <div id="insp-head">
+    <div id="insp-kind"></div>
+    <div id="insp-title"></div>
+  </div>
+  <div id="insp-body"></div>
+</aside>
+
+<script src="https://cdn.jsdelivr.net/npm/3d-force-graph@1.80.0/dist/3d-force-graph.min.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+let UnrealBloomPass = null;
+try { ({ UnrealBloomPass } = await import('three/addons/postprocessing/UnrealBloomPass.js')); }
+catch(e){ console.warn('Bloom indisponible', e); }
+const ForceGraph3D = window.ForceGraph3D;
+
+/* ============================== données ============================== */
+/* Le serveur (/v1/graph) doit renvoyer { entities, facts, memories } au même format. */
+const FALLBACK = {
+  entities: [
+    { id:'annecy',  type:'lieu',         label:'Annecy',  mentions:14 },
+    { id:'lyon',    type:'lieu',         label:'Lyon',    mentions:5,  expired:true, tether:'annecy' },
+    { id:'nexora',  type:'organisation', label:'Nexora',  mentions:9 },
+    { id:'datalis', type:'organisation', label:'Datalis', mentions:6,  expired:true, tether:'nexora' },
+    { id:'marie',   type:'personne',     label:'Marie',   mentions:11 },
+    { id:'julien',  type:'personne',     label:'Julien',  mentions:6 },
+    { id:'camille', type:'personne',     label:'Camille', mentions:4 },
+    { id:'atlas',   type:'projet',       label:'Atlas',   mentions:8 },
+    { id:'mnemos',  type:'projet',       label:'Mnemos',  mentions:7 },
+    { id:'semnoz',  type:'lieu',         label:'Le Semnoz', mentions:5 }
+  ],
+  facts: [
+    { id:'f_habite', predicate:'habite à', object:'annecy', type:'localisation', since:'mars 2021',
+      history:[ { value:'Lyon', entity:'lyon', from:'sept. 2016', to:'mars 2021' } ] },
+    { id:'f_emploi', predicate:'travaille chez', object:'nexora', type:'emploi', since:'janv. 2024',
+      detail:'Développeur backend senior',
+      history:[ { value:'Datalis', entity:'datalis', from:'mai 2019', to:'déc. 2023' } ] },
+    { id:'f_marie',   predicate:'est fiancé à',        object:'marie',   type:'relation', since:'août 2025' },
+    { id:'f_julien',  predicate:'grimpe avec',         object:'julien',  type:'relation', since:'2018' },
+    { id:'f_camille', predicate:'travaille avec',      object:'camille', type:'relation', since:'janv. 2024' },
+    { id:'f_atlas',   predicate:'développe',           object:'atlas',   type:'projet',   since:'2023', detail:'App de randonnée hors-ligne' },
+    { id:'f_mnemos',  predicate:'développe',           object:'mnemos',  type:'projet',   since:'oct. 2025', detail:'Mémoire artificielle personnelle' },
+    { id:'f_semnoz',  predicate:'randonne au',         object:'semnoz',  type:'loisir',   since:'2021' }
+  ],
+  memories: [
+    { id:'m01', label:'Mise en prod de Mnemos v0.1',            date:'26 juin 2026',  freshness:.95, importance:.9,  anchor:'mnemos' },
+    { id:'m02', label:'Randonnée au Semnoz avec Julien',        date:'14 juin 2026',  freshness:.9,  importance:.55, anchor:'semnoz' },
+    { id:'m03', label:'Fiançailles au bord du lac',             date:'23 août 2025',  freshness:.85, importance:1,   anchor:'marie' },
+    { id:'m04', label:'Café avec Camille — l\u2019idée de Mnemos',  date:'2 oct. 2025',   freshness:.8,  importance:.7,  anchor:'camille' },
+    { id:'m05', label:'Premier jour chez Nexora',               date:'8 janv. 2024',  freshness:.7,  importance:.95, anchor:'nexora' },
+    { id:'m06', label:'Anniversaire de Marie au restaurant',    date:'3 mai 2026',    freshness:.65, importance:.8,  anchor:'marie' },
+    { id:'m07', label:'Bug critique d\u2019Atlas résolu à 2h du matin', date:'11 févr. 2026', freshness:.6, importance:.5, anchor:'atlas' },
+    { id:'m08', label:'Déménagement à Annecy',                  date:'20 mars 2021',  freshness:.5,  importance:.9,  anchor:'annecy' },
+    { id:'m09', label:'Dernier jour chez Datalis',              date:'22 déc. 2023',  freshness:.4,  importance:.8,  anchor:'datalis' },
+    { id:'m10', label:'Achat du vélo gravel',                   date:'5 avr. 2025',   freshness:.3,  importance:.4,  anchor:'annecy' },
+    { id:'m11', label:'Conférence Rust à Lyon',                 date:'sept. 2024',    freshness:.25, importance:.5,  anchor:'lyon' },
+    { id:'m12', label:'Session d\u2019escalade annulée (pluie)',    date:'nov. 2025',     freshness:.12, importance:.1,  anchor:'semnoz' }
+  ]
+};
+
+const TYPE_META = {
+  user:         { color:'#ffe6b8', label:'Toi' },
+  personne:     { color:'#ffbe6b', label:'Personne' },
+  lieu:         { color:'#55e0f2', label:'Lieu' },
+  projet:       { color:'#9d7bff', label:'Projet' },
+  organisation: { color:'#e07bdc', label:'Organisation' }
+};
+const FACT_COLOR = {
+  localisation:'#55e0f2', emploi:'#e07bdc', relation:'#ffbe6b',
+  projet:'#9d7bff', loisir:'#6ee7c7'
+};
+const FACT_LABEL = {
+  localisation:'Localisation', emploi:'Emploi', relation:'Relation',
+  projet:'Projet', loisir:'Loisir'
+};
+const GHOST = '#8b90a3', DUST = '#aebcff';
+
+/* ============================== textures ============================== */
+const texCache = new Map();
+function glowTexture(color, soft=false){
+  const key = color + (soft?'s':'');
+  if (texCache.has(key)) return texCache.get(key);
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const x = c.getContext('2d');
+  const g = x.createRadialGradient(64,64,0,64,64,64);
+  if (soft){
+    g.addColorStop(0, color+'66'); g.addColorStop(.4, color+'22'); g.addColorStop(1, color+'00');
+  } else {
+    g.addColorStop(0,'#ffffff'); g.addColorStop(.18,color); g.addColorStop(.45,color+'55'); g.addColorStop(1,color+'00');
+  }
+  x.fillStyle = g; x.fillRect(0,0,128,128);
+  const t = new THREE.CanvasTexture(c); texCache.set(key,t); return t;
+}
+function textSprite(text, color, size=13){
+  const pad = 8, c = document.createElement('canvas'), x = c.getContext('2d');
+  const f = `500 ${size*4}px 'Space Grotesk', sans-serif`;
+  x.font = f;
+  c.width = Math.ceil(x.measureText(text).width) + pad*2; c.height = size*4 + pad*2;
+  x.font = f; x.textBaseline = 'middle'; x.textAlign = 'center';
+  x.shadowColor = 'rgba(0,0,0,.9)'; x.shadowBlur = 10;
+  x.fillStyle = color; x.fillText(text, c.width/2, c.height/2);
+  const t = new THREE.CanvasTexture(c);
+  const m = new THREE.SpriteMaterial({ map:t, transparent:true, depthWrite:false });
+  const s = new THREE.Sprite(m);
+  s.scale.set(c.width/16, c.height/16, 1);
+  return s;
+}
+
+/* ============================== construction du graphe ============================== */
+let DATA = null, firstBuild = true;
+const nodesById = new Map();
+const graphData = { nodes:[], links:[] };
+
+function buildGraph(data){
+  const now = performance.now();
+  const nodes = [], links = [];
+  const keep = id => nodesById.get(id); // réutilise les objets existants (positions conservées)
+
+  const mk = (id, props) => {
+    let n = keep(id);
+    if (!n){ n = { id, __birth: firstBuild ? now + nodes.length*70 : now }; nodesById.set(id, n); if(!firstBuild) n.__new = true; }
+    Object.assign(n, props);
+    nodes.push(n); return n;
+  };
+
+  mk('user', { kind:'user', type:'user', label:'user', sub:'le centre de cette mémoire' });
+
+  for (const e of data.entities){
+    mk(e.id, { kind: e.expired?'ghost':'entity', type:e.type, label:e.label,
+               mentions:e.mentions||1, tether:e.tether });
+    if (e.expired && e.tether)
+      links.push({ source:e.id, target:e.tether, kind:'tether' });
+  }
+  for (const f of data.facts){
+    links.push({ source:'user', target:f.object, kind:'fact', fact:f });
+    (f.history||[]).forEach(h => {
+      if (h.entity) links.push({ source:'user', target:h.entity, kind:'oldfact', fact:f, hist:h });
+    });
+  }
+  for (const m of data.memories){
+    mk(m.id, { kind:'memory', type:'memory', label:m.label, date:m.date,
+               freshness:m.freshness, importance:m.importance, anchor:m.anchor });
+    links.push({ source: m.anchor && data.entities.some(e=>e.id===m.anchor) ? m.anchor : 'user',
+                 target:m.id, kind:'anchor', fresh:m.freshness });
+  }
+
+  graphData.nodes = nodes; graphData.links = links;
+  DATA = data; firstBuild = false;
+
+  document.getElementById('c-faits').textContent = data.facts.length;
+  document.getElementById('c-entites').textContent = data.entities.filter(e=>!e.expired).length;
+  document.getElementById('c-souvenirs').textContent = data.memories.length;
+  document.getElementById('c-perimes').textContent = data.facts.reduce((a,f)=>a+(f.history||[]).length,0);
+}
+
+/* ============================== état UI ============================== */
+const toggles = { personne:true, lieu:true, projet:true, organisation:true, memory:true, ghost:true };
+let minImp = 0, query = '', hoverNode = null;
+
+const nodeVisible = n => {
+  if (!n || n.kind==='user') return true;
+  if (n.kind==='memory') return toggles.memory && n.importance >= minImp;
+  if (n.kind==='ghost')  return toggles.ghost;
+  return toggles[n.type] !== false;
+};
+const matches = n => query && (n.label||'').toLowerCase().includes(query);
+
+/* ============================== rendu des nœuds ============================== */
+function makeNodeObject(n){
+  const g = new THREE.Group();
+  const add = (tex, scale, opacity, blending=THREE.AdditiveBlending) => {
+    const m = new THREE.SpriteMaterial({ map:tex, transparent:true, depthWrite:false, blending, opacity });
+    const s = new THREE.Sprite(m); s.scale.set(scale,scale,1); g.add(s); return s;
+  };
+  let core, halo, label;
+
+  if (n.kind==='user'){
+    halo = add(glowTexture('#b78bff', true), 90, .8);
+    core = add(glowTexture('#ffe6b8'), 30, 1);
+    label = textSprite('user', '#ffe6b8', 12); label.position.y = -16; g.add(label);
+    n.__anim = { base:30, haloBase:90, kind:'user' };
+  }
+  else if (n.kind==='entity'){
+    const col = TYPE_META[n.type]?.color || '#fff';
+    const s = 9 + Math.sqrt(n.mentions||1)*3.4;
+    halo = add(glowTexture(col, true), s*2.6, .55);
+    core = add(glowTexture(col), s, 1);
+    label = textSprite(n.label, '#d7dbf5', 11); label.position.y = -(s*.62+6); g.add(label);
+    n.__anim = { base:s, haloBase:s*2.6, kind:'entity' };
+  }
+  else if (n.kind==='ghost'){
+    core = add(glowTexture(GHOST), 11, .35, THREE.NormalBlending);
+    label = textSprite(n.label, 'rgba(155,160,180,.75)', 10); label.position.y = -12; g.add(label);
+    n.__anim = { base:11, kind:'ghost' };
+  }
+  else { // memory
+    const s = 2.6 + n.importance*3.2;
+    if (n.importance > .35) halo = add(glowTexture(DUST, true), s*(2+n.importance*3.5), .12 + n.importance*.3);
+    core = add(glowTexture(DUST), s, .15 + n.freshness*.85);
+    n.__anim = { base:s, haloBase: halo? s*(2+n.importance*3.5):0, kind:'memory',
+                 phase: Math.random()*Math.PI*2, speed: 1.2+Math.random()*1.6 };
+  }
+  n.__sprites = { core, halo, label, group:g };
+  return g;
+}
+
+/* ============================== graphe 3D ============================== */
+const Graph = new ForceGraph3D(document.getElementById('graph'), { controlType:'orbit' })
+  .backgroundColor('#05060d')
+  .showNavInfo(false)
+  .nodeThreeObject(makeNodeObject)
+  .nodeVisibility(nodeVisible)
+  .nodeLabel(null)
+  .linkVisibility(l => {
+    if (l.kind==='anchor') return false;
+    const s = typeof l.source==='object'?l.source:nodesById.get(l.source);
+    const t = typeof l.target==='object'?l.target:nodesById.get(l.target);
+    return nodeVisible(s) && nodeVisible(t);
+  })
+  .linkColor(l => l.kind==='fact' ? (FACT_COLOR[l.fact.type]||'#9d7bff')
+              : l.kind==='oldfact' ? '#565b6e' : GHOST)
+  .linkOpacity(.55)
+  .linkWidth(l => l.kind==='fact' ? 1.1 : 0.4)
+  .linkThreeObject(l => {
+    if (l.kind!=='tether' && l.kind!=='oldfact') return undefined;
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+    const mat = new THREE.LineDashedMaterial({
+      color: l.kind==='tether' ? 0x8b90a3 : 0x565b6e,
+      dashSize: l.kind==='tether' ? 2.4 : 1.4,
+      gapSize: l.kind==='tether' ? 2.6 : 4,
+      transparent: true, opacity: l.kind==='tether' ? .55 : .3, depthWrite: false
+    });
+    return new THREE.Line(geo, mat);
+  })
+  .linkPositionUpdate((obj, { start, end }, l) => {
+    if (l.kind!=='tether' && l.kind!=='oldfact') return false;
+    const p = obj.geometry.attributes.position;
+    p.setXYZ(0, start.x, start.y, start.z);
+    p.setXYZ(1, end.x, end.y, end.z);
+    p.needsUpdate = true;
+    obj.computeLineDistances();
+    return true;
+  })
+  .onNodeHover(n => { hoverNode = n; document.body.style.cursor = n?'pointer':'default'; renderTip(n); })
+  .onLinkHover(l => { if(!hoverNode){ document.body.style.cursor = (l&&l.kind==='fact')?'pointer':'default'; renderTipLink(l);} })
+  .onNodeClick(n => { openInspectorNode(n); focus(n); })
+  .onLinkClick(l => { if (l.kind==='fact'||l.kind==='oldfact') openInspectorFact(l.fact); })
+  .onBackgroundClick(closeInspector);
+
+Graph.d3Force('charge').strength(n => n.kind==='memory' ? -14 : n.kind==='ghost' ? -60 : -150);
+Graph.d3Force('link')
+  .distance(l => l.kind==='tether' ? 34
+             : l.kind==='anchor' ? 90 + (1-(l.fresh??.5))*110
+             : l.kind==='oldfact' ? 150 : 95)
+  .strength(l => l.kind==='anchor' ? .25 : l.kind==='oldfact' ? .15 : .6);
+
+buildGraph(FALLBACK);
+Graph.graphData(graphData);
+Graph.cameraPosition({ x:0, y:40, z:440 });
+
+/* bloom (dégradation gracieuse si indisponible) */
+try {
+  const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.15, .75, .1);
+  Graph.postProcessingComposer().addPass(bloom);
+} catch(e){ console.warn('Bloom indisponible', e); }
+
+/* fond étoilé lointain */
+{
+  const N = 700, pos = new Float32Array(N*3);
+  for (let i=0;i<N;i++){
+    const r = 1200 + Math.random()*1800, th = Math.random()*Math.PI*2, ph = Math.acos(2*Math.random()-1);
+    pos[i*3] = r*Math.sin(ph)*Math.cos(th); pos[i*3+1] = r*Math.sin(ph)*Math.sin(th); pos[i*3+2] = r*Math.cos(ph);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  Graph.scene().add(new THREE.Points(geo, new THREE.PointsMaterial({
+    color:0x9aa4d8, size:1.4, transparent:true, opacity:.45, sizeAttenuation:false })));
+}
+
+/* auto-rotation au repos */
+const controls = Graph.controls();
+controls.autoRotate = true; controls.autoRotateSpeed = .45;
+controls.enableDamping = true; controls.dampingFactor = .06;
+let idleTimer = null;
+controls.addEventListener('start', () => {
+  controls.autoRotate = false;
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => controls.autoRotate = true, 9000);
+});
+
+addEventListener('resize', () => Graph.width(innerWidth).height(innerHeight));
+
+function focus(n){
+  if (!n || n.x===undefined) return;
+  const d = Math.hypot(n.x,n.y,n.z) || 1, k = 1 + 130/d;
+  Graph.cameraPosition({ x:n.x*k, y:n.y*k, z:n.z*k }, n, 900);
+}
+
+/* ============================== boucle d'animation des sprites ============================== */
+const easeOutBack = t => { const c=1.70158; return 1 + (c+1)*Math.pow(t-1,3) + c*Math.pow(t-1,2); };
+(function animate(){
+  const t = performance.now();
+  for (const n of graphData.nodes){
+    const sp = n.__sprites, a = n.__anim;
+    if (!sp || !a) continue;
+    // naissance
+    let pop = 1;
+    if (n.__birth){
+      const dt = (t - n.__birth)/900;
+      if (dt < 0) pop = 0; else if (dt < 1) pop = easeOutBack(dt); else { pop = 1; delete n.__birth; delete n.__new; }
+    }
+    // recherche : illumine / éteint
+    let dim = 1, boost = 1;
+    if (query){ if (matches(n)) boost = 1.35 + .12*Math.sin(t/180); else dim = .12; }
+    // pulsations par famille
+    let flick = 1;
+    if (a.kind==='user') flick = 1 + .04*Math.sin(t/900);
+    else if (a.kind==='ghost') flick = .8 + .2*Math.sin(t/1400 + (n.id.length));
+    else if (a.kind==='memory'){
+      flick = 1;
+      if (n.importance > .7){ // scintillement des souvenirs importants
+        const w = Math.sin(t/1000*a.speed + a.phase);
+        flick = 1 + Math.max(0, w*w*w) * .9;
+      }
+    }
+    const s = a.base * pop * boost;
+    sp.core.scale.set(s*(a.kind==='memory'?flick*.35+.65:1), s*(a.kind==='memory'?flick*.35+.65:1), 1);
+    sp.core.material.opacity = Math.min(1,
+      (a.kind==='memory' ? (.15 + n.freshness*.85)*flick : a.kind==='ghost' ? .35*flick : 1) * dim * (pop||0.0001));
+    if (sp.halo){
+      const hs = (a.haloBase||0) * pop * boost * (a.kind==='memory' ? (0.9+flick*.1) : (1+.05*Math.sin(t/1200)));
+      sp.halo.scale.set(hs, hs, 1);
+      sp.halo.material.opacity = (a.kind==='memory' ? (.12+n.importance*.3)*flick*.8 : a.kind==='user' ? .8 : .55) * dim * pop;
+    }
+    if (sp.label) sp.label.material.opacity = (a.kind==='ghost' ? .7 : .95) * dim * pop;
+  }
+  requestAnimationFrame(animate);
+})();
+
+/* ============================== tooltip ============================== */
+const tip = document.getElementById('tip');
+let mx = 0, my = 0;
+addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY;
+  if (tip.classList.contains('on')){ tip.style.left = mx+'px'; tip.style.top = my+'px'; } });
+
+function renderTip(n){
+  if (!n){ tip.classList.remove('on'); return; }
+  let k, kc, d = '';
+  if (n.kind==='user'){ k = 'Toi'; kc = '#ffe6b8'; d = n.sub; }
+  else if (n.kind==='entity'){ k = TYPE_META[n.type].label; kc = TYPE_META[n.type].color; d = n.mentions + ' mentions'; }
+  else if (n.kind==='ghost'){ k = 'Fait périmé'; kc = GHOST; d = 'flotte derrière sa version actuelle'; }
+  else { k = 'Souvenir'; kc = DUST; d = n.date + ' · fraîcheur ' + Math.round(n.freshness*100) + '%'; }
+  tip.innerHTML = `<div class="k" style="color:${kc}">${k}</div><div class="l">${n.label}</div><div class="d">${d}</div>`;
+  tip.style.left = mx+'px'; tip.style.top = my+'px';
+  tip.classList.add('on');
+}
+function renderTipLink(l){
+  if (!l || (l.kind!=='fact' && l.kind!=='oldfact')){ tip.classList.remove('on'); return; }
+  const f = l.fact, c = FACT_COLOR[f.type]||'#9d7bff';
+  const obj = l.kind==='oldfact' ? l.hist.value : (DATA.entities.find(e=>e.id===f.object)?.label||'');
+  tip.innerHTML = `<div class="k" style="color:${l.kind==='oldfact'?GHOST:c}">${l.kind==='oldfact'?'Fait périmé':'Fait — '+(FACT_LABEL[f.type]||f.type)}</div>
+    <div class="l">${f.predicate} <span style="color:${c}">${obj}</span></div>
+    <div class="d">${l.kind==='oldfact' ? l.hist.from+' → '+l.hist.to : 'depuis '+f.since+' · cliquer pour la chronologie'}</div>`;
+  tip.style.left = mx+'px'; tip.style.top = my+'px';
+  tip.classList.add('on');
+}
+
+/* ============================== inspecteur ============================== */
+const insp = document.getElementById('inspector');
+const filtersEl = document.getElementById('filters');
+const el = (id) => document.getElementById(id);
+function openInspector(kind, kindColor, title, bodyHTML){
+  el('insp-kind').textContent = kind; el('insp-kind').style.color = kindColor;
+  el('insp-title').textContent = title;
+  el('insp-body').innerHTML = bodyHTML;
+  insp.classList.add('open'); filtersEl.style.opacity = 0; filtersEl.style.pointerEvents = 'none';
+  el('insp-body').querySelectorAll('[data-fact]').forEach(r =>
+    r.addEventListener('click', () => openInspectorFact(DATA.facts.find(f=>f.id===r.dataset.fact))));
+}
+function closeInspector(){ insp.classList.remove('open'); filtersEl.style.opacity = 1; filtersEl.style.pointerEvents = 'auto'; }
+el('insp-close').addEventListener('click', closeInspector);
+
+function factRow(f, past){
+  const c = FACT_COLOR[f.type]||'#9d7bff';
+  return `<div class="factrow" data-fact="${f.id}" style="--c:${c}">
+    <div class="p">${f.predicate} <em>${DATA.entities.find(e=>e.id===f.object)?.label||''}</em></div>
+    <div class="w">${FACT_LABEL[f.type]||f.type} · depuis ${f.since}${(f.history||[]).length?` · ${(f.history).length} version(s) passée(s)`:''}</div>
+  </div>`;
+}
+
+function openInspectorNode(n){
+  if (!n) return;
+  if (n.kind==='user'){
+    const facts = DATA.facts.map(f=>factRow(f)).join('');
+    openInspector('Toi', '#ffe6b8', 'user',
+      `<div class="meta"><span class="chip"><b>${DATA.facts.length}</b> faits</span>
+        <span class="chip"><b>${DATA.memories.length}</b> souvenirs</span></div>
+       <div class="sect">Faits connus</div>${facts}`);
+  }
+  else if (n.kind==='entity'){
+    const m = TYPE_META[n.type];
+    const facts = DATA.facts.filter(f=>f.object===n.id).map(f=>factRow(f)).join('');
+    const mems = DATA.memories.filter(x=>x.anchor===n.id);
+    openInspector(m.label, m.color, n.label,
+      `<div class="meta"><span class="chip"><b>${n.mentions}</b> mentions</span>
+        <span class="chip">${m.label.toLowerCase()}</span></div>
+       ${facts?`<div class="sect">Faits liés</div>${facts}`:''}
+       ${mems.length?`<div class="sect">Souvenirs rattachés</div>${mems.map(x=>
+          `<div class="factrow" style="--c:${DUST}"><div class="p">${x.label}</div><div class="w">${x.date}</div></div>`).join('')}`:''}`);
+  }
+  else if (n.kind==='ghost'){
+    const f = DATA.facts.find(f=>(f.history||[]).some(h=>h.entity===n.id));
+    const h = f && f.history.find(h=>h.entity===n.id);
+    openInspector('Fait périmé', GHOST, n.label,
+      `<div class="meta"><span class="chip">retenu à <b>${DATA.entities.find(e=>e.id===n.tether)?.label||''}</b></span></div>
+       ${f?`<div class="sect">Ce qui était vrai</div>
+       <div class="factrow" data-fact="${f.id}" style="--c:${GHOST}">
+         <div class="p">${f.predicate} <em style="color:${GHOST}">${h.value}</em></div>
+         <div class="w">${h.from} → ${h.to} · voir la chronologie complète</div></div>`:''}`);
+  }
+  else if (n.kind==='memory'){
+    const anchor = DATA.entities.find(e=>e.id===n.anchor);
+    openInspector('Souvenir', DUST, n.label,
+      `<div class="memtext">Épisode enregistré le <b style="color:#fff">${n.date}</b>${anchor?`, rattaché à <b style="color:${TYPE_META[anchor.type].color}">${anchor.label}</b>`:''}.</div>
+       <div class="bar" style="--c:${DUST}"><label>Fraîcheur <span>${Math.round(n.freshness*100)}%</span></label>
+         <div class="track"><div class="fill" style="width:${n.freshness*100}%"></div></div></div>
+       <div class="bar" style="--c:var(--ambre)"><label>Importance émotionnelle <span>${Math.round(n.importance*100)}%</span></label>
+         <div class="track"><div class="fill" style="width:${n.importance*100}%"></div></div></div>
+       <div class="memtext" style="color:var(--txt-dim);font-size:12px">${n.freshness<.3?'Ce souvenir s\u2019éteint doucement — il sera bientôt oublié.':n.importance>.7?'Souvenir marquant : il scintille dans la constellation.':'Souvenir ordinaire, encore accessible.'}</div>`);
+  }
+}
+
+function openInspectorFact(f){
+  if (!f) return;
+  const c = FACT_COLOR[f.type]||'#9d7bff';
+  const cur = DATA.entities.find(e=>e.id===f.object);
+  const tl = [
+    `<div class="tl" style="--c:${c}"><div class="n"></div><div>
+       <div class="v">${cur?.label||''}</div><div class="dates">depuis ${f.since} — aujourd'hui</div>
+       ${f.detail?`<div class="dates">${f.detail}</div>`:''}</div></div>`,
+    ...(f.history||[]).map(h =>
+    `<div class="tl past"><div class="n"></div><div>
+       <div class="v">${h.value}</div><div class="dates">${h.from} → ${h.to}</div>
+       <span class="tag">périmé</span></div></div>`)
+  ].join('');
+  openInspector('Fait — ' + (FACT_LABEL[f.type]||f.type), c, `${f.predicate} ${cur?.label||''}`,
+    `<div class="sect">Chronologie</div><div class="timeline">${tl}</div>`);
+}
+
+/* ============================== recherche & filtres ============================== */
+el('search').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); });
+document.querySelectorAll('.tog').forEach(t => t.addEventListener('click', () => {
+  toggles[t.dataset.f] = !toggles[t.dataset.f];
+  t.classList.toggle('off', !toggles[t.dataset.f]);
+  Graph.nodeVisibility(nodeVisible); // force le recalcul
+}));
+el('imp').addEventListener('input', e => {
+  minImp = e.target.value/100;
+  el('impval').textContent = e.target.value + '%';
+  Graph.nodeVisibility(nodeVisible);
+});
+
+/* ============================== chargement & rafraîchissement ============================== */
+let liveOnce = false;
+async function load(){
+  try {
+    const r = await fetch('/v1/graph', { cache:'no-store' });
+    if (!r.ok) throw new Error(r.status);
+    const data = await r.json();
+    if (!data || !data.entities) throw new Error('format');
+    buildGraph(data);
+    Graph.graphData(graphData);
+    if (!liveOnce){
+      liveOnce = true;
+      const st = document.getElementById('status');
+      st.classList.add('live');
+      document.getElementById('status-txt').textContent = 'flux connecté — /v1/graph';
+    }
+  } catch(e){ /* on garde la constellation actuelle (ou le fallback) */ }
+}
+load();
+setInterval(load, 30000);
+</script>
+
+
+</body></html>

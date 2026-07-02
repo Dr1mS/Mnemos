@@ -12,7 +12,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from mnemos import __version__
-from mnemos.api.routes import router
+from mnemos.api.routes import router, viz_router
 from mnemos.clock import Clock
 from mnemos.config import Settings, get_settings
 from mnemos.consolidation.extractor import FactExtractor
@@ -37,12 +37,14 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     state = app.state
     settings: Settings = state.settings
     owns_engine = not hasattr(state, "store")
+    if not hasattr(state, "clock"):
+        state.clock = Clock()
     if owns_engine:
         client = OllamaClient(settings)
         state.client = client
         state.manager = ModelManager(settings, client)
         embedder = DenseEmbedder(state.manager, settings)
-        clock = Clock()
+        clock = state.clock
         state.engine = make_async_engine(settings.EPISODIC_DB)
         state.semantic_engine = make_async_engine(settings.SEMANTIC_DB)
         state.store = EpisodicStore(state.engine, embedder, clock, settings)
@@ -84,4 +86,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(title="mnemos", version=__version__, lifespan=_lifespan)
     app.state.settings = settings
     app.include_router(router)
+    app.include_router(viz_router)
     return app

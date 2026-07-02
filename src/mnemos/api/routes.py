@@ -7,9 +7,11 @@ déjà cherchable.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import FileResponse
 
 from mnemos.api.deps import get_orchestrator, get_queue, get_store, get_wm, require_api_key
 from mnemos.api.schemas import (
@@ -102,6 +104,25 @@ async def health(request: Request, queue: QueueDep) -> HealthOut:
         salience_queue_depth=queue.depth,
         worker_last_run=marker.read_text().strip() if marker.exists() else None,
     )
+
+
+@router.get("/graph")
+async def graph(request: Request, store: StoreDep) -> dict[str, object]:
+    """Graphe mémoire pour le visualiseur — contrat {entities, facts, memories}."""
+    from mnemos.api.graph import build_graph
+
+    payload = await build_graph(store, request.app.state.semantic)
+    payload["generated_at"] = request.app.state.clock.now_ms()
+    return payload
+
+
+# Hors /v1 : la page du visualiseur (fetch /v1/graph elle-même)
+viz_router = APIRouter()
+
+
+@viz_router.get("/viz", include_in_schema=False)
+async def constellation() -> FileResponse:
+    return FileResponse(Path(__file__).parent / "static" / "constellation.html")
 
 
 # ── Admin (§16.1) — auth requise via require_api_key global ──────────────────
