@@ -14,8 +14,9 @@ from __future__ import annotations
 
 from typing import Any
 
+import sqlite_vec  # type: ignore[import-untyped]
 from alembic import context
-from sqlalchemy import create_engine, pool
+from sqlalchemy import create_engine, event, pool
 
 from mnemos.config import get_settings
 
@@ -65,10 +66,18 @@ def run_migrations_offline() -> None:
             context.run_migrations(db_name=db_name)
 
 
+def _load_sqlite_vec(dbapi_conn: Any, _record: Any) -> None:
+    """Les migrations créent des tables vec0 → extension requise (sync sqlite3)."""
+    dbapi_conn.enable_load_extension(True)
+    sqlite_vec.load(dbapi_conn)
+    dbapi_conn.enable_load_extension(False)
+
+
 def run_migrations_online() -> None:
     for db_name in _selected_dbs():
         settings.DATA_DIR.mkdir(parents=True, exist_ok=True)
         engine = create_engine(DATABASES[db_name], poolclass=pool.NullPool)
+        event.listens_for(engine, "connect")(_load_sqlite_vec)
         with engine.connect() as connection:
             context.configure(
                 connection=connection,
