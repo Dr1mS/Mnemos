@@ -206,6 +206,38 @@ class SemanticStore:
             logger.info("fact_written", fact_id=new_fact.id, action=action, predicate=predicate)
             return FactWriteResult(action=action, fact=new_fact, superseded=superseded)
 
+    async def retract_fact(self, subject: str, predicate: str, object_: str) -> Fact | None:
+        """Rétractation explicite d'un fait courant ("je n'aime plus X",
+        fait erroné). Invalide (valid_until=now) SANS superseded_by — c'est
+        une fin de validité, pas un remplacement. §22 : la détection de
+        négation est déléguée au consommateur (Claude via MCP), le store ne
+        fait que l'opération sûre.
+
+        Match : subject+predicate exacts (après résolution d'alias), object
+        casse-insensible exact. Retourne le fait rétracté, ou None.
+        """
+        subject = await self.resolve_name(subject)
+        object_ = await self.resolve_name(object_)
+        async with self._sessions() as session, session.begin():
+            current = list(
+                (
+                    await session.execute(
+                        select(Fact).where(
+                            func.lower(Fact.subject) == subject.lower(),
+                            Fact.predicate == predicate,
+                            Fact.valid_until.is_(None),
+                        )
+                    )
+                ).scalars()
+            )
+            for fact in current:
+                if fact.object.lower() == object_.lower():
+                    fact.valid_until = self._clock.now_ms()
+                    session.add(fact)
+                    logger.info("fact_retracted", fact_id=fact.id, predicate=predicate)
+                    return fact
+        return None
+
     # ── Lecture ───────────────────────────────────────────────────────────────
 
     async def get_current_facts(

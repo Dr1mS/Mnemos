@@ -151,6 +151,41 @@ async def test_upsert_entity_incremente_et_merge_alias(
     assert "Datalyse SAS" in json.loads(e2.aliases)
 
 
+async def test_retract_fact_invalide_sans_supersession(
+    store: SemanticStore, fixed_clock: FixedClock
+) -> None:
+    """Rétractation : valid_until posé, PAS de superseded_by (fin de validité,
+    pas remplacement). Le fait reste en historique."""
+    await store.add_fact("user", "prefers", "café", ["ep1"])
+    await store.add_fact("user", "prefers", "thé", ["ep2"])
+    retracted = await store.retract_fact("user", "prefers", "Café")  # casse-insensible
+    assert retracted is not None
+    assert retracted.valid_until == fixed_clock.now_ms()
+    assert retracted.superseded_by is None
+
+    current = {f.object for f in await store.get_current_facts("user", "prefers")}
+    assert current == {"thé"}  # café retiré, thé intact
+    history = await store.get_history("user", "prefers")
+    assert any(f.object == "café" for f in history)  # audit préservé
+
+
+async def test_retract_fact_inconnu_retourne_none(store: SemanticStore) -> None:
+    await store.add_fact("user", "prefers", "thé", ["ep1"])
+    assert await store.retract_fact("user", "prefers", "inexistant") is None
+    assert await store.retract_fact("user", "works_at", "thé") is None
+    assert len(await store.get_current_facts("user", "prefers")) == 1  # rien touché
+
+
+async def test_retract_puis_reaffirmation(store: SemanticStore, fixed_clock: FixedClock) -> None:
+    """Rétracter puis ré-affirmer → nouveau fait courant, chaîne complète."""
+    await store.add_fact("user", "prefers", "café", ["ep1"])
+    await store.retract_fact("user", "prefers", "café")
+    fixed_clock.advance(1_000)
+    result = await store.add_fact("user", "prefers", "café", ["ep2"])
+    assert result.action == "inserted"  # pas duplicate : l'ancien est invalidé
+    assert len(await store.get_history("user", "prefers")) == 2
+
+
 async def test_search_facts_exclut_les_invalides(store: SemanticStore) -> None:
     """Anti-pattern 6 : les faits supersédés ne polluent pas la recherche."""
     await store.add_fact("user", "works_at", "Datalyse", ["ep1"])

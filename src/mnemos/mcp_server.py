@@ -196,6 +196,34 @@ async def memory_facts(
 
 
 @mcp.tool()
+async def memory_forget(
+    ctx: Context,  # type: ignore[type-arg]
+    predicate: str,
+    object: str,
+    subject: str = "user",
+) -> str:
+    """Retract a fact that is no longer true or was wrong.
+
+    Use when the user corrects the memory ("je n'aime plus X", "c'était pas
+    moi", "ce n'est plus vrai"). The fact is invalidated (kept in history),
+    not deleted. The object must match an existing current fact exactly —
+    if unsure, the tool lists the candidates so you can retry.
+    """
+    app = _app(ctx)
+    retracted = await app.semantic.retract_fact(subject, predicate, object)
+    if retracted is not None:
+        return f"rétracté : {_fmt_fact(retracted)}"
+    candidates = await app.semantic.get_current_facts(subject, predicate)
+    if not candidates:
+        return f"aucun fait courant {subject}/{predicate}"
+    listing = "\n".join(f"  • {f.object}" for f in candidates)
+    return (
+        f"object non trouvé. Faits courants {subject}/{predicate} :\n{listing}\n"
+        f"Réessaie avec l'object exact."
+    )
+
+
+@mcp.tool()
 async def memory_consolidate(ctx: Context) -> str:  # type: ignore[type-arg]
     """Force a consolidation run: extract facts from recent salient episodes.
 
