@@ -56,8 +56,10 @@ async def make_stub_app(
 
     settings = settings or Settings(
         _env_file=None,
+        DATA_DIR=tmp_path,
         EPISODIC_DB=tmp_path / "episodic.db",
         SEMANTIC_DB=tmp_path / "semantic.db",
+        PROCEDURAL_DIR=tmp_path / "procedural",
     )
     clock = clock or Clock()
     epi_engine = make_async_engine(settings.EPISODIC_DB)

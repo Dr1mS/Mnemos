@@ -13,6 +13,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 from mnemos.api.deps import get_orchestrator, get_queue, get_store, get_wm, require_api_key
 from mnemos.api.schemas import (
+    ConsolidationReportOut,
+    DecayReportOut,
     EpisodeCreate,
     EpisodeOut,
     HealthOut,
@@ -92,9 +94,34 @@ async def health(request: Request, queue: QueueDep) -> HealthOut:
         "episodic": settings.EPISODIC_DB.exists(),
         "semantic": settings.SEMANTIC_DB.exists(),
     }
+    marker = settings.DATA_DIR / "worker_last_run"
     return HealthOut(
         ok=ollama_ok and all(dbs.values()),
         ollama=ollama_ok,
         dbs=dbs,
         salience_queue_depth=queue.depth,
+        worker_last_run=marker.read_text().strip() if marker.exists() else None,
     )
+
+
+# ── Admin (§16.1) — auth requise via require_api_key global ──────────────────
+
+
+@router.post("/admin/consolidate")
+async def admin_consolidate(request: Request) -> ConsolidationReportOut:
+    report = await request.app.state.worker.run_once()
+    return ConsolidationReportOut(
+        candidates=report.candidates,
+        consolidated=report.consolidated,
+        extraction_failures=report.extraction_failures,
+        facts_inserted=report.facts_inserted,
+        facts_superseded=report.facts_superseded,
+        facts_duplicate=report.facts_duplicate,
+        entities_upserted=report.entities_upserted,
+    )
+
+
+@router.post("/admin/decay")
+async def admin_decay(store: StoreDep, dry_run: bool = False) -> DecayReportOut:
+    report = await store.apply_decay(dry_run=dry_run)
+    return DecayReportOut(scanned=report.scanned, dry_run=report.dry_run, now_ms=report.now_ms)

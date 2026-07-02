@@ -15,6 +15,8 @@ from mnemos import __version__
 from mnemos.api.routes import router
 from mnemos.clock import Clock
 from mnemos.config import Settings, get_settings
+from mnemos.consolidation.extractor import FactExtractor
+from mnemos.consolidation.worker import ConsolidationWorker
 from mnemos.embeddings.dense import DenseEmbedder
 from mnemos.llm.model_manager import ModelManager
 from mnemos.llm.ollama_client import OllamaClient
@@ -22,6 +24,7 @@ from mnemos.logging import configure_logging, get_logger
 from mnemos.models.base import make_async_engine
 from mnemos.router.orchestrator import RouterOrchestrator
 from mnemos.stores.episodic import EpisodicStore
+from mnemos.stores.procedural import ProceduralStore
 from mnemos.stores.semantic import SemanticStore
 from mnemos.stores.working import WorkingMemoryRegistry
 from mnemos.tagger.salience import SalienceTagger, ScoringQueue
@@ -46,8 +49,20 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
         state.semantic = SemanticStore(state.semantic_engine, embedder, clock, settings)
     if not hasattr(state, "wm"):
         state.wm = WorkingMemoryRegistry()
+    if not hasattr(state, "procedural"):
+        state.procedural = ProceduralStore(settings.PROCEDURAL_DIR, Clock())
     if not hasattr(state, "orchestrator"):
-        state.orchestrator = RouterOrchestrator(state.store, state.semantic, state.wm)
+        state.orchestrator = RouterOrchestrator(
+            state.store, state.semantic, state.wm, state.procedural
+        )
+    if not hasattr(state, "worker"):
+        state.worker = ConsolidationWorker(
+            state.store,
+            state.semantic,
+            FactExtractor(state.manager, settings),
+            settings,
+            Clock(),
+        )
     if not hasattr(state, "queue"):
         tagger = SalienceTagger(state.manager, settings)
         state.queue = ScoringQueue(tagger, state.store)

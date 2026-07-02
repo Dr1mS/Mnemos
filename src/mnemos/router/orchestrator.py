@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 from mnemos.models.semantic import Fact
 from mnemos.router.classifier import QueryType, classify
 from mnemos.stores.episodic import EpisodicStore, ScoredEpisode
+from mnemos.stores.procedural import ProceduralStore
 from mnemos.stores.semantic import ScoredFact, SemanticStore
 from mnemos.stores.working import WMItem, WorkingMemoryRegistry
 
@@ -42,10 +43,12 @@ class RouterOrchestrator:
         episodic: EpisodicStore,
         semantic: SemanticStore,
         working: WorkingMemoryRegistry,
+        procedural: ProceduralStore | None = None,
     ) -> None:
         self._episodic = episodic
         self._semantic = semantic
         self._working = working
+        self._procedural = procedural
 
     async def query(
         self, q: str, session_id: str | None = None, k: int = 10
@@ -82,10 +85,16 @@ class RouterOrchestrator:
             if wm is not None:
                 working = wm.get_context()
 
+        # Procedural : toujours best-effort (§14.2) — jamais bloquant.
+        procedural: list[str] = []
+        if self._procedural is not None and qtype is QueryType.PROCEDURAL:
+            procedural = [meta.name for meta in self._procedural.search(q, k=5)]
+
         return QueryResult(
             type=qtype,
             episodes=episodes,
             facts=facts,
             history=history,
             working=working,
+            procedural=procedural,
         )

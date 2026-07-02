@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import shutil
 import sqlite3
-from collections.abc import Callable
+from collections.abc import Callable, Coroutine
 from pathlib import Path
 
 import typer
@@ -41,12 +41,13 @@ def serve() -> None:
     uvicorn.run(create_app(settings), host=settings.API_HOST, port=settings.API_PORT)
 
 
-@app.command()
-def consolidate() -> None:
-    """Force un run du worker de consolidation (§17)."""
-    import asyncio
+# ── Composants partagés par les commandes directes (hors serveur) ────────────
 
-    async def _run() -> None:
+
+class _Components:
+    """Assemblage complet des composants Mnemos pour le CLI."""
+
+    def __init__(self) -> None:
         from mnemos.clock import Clock
         from mnemos.consolidation.extractor import FactExtractor
         from mnemos.consolidation.worker import ConsolidationWorker
@@ -54,35 +55,228 @@ def consolidate() -> None:
         from mnemos.llm.model_manager import ModelManager
         from mnemos.llm.ollama_client import OllamaClient
         from mnemos.models.base import make_async_engine
+        from mnemos.router.orchestrator import RouterOrchestrator
         from mnemos.stores.episodic import EpisodicStore
+        from mnemos.stores.procedural import ProceduralStore
         from mnemos.stores.semantic import SemanticStore
+        from mnemos.stores.working import WorkingMemoryRegistry
 
-        settings = get_settings()
-        clock = Clock()
-        client = OllamaClient(settings)
-        manager = ModelManager(settings, client)
-        embedder = DenseEmbedder(manager, settings)
-        episodic_engine = make_async_engine(settings.EPISODIC_DB)
-        semantic_engine = make_async_engine(settings.SEMANTIC_DB)
-        worker = ConsolidationWorker(
-            EpisodicStore(episodic_engine, embedder, clock, settings),
-            SemanticStore(semantic_engine, embedder, clock, settings),
-            FactExtractor(manager, settings),
-            settings,
-            clock,
+        self.settings = get_settings()
+        self.clock = Clock()
+        self.client = OllamaClient(self.settings)
+        manager = ModelManager(self.settings, self.client)
+        embedder = DenseEmbedder(manager, self.settings)
+        self.episodic_engine = make_async_engine(self.settings.EPISODIC_DB)
+        self.semantic_engine = make_async_engine(self.settings.SEMANTIC_DB)
+        self.episodic = EpisodicStore(self.episodic_engine, embedder, self.clock, self.settings)
+        self.semantic = SemanticStore(self.semantic_engine, embedder, self.clock, self.settings)
+        self.procedural = ProceduralStore(self.settings.PROCEDURAL_DIR, self.clock)
+        self.orchestrator = RouterOrchestrator(
+            self.episodic, self.semantic, WorkingMemoryRegistry(), self.procedural
         )
-        report = await worker.run_once()
+        self.worker = ConsolidationWorker(
+            self.episodic, self.semantic, FactExtractor(manager, self.settings),
+            self.settings, self.clock,
+        )
+
+    async def aclose(self) -> None:
+        await self.episodic_engine.dispose()
+        await self.semantic_engine.dispose()
+        await self.client.aclose()
+
+
+def _run_with_components(fn: Callable[[_Components], Coroutine[None, None, None]]) -> None:
+    import asyncio
+
+    async def _wrapped() -> None:
+        components = _Components()
+        try:
+            await fn(components)
+        finally:
+            await components.aclose()
+
+    asyncio.run(_wrapped())
+
+
+@app.command()
+def write(
+    content: str,
+    role: str = typer.Option("user", "--role"),
+    session: str | None = typer.Option(None, "--session"),
+) -> None:
+    """Écrit un épisode (§17). Salience scorée de façon synchrone ici (CLI)."""
+
+    async def _write(c: _Components) -> None:
+        episode = await c.episodic.write(content, role=role, session_id=session)
+        typer.echo(f"écrit : {episode.id} (salience par défaut 0.5, scoring via serveur)")
+
+    _run_with_components(_write)
+
+
+@app.command()
+def search(query: str, k: int = typer.Option(10, "-k")) -> None:
+    """Recherche épisodique hybride (§17)."""
+
+    async def _search(c: _Components) -> None:
+        results = await c.episodic.search(query, k=k)
+        if not results:
+            typer.echo("aucun résultat")
+            return
+        for s in results:
+            typer.echo(f"{s.score:.3f}  [{s.episode.id}]  {s.episode.content[:80]}")
+
+    _run_with_components(_search)
+
+
+@app.command()
+def query(q: str, session: str | None = typer.Option(None, "--session")) -> None:
+    """Query routée multi-store (§17)."""
+
+    async def _query(c: _Components) -> None:
+        result = await c.orchestrator.query(q, session_id=session)
+        typer.echo(f"type : {result.type.value}")
+        for s in result.episodes:
+            typer.echo(f"  épisode {s.score:.3f}  {s.episode.content[:70]}")
+        for f in result.facts:
+            typer.echo(f"  fait {f.score:.3f}  {f.fact.subject} {f.fact.predicate} {f.fact.object}")
+        for fact in result.history:
+            status = "courant" if fact.valid_until is None else "invalidé"
+            typer.echo(f"  history [{status}]  {fact.subject} {fact.predicate} {fact.object}")
+        for name in result.procedural:
+            typer.echo(f"  skill  {name}")
+
+    _run_with_components(_query)
+
+
+@app.command()
+def facts(
+    subject: str | None = typer.Option(None, "--subject"),
+    predicate: str | None = typer.Option(None, "--predicate"),
+    history: bool = typer.Option(False, "--history"),
+) -> None:
+    """Faits courants, ou historique complet avec --history (§17)."""
+
+    async def _facts(c: _Components) -> None:
+        if history:
+            if not subject or not predicate:
+                typer.echo("--history exige --subject et --predicate", err=True)
+                raise typer.Exit(code=2)
+            rows = await c.semantic.get_history(subject, predicate)
+        else:
+            rows = await c.semantic.get_current_facts(subject, predicate)
+        for f in rows:
+            status = "courant " if f.valid_until is None else "invalidé"
+            typer.echo(
+                f"[{status}]  {f.subject}  {f.predicate}  {f.object}  "
+                f"(conf {f.confidence:.2f})"
+            )
+        if not rows:
+            typer.echo("aucun fait")
+
+    _run_with_components(_facts)
+
+
+@app.command()
+def consolidate() -> None:
+    """Force un run du worker de consolidation (§17)."""
+
+    async def _consolidate(c: _Components) -> None:
+        report = await c.worker.run_once()
         typer.echo(
             f"candidats={report.candidates} consolidés={report.consolidated} "
             f"échecs={report.extraction_failures} faits: +{report.facts_inserted} "
             f"~{report.facts_superseded} ={report.facts_duplicate} "
             f"entités={report.entities_upserted}"
         )
-        await episodic_engine.dispose()
-        await semantic_engine.dispose()
-        await client.aclose()
 
-    asyncio.run(_run())
+    _run_with_components(_consolidate)
+
+
+@app.command()
+def decay(dry_run: bool = typer.Option(False, "--dry-run")) -> None:
+    """Force apply_decay (§17)."""
+
+    async def _decay(c: _Components) -> None:
+        report = await c.episodic.apply_decay(dry_run=dry_run)
+        typer.echo(f"épisodes traités : {report.scanned} (dry_run={report.dry_run})")
+
+    _run_with_components(_decay)
+
+
+@app.command()
+def export(
+    out: Path = typer.Option(..., "--out"),
+    format: str = typer.Option("jsonl", "--format"),
+) -> None:
+    """Export JSONL des épisodes + faits (§17). Une ligne = {type, data}."""
+    if format != "jsonl":
+        typer.echo("seul --format jsonl est supporté", err=True)
+        raise typer.Exit(code=2)
+
+    async def _export(c: _Components) -> None:
+        import json
+
+        from sqlalchemy import select
+
+        from mnemos.models.episodic import Episode
+        from mnemos.models.semantic import Fact
+
+        n = 0
+        with out.open("w") as fh:
+            async with c.episodic._sessions() as session:
+                for ep in (await session.execute(select(Episode))).scalars():
+                    row = {k: v for k, v in vars(ep).items() if not k.startswith("_")}
+                    fh.write(json.dumps({"type": "episode", "data": row},
+                                        ensure_ascii=False) + "\n")
+                    n += 1
+            async with c.semantic._sessions() as session:
+                for fact in (await session.execute(select(Fact))).scalars():
+                    row = {k: v for k, v in vars(fact).items() if not k.startswith("_")}
+                    fh.write(json.dumps({"type": "fact", "data": row},
+                                        ensure_ascii=False) + "\n")
+                    n += 1
+        typer.echo(f"{n} enregistrements → {out}")
+
+    _run_with_components(_export)
+
+
+@app.command()
+def stats() -> None:
+    """Stats globales (§17)."""
+
+    async def _stats(c: _Components) -> None:
+        from sqlalchemy import text as sql
+
+        async with c.episodic._sessions() as session:
+            total = (await session.execute(sql("SELECT COUNT(*) FROM episodes"))).scalar_one()
+            consolidated = (
+                await session.execute(
+                    sql("SELECT COUNT(*) FROM episodes WHERE consolidated_at IS NOT NULL")
+                )
+            ).scalar_one()
+            archived = (
+                await session.execute(sql("SELECT COUNT(*) FROM episodes WHERE archived = 1"))
+            ).scalar_one()
+        async with c.semantic._sessions() as session:
+            current = (
+                await session.execute(
+                    sql("SELECT COUNT(*) FROM facts WHERE valid_until IS NULL")
+                )
+            ).scalar_one()
+            superseded = (
+                await session.execute(
+                    sql("SELECT COUNT(*) FROM facts WHERE valid_until IS NOT NULL")
+                )
+            ).scalar_one()
+            entities = (await session.execute(sql("SELECT COUNT(*) FROM entities"))).scalar_one()
+        duplicates = await c.semantic.count_duplicate_current()
+        skills = len(c.procedural.list_skills())
+        typer.echo(f"épisodes        : {total} (consolidés {consolidated}, archivés {archived})")
+        typer.echo(f"faits courants  : {current} (invalidés {superseded}, doublons {duplicates})")
+        typer.echo(f"entités         : {entities}")
+        typer.echo(f"skills          : {skills}")
+
+    _run_with_components(_stats)
 
 
 def _check_ollama(settings: Settings) -> tuple[bool, list[str]]:

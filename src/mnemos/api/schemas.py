@@ -153,4 +153,20 @@ class HealthOut(BaseModel):
     ollama: bool
     dbs: dict[str, bool]
     salience_queue_depth: int
-    worker_last_run: str | None = None  # renseigné à partir de la Phase 4
+    worker_last_run: str | None = None
+
+
+class ConsolidationReportOut(BaseModel):
+    candidates: int
+    consolidated: int
+    extraction_failures: int
+    facts_inserted: int
+    facts_superseded: int
+    facts_duplicate: int
+    entities_upserted: int
+
+
+class DecayReportOut(BaseModel):
+    scanned: int
+    dry_run: bool
+    now_ms: int

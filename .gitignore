@@ -17,3 +17,6 @@ data/
 .idea/
 .DS_Store
 Thumbs.db
+
+# private memory
+Adrien_memory_dump/
