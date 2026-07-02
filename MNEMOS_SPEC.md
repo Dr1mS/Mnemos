@@ -1,8 +1,12 @@
 # Mnemos — Multi-System Memory for LLM Agents
 
 **Spec implémentation pour Claude Code.**
-Cible matérielle : Windows 11, RTX 3070 Ti (8 GB VRAM), 64 GB RAM, PowerShell.
+Cibles matérielles (deux profils) :
+- **Profil dev (Linux)** : Ubuntu 24.04, i7-6700 4c/8t, 16 GB RAM, CPU-only, bash.
+- **Profil déploiement (Windows)** : Windows 11, RTX 3070 Ti (8 GB VRAM), 64 GB RAM, PowerShell.
 
+> **Rev 1.2 (2026-07-02)** — conclusions du POC modèles (`poc/RESULTS.md`) : passage à `qwen3:4b` avec `think=false` pour salience ET extraction (§2, §4, §7), prompt d'extraction v4 avec exemples de bascule (§15.2), double profil matériel dev CPU / déploiement GPU (§2, §4, §21), scripts de setup bash + PowerShell (§3, §4).
+>
 > **Rev 1.1 (2026-07-02)** — corrections après revue : cardinalité des prédicats (§10.2), decay sans double-comptage (§5.1, §9.2), règle d'archivage unifiée (§9.2), implémentation de référence du ModelManager + acquisition MEDIUM par épisode (§7.2, §15.1), salience asynchrone hors write path (§13.3, §16.1), flux entités branché à la consolidation (§15), saturation du sparse coding (§8.2), renommage `valence` → `arousal`, horloge injectable (§6).
 
 ---
@@ -35,14 +39,16 @@ L'architecture évite les pièges classiques des systèmes à store unique : pas
 | Scheduler | APScheduler | ^3.10 | Worker consolidation |
 | Tests | pytest, pytest-asyncio | latest | Standard |
 | LLM runtime | Ollama (local) | ≥0.5 | Déjà installé |
-| Embedding model | `bge-m3` | via Ollama | Multilingue FR/EN, 1024-dim, ~600 MB Q4 |
-| Salience model | `qwen2.5:3b-instruct-q4_K_M` | via Ollama | ~2 GB, JSON mode fiable |
-| Consolidation model | `qwen2.5:7b-instruct-q4_K_M` | via Ollama | ~4.5 GB, extraction de faits |
+| Embedding model | `bge-m3` | via Ollama | Multilingue FR/EN, 1024-dim, ~1.2 GB — validé POC : p50 231 ms sur CPU |
+| Salience model | `qwen3:4b` (`think=false`) | via Ollama | ~2.5 GB, plausibilité 17/17 au POC |
+| Consolidation model | `qwen3:4b` (`think=false`) | via Ollama | même modèle que salience → zéro swap ; `qwen3:8b` en option sur profil GPU |
 
-**Budget VRAM (8 GB)** :
-- Mode normal (embedding + salience concurrent) : ~2.6 GB weights + KV cache → ~5 GB total.
-- Mode consolidation (7B seul) : ~4.5 GB weights + KV cache → ~6.5 GB total.
-- Le ModelManager (cf. §7) évite la concurrence entre les deux modes.
+**⚠ Famille qwen3 = thinking models : `think=false` obligatoire sur tout appel generate.** Le mode thinking casse le JSON structuré sous Ollama (issue ollama#10929) et multiplie la latence CPU par 5-10×.
+
+**Budget mémoire** :
+- Profil dev (16 GB RAM, CPU-only) : bge-m3 (~1.2 GB) + qwen3:4b (~2.5 GB) résidents ≈ 3.7 GB. Un seul LLM pour salience et extraction → jamais de swap de modèle. La contrainte est la latence CPU (~8 tok/s en génération), pas la mémoire.
+- Profil déploiement (8 GB VRAM) : mêmes modèles ≈ 3.7 GB + KV cache → confortable. Si `qwen3:8b` est activé pour l'extraction, l'exclusion small/medium du ModelManager redevient active (cf. §7).
+- Le ModelManager (cf. §7) reste l'unique point de sortie vers Ollama dans les deux profils.
 
 ---
 
@@ -64,7 +70,9 @@ mnemos/
 │   ├── semantic.db
 │   └── procedural/
 ├── scripts/
-│   ├── setup_ollama_models.ps1
+│   ├── setup_ollama_models.sh      # profil Linux
+│   ├── setup_ollama_models.ps1     # profil Windows
+│   ├── reset_dbs.sh
 │   ├── reset_dbs.ps1
 │   └── benchmark.py
 ├── src/mnemos/
@@ -130,16 +138,27 @@ mnemos/
 
 ### 4.1 Modèles Ollama
 
-`scripts/setup_ollama_models.ps1` :
+`scripts/setup_ollama_models.sh` (Linux) / `scripts/setup_ollama_models.ps1` (Windows) :
 
-```powershell
+```sh
 ollama pull bge-m3
-ollama pull qwen2.5:3b-instruct-q4_K_M
-ollama pull qwen2.5:7b-instruct-q4_K_M
+ollama pull qwen3:4b
+# ollama pull qwen3:8b   # optionnel — profil GPU uniquement (extraction)
 ollama list
 ```
 
 ### 4.2 Environnement Python
+
+Linux :
+
+```sh
+uv venv --python 3.12
+source .venv/bin/activate
+uv pip install -e ".[dev]"
+alembic upgrade head
+```
+
+Windows :
 
 ```powershell
 uv venv --python 3.12
@@ -154,8 +173,10 @@ alembic upgrade head
 # Ollama
 OLLAMA_HOST=http://localhost:11434
 EMBED_MODEL=bge-m3
-SALIENCE_MODEL=qwen2.5:3b-instruct-q4_K_M
-EXTRACTION_MODEL=qwen2.5:7b-instruct-q4_K_M
+SALIENCE_MODEL=qwen3:4b
+EXTRACTION_MODEL=qwen3:4b
+# Profil GPU (3070 Ti) : EXTRACTION_MODEL=qwen3:8b possible → tier MEDIUM active
+LLM_THINK=false   # famille qwen3 : jamais de mode thinking (JSON cassé + latence ×5-10)
 
 # Storage
 DATA_DIR=./data
@@ -323,11 +344,12 @@ class OllamaClient:
         model: str,
         format: Literal["json"] | None = None,
         options: dict | None = None,
+        think: bool = False,   # TOUJOURS False pour qwen3 (cf. §2)
     ) -> str: ...
     async def health_check(self) -> bool: ...
 ```
 
-Implémentation : `httpx.AsyncClient`, timeouts explicites (60s embed, 120s generate), retry exponentiel (3 tentatives) sur erreurs réseau, **pas** de retry sur erreurs HTTP 4xx.
+Implémentation : `httpx.AsyncClient`, timeouts explicites (60s embed, 300s generate — profil CPU oblige), retry exponentiel (3 tentatives) sur erreurs réseau, **pas** de retry sur erreurs HTTP 4xx. Le paramètre `think` est transmis tel quel à l'API Ollama ; il vient de `Settings.LLM_THINK`, jamais hardcodé à True.
 
 ### 7.2 `model_manager.py`
 
@@ -337,8 +359,8 @@ Implémentation de référence — c'est le composant le plus piégeux du systè
 
 ```python
 class Tier(str, Enum):
-    SMALL = "small"      # bge-m3, qwen2.5:3b
-    MEDIUM = "medium"    # qwen2.5:7b
+    SMALL = "small"      # bge-m3, qwen3:4b (salience + extraction en profil dev)
+    MEDIUM = "medium"    # qwen3:8b (profil GPU uniquement, optionnel)
     # LARGE réservé pour future extension
 
 class ModelManager:
@@ -386,6 +408,8 @@ class ModelManager:
 ```
 
 **Règle d'exclusion** : si une tier est active avec count > 0, l'autre tier doit attendre. Cela évite que la consolidation (medium) tourne pendant que l'API sert (small) et fasse OOM.
+
+**Cas profil dev (un seul LLM)** : quand `EXTRACTION_MODEL == SALIENCE_MODEL`, l'extraction est routée en tier SMALL — l'exclusion ne se déclenche jamais, c'est attendu. Le ModelManager route par **modèle**, pas par usage. Le stress test d'exclusion reste obligatoire : il protège le profil GPU (qwen3:8b en MEDIUM).
 
 **Famine assumée** : sous trafic SMALL continu, `_active_count` peut ne jamais retomber à 0 et MEDIUM attend. C'est le bon trade-off pour un MVP : la latence du write path prime sur la ponctualité de la consolidation (qui retentera au prochain tick). Ne PAS ajouter de mécanisme de fairness sans mesure démontrant le besoin. Le pendant côté worker : acquisition MEDIUM **par épisode**, pas autour du batch (cf. §15.1), sinon c'est la consolidation qui affame le write path pendant des minutes.
 
@@ -744,7 +768,7 @@ Scheduling : APScheduler `interval` trigger toutes les `CONSOLIDATION_INTERVAL_M
 
 ### 15.2 Extracteur de faits + entités (`extractor.py`)
 
-Prompt qwen2.5:7b en JSON mode :
+Prompt v4 (`think=false`, JSON mode) — issu du POC (`poc/RESULTS.md`) : les règles seules sur-suppriment avec un 4B (passé composé, has_goal) ; les exemples de bascule sont la partie qui porte. Ne pas les retirer pour "raccourcir le prompt".
 
 ```
 Extract structured facts and named entities from this conversation episode.
@@ -758,13 +782,30 @@ Allowed predicates: works_at, lives_in, prefers, dislikes, owns,
                     is_a, has_attribute, knows_about, has_goal, has_skill
 
 Rules:
-- subject is the user unless explicitly about another entity
-- only extract facts that are statements of preference, identity, or factual claims
-- IGNORE questions, hypotheticals, jokes, expressions of uncertainty
+- subject is EXACTLY "user" when the fact is about the user speaking; when
+  the sentence explicitly names another person/entity as the actor, that
+  entity is the subject
+- if the actor is a pronoun whose referent is NOT named in this episode,
+  extract NOTHING about it
+- extract facts that are CURRENTLY true. A past event that established a
+  current state IS a current fact. A state explicitly ended is NOT.
+- personal goals and desires to learn/do something ARE facts (has_goal)
+- IGNORE questions, unrealistic hypotheticals/conditionals, jokes, sarcasm,
+  and statements the speaker is unsure about
+- use canonical English for predicates, but keep the object in the original
+  language of the episode (do not translate it)
+- confidence is a number between 0.0 and 1.0
 - entities: only entities actually mentioned; use the most complete surface
   form as name
 - if nothing extractable, return {"facts": [], "entities": []}
-- use canonical English for predicates even if input is French
+
+Examples:
+- "Avant je bossais chez TechCorp." → facts: []  (state ended, no longer true)
+- "J'ai adopté un chat, Yuzu." → {"subject": "user", "predicate": "owns", "object": "Yuzu", "confidence": 0.9}  (past event, current state)
+- "J'aimerais apprendre Rust." → {"subject": "user", "predicate": "has_goal", "object": "Rust", "confidence": 0.9}
+- "Mon frère Tom travaille chez Airbus." → {"subject": "Tom", "predicate": "works_at", "object": "Airbus", "confidence": 0.9}
+- "Je ne bois plus de thé, je suis passée au maté." → {"subject": "user", "predicate": "prefers", "object": "maté", "confidence": 0.9}  (only the NEW preference)
+- "Si je gagnais au loto, j'achèterais une villa." → facts: []  (hypothetical)
 
 Episode (role={role}, timestamp={ts}):
 {content}
@@ -955,7 +996,7 @@ Avant tout merge sur `main` :
   - Episodes écrits = ceux attendus
   - Facts consolidés cohérents avec extraction
   - Aucun fait courant en doublon (même subject+predicate, valid_until=NULL)
-- [ ] Pic VRAM observé < 7 GB pendant `test_full_session`
+- [ ] Profil GPU : pic VRAM < 7 GB pendant `test_full_session`. Profil dev CPU : aucun swap (RSS Ollama + serveur < 12 GB) et write path p50 < 500 ms pendant `test_full_session`
 - [ ] Aucune erreur `OOM` ou `deadlock` dans les logs
 
 ---
