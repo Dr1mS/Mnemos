@@ -142,6 +142,11 @@ async def test_worker_rescore_les_episodes_non_scores(tmp_path) -> None:  # type
         tagger=SalienceTagger(stub, settings),  # type: ignore[arg-type]
     )
     ep = await episodic.write("je suis dev", role="user")  # jamais scoré → 0.5
+
+    # Observabilité avant run : 1 non-scoré, rien de mûr
+    counts = await episodic.pending_counts()
+    assert counts == {"unscored": 1, "consolidation_ready": 0, "consolidation_waiting": 0}
+
     clock.advance(2 * 3_600_000)
     report = await worker.run_once()
     assert report.rescored == 1
@@ -149,5 +154,14 @@ async def test_worker_rescore_les_episodes_non_scores(tmp_path) -> None:  # type
     assert got is not None
     assert got.salience == 0.9  # boost-floor self_ref appliqué au rattrapage
     assert report.candidates == 1  # devenu candidat et consolidé dans le même run
+
+    # worker_status.json : idle + rapport du dernier run
+    status = _json.loads((tmp_path / "worker_status.json").read_text())
+    assert status["phase"] == "idle"
+    assert status["last_run"]["consolidated"] == 1
+    assert status["last_run"]["rescored"] == 1
+
+    counts = await episodic.pending_counts()
+    assert counts["unscored"] == 0 and counts["consolidation_ready"] == 0
     await epi_engine.dispose()
     await sem_engine.dispose()

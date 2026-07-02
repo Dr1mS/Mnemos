@@ -320,6 +320,57 @@ def export(
 
 
 @app.command()
+def status() -> None:
+    """Que fait l'IA locale, là maintenant ? (observabilité worker)."""
+    import json as json_
+
+    settings = get_settings()
+    status_file = settings.DATA_DIR / "worker_status.json"
+    if status_file.exists():
+        worker_status = json_.loads(status_file.read_text())
+        phase = worker_status.get("phase", "?")
+        if phase == "idle":
+            last = worker_status.get("last_run", {})
+            typer.echo(f"{OK} worker au repos (maj {worker_status.get('updated_at', '?')})")
+            if last:
+                typer.echo(
+                    f"   dernier run : {last.get('at', '?')} — "
+                    f"{last.get('consolidated', 0)}/{last.get('candidates', 0)} consolidés, "
+                    f"+{last.get('facts_inserted', 0)} faits "
+                    f"~{last.get('facts_superseded', 0)}, "
+                    f"{last.get('rescored', 0)} rescorés"
+                )
+            interval = worker_status.get(
+                "next_run_in_minutes", settings.CONSOLIDATION_INTERVAL_MINUTES
+            )
+            typer.echo(f"   prochain tick : toutes les {interval} min")
+        else:
+            done = worker_status.get("done", 0)
+            total = worker_status.get("total", "?")
+            label = "scoring salience" if phase == "scoring" else "extraction de faits"
+            eta = worker_status.get("eta_s")
+            eta_txt = f" — ~{eta // 60} min {eta % 60:02d} s restantes" if eta else ""
+            current = str(worker_status.get("current", "?"))
+            typer.echo(
+                f"{WARN} 🔥 {label} en cours : {done}/{total} "
+                f"(épisode {current[:10]}…){eta_txt}"
+            )
+    else:
+        typer.echo(f"{WARN} pas de statut worker (jamais lancé, ou version antérieure)")
+
+    async def _pending(c: _Components) -> None:
+        counts = await c.episodic.pending_counts()
+        typer.echo(
+            f"   en attente : {counts['consolidation_ready']} mûr(s) pour consolidation, "
+            f"{counts['consolidation_waiting']} saillant(s) trop récent(s) (< "
+            f"{c.settings.CONSOLIDATION_DELAY_HOURS:g} h), "
+            f"{counts['unscored']} non scoré(s)"
+        )
+
+    _run_with_components(_pending)
+
+
+@app.command()
 def stats() -> None:
     """Stats globales (§17)."""
 

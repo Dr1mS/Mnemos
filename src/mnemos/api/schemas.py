@@ -154,6 +154,8 @@ class HealthOut(BaseModel):
     dbs: dict[str, bool]
     salience_queue_depth: int
     worker_last_run: str | None = None
+    worker: dict[str, object] | None = None  # contenu de worker_status.json
+    pending: dict[str, int] | None = None  # unscored / ready / waiting
 
 
 class ConsolidationReportOut(BaseModel):

@@ -89,7 +89,9 @@ async def get_episode(episode_id: str, store: StoreDep, request: Request) -> Epi
 
 
 @router.get("/health")
-async def health(request: Request, queue: QueueDep) -> HealthOut:
+async def health(request: Request, queue: QueueDep, store: StoreDep) -> HealthOut:
+    import json as json_
+
     settings = request.app.state.settings
     ollama_ok: bool = await request.app.state.manager.health_check()
     dbs = {
@@ -97,12 +99,15 @@ async def health(request: Request, queue: QueueDep) -> HealthOut:
         "semantic": settings.SEMANTIC_DB.exists(),
     }
     marker = settings.DATA_DIR / "worker_last_run"
+    status_file = settings.DATA_DIR / "worker_status.json"
     return HealthOut(
         ok=ollama_ok and all(dbs.values()),
         ollama=ollama_ok,
         dbs=dbs,
         salience_queue_depth=queue.depth,
         worker_last_run=marker.read_text().strip() if marker.exists() else None,
+        worker=json_.loads(status_file.read_text()) if status_file.exists() else None,
+        pending=await store.pending_counts(),
     )
 
 

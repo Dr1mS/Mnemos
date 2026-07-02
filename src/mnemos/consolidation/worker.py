@@ -11,6 +11,8 @@ extraction_failed=1, on passe au suivant. Pas de boucle infinie.
 
 from __future__ import annotations
 
+import json
+import time
 from dataclasses import dataclass, field
 
 from mnemos.clock import Clock
@@ -63,7 +65,10 @@ class ConsolidationWorker:
         # Rattrapage : épisodes jamais scorés (queue morte avant drain, §13.3).
         # Sans ça, ils gardent salience=0.5 < seuil et ne consolident jamais.
         if self._tagger is not None:
-            for episode in await self._episodic.list_unscored():
+            unscored = await self._episodic.list_unscored()
+            for i, episode in enumerate(unscored, 1):
+                self._write_status(phase="scoring", done=i - 1, total=len(unscored),
+                                   current=episode.id)
                 scores = await self._tagger.score(episode.content, [])
                 await self._episodic.update_salience(episode.id, scores)
                 report.rescored += 1
@@ -75,9 +80,18 @@ class ConsolidationWorker:
             limit=self._settings.CONSOLIDATION_BATCH_SIZE,
         )
         report.candidates = len(candidates)
-        for episode in candidates:
+        durations: list[float] = []
+        for i, episode in enumerate(candidates, 1):
+            avg = sum(durations) / len(durations) if durations else None
+            self._write_status(
+                phase="extracting", done=i - 1, total=len(candidates),
+                current=episode.id,
+                eta_s=round(avg * (len(candidates) - i + 1)) if avg else None,
+            )
+            t0 = time.monotonic()
             extraction = await self._extract_with_retry(episode.id, episode.content,
                                                         episode.role, episode.created_at)
+            durations.append(time.monotonic() - t0)
             if extraction is None:
                 await self._episodic.mark_consolidated(episode.id, extraction_failed=True)
                 report.extraction_failures += 1
@@ -116,6 +130,19 @@ class ConsolidationWorker:
         report.decay = await self._episodic.apply_decay()
         report.archive = await self._episodic.archive_old()
         self._write_last_run_marker()
+        self._write_status(
+            phase="idle",
+            last_run={
+                "at": self._clock.now_dt().isoformat(),
+                "candidates": report.candidates,
+                "consolidated": report.consolidated,
+                "failures": report.extraction_failures,
+                "facts_inserted": report.facts_inserted,
+                "facts_superseded": report.facts_superseded,
+                "rescored": report.rescored,
+            },
+            next_run_in_minutes=self._settings.CONSOLIDATION_INTERVAL_MINUTES,
+        )
         logger.info(
             "consolidation_run_done",
             candidates=report.candidates,
@@ -150,3 +177,19 @@ class ConsolidationWorker:
             marker.write_text(self._clock.now_dt().isoformat())
         except OSError as exc:
             logger.warning("worker_marker_write_failed", error=str(exc))
+
+    def _write_status(self, phase: str, **fields: object) -> None:
+        """Statut temps réel dans data/worker_status.json — observabilité
+        cross-process (mnemos status, /v1/health, viz). Best-effort : une
+        erreur d'écriture ne doit jamais interrompre la consolidation."""
+        status = {
+            "phase": phase,  # scoring | extracting | idle
+            "updated_at": self._clock.now_dt().isoformat(),
+            **fields,
+        }
+        try:
+            (self._settings.DATA_DIR / "worker_status.json").write_text(
+                json.dumps(status, ensure_ascii=False)
+            )
+        except OSError as exc:
+            logger.warning("worker_status_write_failed", error=str(exc))

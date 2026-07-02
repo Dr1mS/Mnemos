@@ -223,6 +223,36 @@ class EpisodicStore:
 
     # ── Consolidation hooks (§15) ─────────────────────────────────────────────
 
+    async def pending_counts(self) -> dict[str, int]:
+        """Ce qui attend l'IA locale (observabilité) : épisodes jamais scorés,
+        candidats mûrs pour consolidation, saillants mais trop récents."""
+        now = self._clock.now_ms()
+        cutoff = now - int(self._settings.CONSOLIDATION_DELAY_HOURS * 3_600_000)
+        threshold = self._settings.SALIENCE_THRESHOLD_CONSOLIDATE
+        async with self._sessions() as session:
+            row = await session.execute(
+                text(
+                    """
+                    SELECT
+                      SUM(CASE WHEN surprise IS NULL THEN 1 ELSE 0 END),
+                      SUM(CASE WHEN surprise IS NOT NULL AND consolidated_at IS NULL
+                               AND salience > :thr AND created_at <= :cutoff
+                               THEN 1 ELSE 0 END),
+                      SUM(CASE WHEN surprise IS NOT NULL AND consolidated_at IS NULL
+                               AND salience > :thr AND created_at > :cutoff
+                               THEN 1 ELSE 0 END)
+                    FROM episodes WHERE archived = 0
+                    """
+                ),
+                {"thr": threshold, "cutoff": cutoff},
+            )
+            unscored, ready, too_recent = row.one()
+        return {
+            "unscored": int(unscored or 0),
+            "consolidation_ready": int(ready or 0),
+            "consolidation_waiting": int(too_recent or 0),
+        }
+
     async def list_unscored(self, limit: int = 50) -> list[Episode]:
         """Épisodes jamais passés au scoring de salience (surprise IS NULL,
         §5.1) — jobs perdus quand le process meurt avant que la queue draine.
