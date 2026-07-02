@@ -201,6 +201,20 @@ class EpisodicStore:
         async with self._sessions() as session:
             return await session.get(Episode, episode_id)
 
+    async def list_recent(self, session_id: str | None = None, n: int = 5) -> list[Episode]:
+        """Derniers épisodes (ordre chronologique) — historique du scoring §13.2."""
+        stmt = (
+            select(Episode)
+            .where(Episode.archived == 0)
+            .order_by(Episode.created_at.desc())
+            .limit(n)
+        )
+        if session_id is not None:
+            stmt = stmt.where(Episode.session_id == session_id)
+        async with self._sessions() as session:
+            rows = list((await session.execute(stmt)).scalars())
+        return list(reversed(rows))
+
     # ── Consolidation hooks (§15) ─────────────────────────────────────────────
 
     async def list_pending_consolidation(

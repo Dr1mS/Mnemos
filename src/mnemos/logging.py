@@ -33,6 +33,8 @@ def configure_logging(log_level: str = "INFO") -> None:
             structlog.processors.format_exc_info,
             renderer,
         ],
+        # Factory stdlib obligatoire : add_logger_name lit logger.name
+        logger_factory=structlog.stdlib.LoggerFactory(),
         wrapper_class=structlog.make_filtering_bound_logger(level),
         cache_logger_on_first_use=True,
     )

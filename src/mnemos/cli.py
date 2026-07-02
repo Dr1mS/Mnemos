@@ -30,6 +30,17 @@ def version() -> None:
     typer.echo(f"mnemos {__version__}")
 
 
+@app.command()
+def serve() -> None:
+    """Lance le serveur API (§17)."""
+    import uvicorn
+
+    from mnemos.server import create_app
+
+    settings = get_settings()
+    uvicorn.run(create_app(settings), host=settings.API_HOST, port=settings.API_PORT)
+
+
 def _check_ollama(settings: Settings) -> tuple[bool, list[str]]:
     """Ollama joignable + modèles requis pullés."""
     import httpx
