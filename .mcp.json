@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "mnemos": {
+      "command": "/home/user/Bureau/git/Mnemos/Mnemos/.venv/bin/mnemos-mcp",
+      "args": [],
+      "env": {
+        "DATA_DIR": "/home/user/Bureau/git/Mnemos/Mnemos/data/adrien",
+        "EPISODIC_DB": "/home/user/Bureau/git/Mnemos/Mnemos/data/adrien/episodic.db",
+        "SEMANTIC_DB": "/home/user/Bureau/git/Mnemos/Mnemos/data/adrien/semantic.db",
+        "PROCEDURAL_DIR": "/home/user/Bureau/git/Mnemos/Mnemos/data/adrien/procedural",
+        "LOG_LEVEL": "INFO"
+      }
+    }
+  }
+}
