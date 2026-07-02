@@ -41,6 +41,50 @@ def serve() -> None:
     uvicorn.run(create_app(settings), host=settings.API_HOST, port=settings.API_PORT)
 
 
+@app.command()
+def consolidate() -> None:
+    """Force un run du worker de consolidation (§17)."""
+    import asyncio
+
+    async def _run() -> None:
+        from mnemos.clock import Clock
+        from mnemos.consolidation.extractor import FactExtractor
+        from mnemos.consolidation.worker import ConsolidationWorker
+        from mnemos.embeddings.dense import DenseEmbedder
+        from mnemos.llm.model_manager import ModelManager
+        from mnemos.llm.ollama_client import OllamaClient
+        from mnemos.models.base import make_async_engine
+        from mnemos.stores.episodic import EpisodicStore
+        from mnemos.stores.semantic import SemanticStore
+
+        settings = get_settings()
+        clock = Clock()
+        client = OllamaClient(settings)
+        manager = ModelManager(settings, client)
+        embedder = DenseEmbedder(manager, settings)
+        episodic_engine = make_async_engine(settings.EPISODIC_DB)
+        semantic_engine = make_async_engine(settings.SEMANTIC_DB)
+        worker = ConsolidationWorker(
+            EpisodicStore(episodic_engine, embedder, clock, settings),
+            SemanticStore(semantic_engine, embedder, clock, settings),
+            FactExtractor(manager, settings),
+            settings,
+            clock,
+        )
+        report = await worker.run_once()
+        typer.echo(
+            f"candidats={report.candidates} consolidés={report.consolidated} "
+            f"échecs={report.extraction_failures} faits: +{report.facts_inserted} "
+            f"~{report.facts_superseded} ={report.facts_duplicate} "
+            f"entités={report.entities_upserted}"
+        )
+        await episodic_engine.dispose()
+        await semantic_engine.dispose()
+        await client.aclose()
+
+    asyncio.run(_run())
+
+
 def _check_ollama(settings: Settings) -> tuple[bool, list[str]]:
     """Ollama joignable + modèles requis pullés."""
     import httpx

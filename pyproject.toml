@@ -52,6 +52,10 @@ src = ["src", "tests"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "ASYNC"]
 
+[tool.ruff.lint.per-file-ignores]
+# Prompt v4 : les exemples one-line font partie du prompt validé par le POC
+"src/mnemos/consolidation/extractor.py" = ["E501"]
+
 [tool.mypy]
 strict = true
 packages = ["mnemos"]
