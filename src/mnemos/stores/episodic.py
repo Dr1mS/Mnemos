@@ -223,6 +223,19 @@ class EpisodicStore:
 
     # ── Consolidation hooks (§15) ─────────────────────────────────────────────
 
+    async def list_unscored(self, limit: int = 50) -> list[Episode]:
+        """Épisodes jamais passés au scoring de salience (surprise IS NULL,
+        §5.1) — jobs perdus quand le process meurt avant que la queue draine.
+        Rattrapés par le worker (§15.1)."""
+        async with self._sessions() as session:
+            rows = await session.execute(
+                select(Episode)
+                .where(Episode.surprise.is_(None), Episode.archived == 0)
+                .order_by(Episode.created_at)
+                .limit(limit)
+            )
+            return list(rows.scalars())
+
     async def list_pending_consolidation(
         self, min_salience: float, min_age_hours: float, limit: int
     ) -> list[Episode]:

@@ -71,10 +71,12 @@ async def app_lifespan(_server: FastMCP) -> AsyncIterator[AppContext]:
         episodic, semantic, WorkingMemoryRegistry(),
         ProceduralStore(settings.PROCEDURAL_DIR, clock),
     )
+    tagger = SalienceTagger(manager, settings)
     worker = ConsolidationWorker(
-        episodic, semantic, FactExtractor(manager, settings), settings, clock
+        episodic, semantic, FactExtractor(manager, settings), settings, clock,
+        tagger=tagger,
     )
-    queue = ScoringQueue(SalienceTagger(manager, settings), episodic)
+    queue = ScoringQueue(tagger, episodic)
     await queue.start()
     logger.info("mcp_server_started", episodic_db=str(settings.EPISODIC_DB))
     try:
@@ -100,7 +102,9 @@ mcp = FastMCP(
         "preferences, or their own life/projects. Use memory_write to store "
         "NEW lasting information the user reveals (identity, preferences, "
         "life/project facts) — write the user's statement, not your reply. "
-        "Do not write secrets or throwaway chatter."
+        "When the user CORRECTS a stored fact ('ce n'est plus vrai', 'c'était "
+        "pas moi'), use memory_forget — never write instruction-like episodes "
+        "such as 'il faut oublier X'. Do not write secrets or throwaway chatter."
     ),
 )
 

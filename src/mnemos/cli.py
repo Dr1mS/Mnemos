@@ -60,6 +60,7 @@ class _Components:
         from mnemos.stores.procedural import ProceduralStore
         from mnemos.stores.semantic import SemanticStore
         from mnemos.stores.working import WorkingMemoryRegistry
+        from mnemos.tagger.salience import SalienceTagger
 
         self.settings = get_settings()
         self.clock = Clock()
@@ -76,7 +77,7 @@ class _Components:
         )
         self.worker = ConsolidationWorker(
             self.episodic, self.semantic, FactExtractor(manager, self.settings),
-            self.settings, self.clock,
+            self.settings, self.clock, tagger=SalienceTagger(manager, self.settings),
         )
 
     async def aclose(self) -> None:

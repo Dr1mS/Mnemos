@@ -92,3 +92,62 @@ def test_map_predicate_fallback_preserve_le_brut() -> None:
     predicate, obj = map_predicate("plays_instrument", "guitare")
     assert predicate == FALLBACK_PREDICATE
     assert obj == "plays_instrument: guitare"
+
+
+# ── Rescan des non-scorés (worker) ────────────────────────────────────────────
+
+
+async def test_worker_rescore_les_episodes_non_scores(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    """Jobs de salience perdus (process mort) → rattrapés au run_once suivant."""
+    import json as _json
+
+    from sqlalchemy import text as _sql
+    from tests.conftest import StubEmbedder
+
+    from mnemos.clock import FixedClock
+    from mnemos.consolidation.worker import ConsolidationWorker
+    from mnemos.models.base import make_async_engine
+    from mnemos.models.episodic import EPISODIC_SCHEMA_SQL
+    from mnemos.models.semantic import SEMANTIC_SCHEMA_SQL
+    from mnemos.stores.episodic import EpisodicStore
+    from mnemos.stores.semantic import SemanticStore
+    from mnemos.tagger.salience import SalienceTagger
+
+    class StubGen:
+        async def generate(self, prompt: str, model: str, **kw: object) -> str:
+            if "salience" in prompt:
+                return _json.dumps(
+                    {"surprise": 0.2, "arousal": 0.2, "self_ref": 0.9, "recurrence": 0.0}
+                )
+            return _json.dumps({"facts": [], "entities": []})
+
+    clock = FixedClock(start_ms=1_782_727_200_000)
+    settings = Settings(_env_file=None, DATA_DIR=tmp_path)
+    epi_engine = make_async_engine(tmp_path / "e.db")
+    sem_engine = make_async_engine(tmp_path / "s.db")
+    async with epi_engine.begin() as conn:
+        for stmt in EPISODIC_SCHEMA_SQL:
+            await conn.execute(_sql(stmt))
+    async with sem_engine.begin() as conn:
+        for stmt in SEMANTIC_SCHEMA_SQL:
+            await conn.execute(_sql(stmt))
+    stub = StubGen()
+    episodic = EpisodicStore(epi_engine, StubEmbedder(), clock, settings)  # type: ignore[arg-type]
+    worker = ConsolidationWorker(
+        episodic,
+        SemanticStore(sem_engine, StubEmbedder(), clock, settings),  # type: ignore[arg-type]
+        FactExtractor(stub, settings),  # type: ignore[arg-type]
+        settings,
+        clock,
+        tagger=SalienceTagger(stub, settings),  # type: ignore[arg-type]
+    )
+    ep = await episodic.write("je suis dev", role="user")  # jamais scoré → 0.5
+    clock.advance(2 * 3_600_000)
+    report = await worker.run_once()
+    assert report.rescored == 1
+    got = await episodic.get_by_id(ep.id)
+    assert got is not None
+    assert got.salience == 0.9  # boost-floor self_ref appliqué au rattrapage
+    assert report.candidates == 1  # devenu candidat et consolidé dans le même run
+    await epi_engine.dispose()
+    await sem_engine.dispose()

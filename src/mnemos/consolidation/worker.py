@@ -19,6 +19,7 @@ from mnemos.consolidation.extractor import Extraction, FactExtractor
 from mnemos.logging import get_logger
 from mnemos.stores.episodic import ArchiveReport, DecayReport, EpisodicStore
 from mnemos.stores.semantic import SemanticStore
+from mnemos.tagger.salience import SalienceTagger
 
 logger = get_logger(__name__)
 
@@ -34,6 +35,7 @@ class ConsolidationReport:
     facts_superseded: int = 0
     facts_duplicate: int = 0
     entities_upserted: int = 0
+    rescored: int = 0  # épisodes surprise IS NULL rattrapés (jobs perdus)
     decay: DecayReport | None = None
     archive: ArchiveReport | None = None
     actions: dict[str, int] = field(default_factory=dict)
@@ -47,15 +49,26 @@ class ConsolidationWorker:
         extractor: FactExtractor,
         settings: Settings,
         clock: Clock,
+        tagger: SalienceTagger | None = None,
     ) -> None:
         self._episodic = episodic
         self._semantic = semantic
         self._extractor = extractor
         self._settings = settings
         self._clock = clock
+        self._tagger = tagger
 
     async def run_once(self) -> ConsolidationReport:
         report = ConsolidationReport()
+        # Rattrapage : épisodes jamais scorés (queue morte avant drain, §13.3).
+        # Sans ça, ils gardent salience=0.5 < seuil et ne consolident jamais.
+        if self._tagger is not None:
+            for episode in await self._episodic.list_unscored():
+                scores = await self._tagger.score(episode.content, [])
+                await self._episodic.update_salience(episode.id, scores)
+                report.rescored += 1
+            if report.rescored:
+                logger.info("salience_rescored", count=report.rescored)
         candidates = await self._episodic.list_pending_consolidation(
             min_salience=self._settings.SALIENCE_THRESHOLD_CONSOLIDATE,
             min_age_hours=self._settings.CONSOLIDATION_DELAY_HOURS,

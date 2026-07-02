@@ -62,6 +62,7 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
             FactExtractor(state.manager, settings),
             settings,
             Clock(),
+            tagger=SalienceTagger(state.manager, settings),
         )
     if not hasattr(state, "queue"):
         tagger = SalienceTagger(state.manager, settings)
