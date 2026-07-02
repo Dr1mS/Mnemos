@@ -62,3 +62,8 @@ select = ["E", "F", "I", "UP", "B", "SIM", "ASYNC"]
 strict = true
 packages = ["mnemos"]
 mypy_path = "src"
+
+[[tool.mypy.overrides]]
+# APScheduler 3.x ne fournit pas de stubs (py.typed arrive avec la v4)
+module = "apscheduler.*"
+ignore_missing_imports = true

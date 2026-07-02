@@ -64,6 +64,12 @@ class ArchiveReport:
     dry_run: bool
 
 
+@dataclass(frozen=True)
+class ArchiveDumpReport:
+    dumped: int
+    path: str | None
+
+
 class EpisodicStore:
     def __init__(
         self,
@@ -320,3 +326,35 @@ class EpisodicStore:
             expired_unconsolidated=report.expired_unconsolidated,
         )
         return report
+
+    async def dump_archived(self) -> ArchiveDumpReport:
+        """Dump JSONL des épisodes archivés vers data/archive/YYYY-MM.jsonl
+        puis DELETE (§9.2, worker mensuel). Deletes explicites sur les trois
+        tables : le FK CASCADE de episodes_sparse ne fire pas (PRAGMA
+        foreign_keys OFF par défaut) et episodes_vec (vec0) n'a pas de FK.
+        """
+        now_dt = self._clock.now_dt()
+        archive_dir = self._settings.DATA_DIR / "archive"
+        async with self._sessions() as session, session.begin():
+            rows = list(
+                (await session.execute(select(Episode).where(Episode.archived == 1))).scalars()
+            )
+            if not rows:
+                return ArchiveDumpReport(dumped=0, path=None)
+            archive_dir.mkdir(parents=True, exist_ok=True)
+            path = archive_dir / f"{now_dt.year}-{now_dt.month:02d}.jsonl"
+            with path.open("a") as fh:
+                for ep in rows:
+                    record = {
+                        k: v for k, v in vars(ep).items() if not k.startswith("_")
+                    }
+                    fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+            ids = [ep.id for ep in rows]
+            for stmt in (
+                "DELETE FROM episodes_sparse WHERE episode_id IN (SELECT id FROM episodes WHERE archived = 1)",  # noqa: E501
+                "DELETE FROM episodes_vec WHERE episode_id IN (SELECT id FROM episodes WHERE archived = 1)",  # noqa: E501
+                "DELETE FROM episodes WHERE archived = 1",
+            ):
+                await session.execute(text(stmt))
+        logger.info("archive_dumped", count=len(ids), path=str(path))
+        return ArchiveDumpReport(dumped=len(ids), path=str(path))

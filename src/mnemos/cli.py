@@ -204,6 +204,84 @@ def decay(dry_run: bool = typer.Option(False, "--dry-run")) -> None:
 
 
 @app.command()
+def worker() -> None:
+    """Worker standalone (§17) — consolidation périodique + dump mensuel des
+    archivés. Instance unique via lock fichier dans data/ (§15.1)."""
+    import os
+
+    settings = get_settings()
+    settings.DATA_DIR.mkdir(parents=True, exist_ok=True)
+    lock_path = settings.DATA_DIR / "worker.lock"
+    try:
+        # O_EXCL : création atomique — échoue si le lock existe déjà.
+        fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        os.write(fd, str(os.getpid()).encode())
+        os.close(fd)
+    except FileExistsError:
+        typer.echo(
+            f"{KO} un worker tourne déjà (ou lock orphelin) : {lock_path}\n"
+            f"   Si aucun worker n'est actif, supprimer le fichier.",
+            err=True,
+        )
+        raise typer.Exit(code=1) from None
+
+    async def _worker(c: _Components) -> None:
+        import asyncio as aio
+
+        from apscheduler.schedulers.asyncio import AsyncIOScheduler
+        from apscheduler.triggers.cron import CronTrigger
+        from apscheduler.triggers.interval import IntervalTrigger
+
+        scheduler = AsyncIOScheduler()
+        scheduler.add_job(
+            c.worker.run_once,
+            IntervalTrigger(minutes=c.settings.CONSOLIDATION_INTERVAL_MINUTES),
+        )
+        # Dump mensuel des archivés (§9.2) — le 1er du mois à 03:00.
+        scheduler.add_job(c.episodic.dump_archived, CronTrigger(day=1, hour=3))
+        scheduler.start()
+        typer.echo(
+            f"worker démarré (consolidation toutes les "
+            f"{c.settings.CONSOLIDATION_INTERVAL_MINUTES} min, Ctrl-C pour arrêter)"
+        )
+        await c.worker.run_once()  # premier tick immédiat
+        try:
+            await aio.Event().wait()
+        finally:
+            scheduler.shutdown(wait=False)
+
+    try:
+        _run_with_components(_worker)
+    except KeyboardInterrupt:
+        typer.echo("worker arrêté")
+    finally:
+        lock_path.unlink(missing_ok=True)
+
+
+@app.command()
+def backup(out_dir: Path = typer.Option(Path("./backups"), "--out")) -> None:
+    """Backup atomique des DBs via VACUUM INTO (anti-pattern 9 : jamais de
+    copie brute, le -wal resterait incohérent)."""
+    from datetime import UTC, datetime
+
+    settings = get_settings()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(tz=UTC).strftime("%Y%m%d_%H%M%S")
+    for name, db_path in (("episodic", settings.EPISODIC_DB),
+                          ("semantic", settings.SEMANTIC_DB)):
+        if not db_path.exists():
+            typer.echo(f"{WARN} {name} : {db_path} absent, skip")
+            continue
+        target = out_dir / f"mnemos_{name}_{stamp}.db"
+        conn = sqlite3.connect(db_path)
+        try:
+            conn.execute("VACUUM INTO ?", (str(target),))
+        finally:
+            conn.close()
+        typer.echo(f"{OK} {name} → {target}")
+
+
+@app.command()
 def export(
     out: Path = typer.Option(..., "--out"),
     format: str = typer.Option("jsonl", "--format"),

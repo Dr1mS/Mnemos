@@ -43,7 +43,10 @@ async def store(tmp_path: Path, fixed_clock: FixedClock) -> AsyncIterator[Episod
         for stmt in EPISODIC_SCHEMA_SQL:
             await conn.execute(text(stmt))
     yield EpisodicStore(
-        engine, StubEmbedder(), fixed_clock, Settings(_env_file=None)  # type: ignore[arg-type]
+        engine,
+        StubEmbedder(),  # type: ignore[arg-type]
+        fixed_clock,
+        Settings(_env_file=None, DATA_DIR=tmp_path),
     )
     await engine.dispose()
 
@@ -186,6 +189,43 @@ async def test_set_entity_refs(store: EpisodicStore) -> None:
     got = await store.get_by_id(ep.id)
     assert got is not None
     assert got.entity_refs == '["Tom", "Airbus"]'
+
+
+async def test_dump_archived_jsonl_puis_delete(
+    store: EpisodicStore, fixed_clock: FixedClock, tmp_path: Path
+) -> None:
+    """§9.2 : dump JSONL des archivés puis DELETE des 3 tables."""
+    import json as _json
+
+    from sqlalchemy import text as _sql
+
+    ep = await store.write("souvenir à archiver", role="user", salience_scores=scores(0.3))
+    keep = await store.write("souvenir gardé", role="user", salience_scores=scores(0.9))
+    fixed_clock.advance(91 * DAY_MS)
+    await store.archive_old()  # règle 2 archive le premier
+
+    report = await store.dump_archived()
+    assert report.dumped == 1
+    assert report.path is not None
+    dump_text = Path(report.path).read_text()  # noqa: ASYNC240 — test, I/O local ok
+    lines = [_json.loads(line) for line in dump_text.splitlines()]
+    assert lines[0]["id"] == ep.id
+    assert lines[0]["content"] == "souvenir à archiver"
+
+    # Purge complète des 3 tables pour l'archivé, l'autre intact
+    assert await store.get_by_id(ep.id) is None
+    assert await store.get_by_id(keep.id) is not None
+    async with store._sessions() as session:
+        n_sparse = (
+            await session.execute(_sql("SELECT COUNT(*) FROM episodes_sparse"))
+        ).scalar_one()
+        n_vec = (
+            await session.execute(_sql("SELECT COUNT(*) FROM episodes_vec"))
+        ).scalar_one()
+    assert n_sparse == 1 and n_vec == 1
+
+    # Re-dump : plus rien
+    assert (await store.dump_archived()).dumped == 0
 
 
 async def test_update_salience_async(store: EpisodicStore) -> None:
