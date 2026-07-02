@@ -43,6 +43,7 @@ The golden rule, borrowed from neuroscience: **memories are never overwritten, t
 - 🗂️ **Versioned facts** — supersession on functional predicates, coexistence on multi, explicit retraction, full audit chain
 - 🧭 **FR/EN router** — lexical classification ("yesterday" → episodic, "what do you know about" → semantic, "how did my preference change" → history)
 - 🔌 **Native MCP** — 5 tools (`memory_query`, `memory_write`, `memory_forget`, `memory_facts`, `memory_consolidate`) for Claude Code & Claude Desktop
+- 🌌 **3D visualizer** — your memory as a living constellation: entities as stars, facts as glowing links, superseded facts as tethered ghosts, memories as dust that literally fades with decay
 - 🛡️ **Measured defense in depth** — salience filters emotional-but-impersonal content, the extractor rejects hypotheticals/past-tense/third-party statements (bench: 0 traps end-to-end on an adversarial corpus)
 
 ## 🚀 Quickstart (Linux)
@@ -81,6 +82,17 @@ mnemos query "what do you know about me?"
 ```
 
 **Automatic consolidation** — user systemd service running `mnemos worker` (hourly tick + monthly archive dump, single-instance lock): see `scripts/`.
+
+## 🌌 Memory Constellation — the 3D visualizer
+
+Watch your memory live: a weightless force-graph where **entities are stars** (sized by how often they recur), **facts are glowing links** colored by family, **superseded facts drift behind their successor as tethered ghosts**, and **raw memories are orbiting dust** — opacity is their decay state, halo is their salience. Faded memories literally go dark.
+
+```sh
+mnemos serve
+# then open  →  http://127.0.0.1:8765/viz
+```
+
+Hover for tooltips, click for the inspector (including a fact's full version history), search to highlight, filter by family or minimum salience. Single-file page (three.js + UnrealBloom + 3d-force-graph via pinned CDNs), fed by `GET /v1/graph`, refreshed every 30 s — new memories pulse into existence. Works standalone with demo data if the API is unreachable.
 
 ## 🏗️ Architecture
 
@@ -135,6 +147,7 @@ Importing an existing memory (JSONL episodes + distilled facts): `scripts/import
 - [x] MCP server (Claude Code, Claude Desktop)
 - [x] Fact retraction — negation detection delegated to the consuming LLM via `memory_forget`
 - [x] Recovery of lost salience scorings on worker restart
+- [x] 3D visualizer — Memory Constellation (`/viz`)
 - [ ] Episodic fallback when semantic scores are low
 - [ ] Extraction mode for non-conversational content (summaries)
 - [ ] Semantic forgetting (confidence decay for unreinforced facts)
@@ -186,6 +199,7 @@ La règle d'or héritée de la neuro : **on n'écrase jamais un souvenir, on le 
 - 🗂️ **Faits versionnés** — supersession sur les prédicats fonctionnels, coexistence sur les multi, rétractation explicite, chaîne d'audit complète
 - 🧭 **Router FR/EN** — classification lexicale (« hier » → épisodique, « qu'est-ce que tu sais sur » → sémantique, « comment ma préférence a évolué » → historique)
 - 🔌 **MCP natif** — 5 tools (`memory_query`, `memory_write`, `memory_forget`, `memory_facts`, `memory_consolidate`) pour Claude Code & Claude Desktop
+- 🌌 **Visualiseur 3D** — votre mémoire en constellation vivante : entités-étoiles, faits-liens lumineux, faits supersédés en fantômes rattachés, souvenirs en poussière qui s'éteint littéralement avec le decay
 - 🛡️ **Défense en profondeur mesurée** — la salience filtre l'émotionnel-non-personnel, l'extracteur rejette hypothétiques/temps passé/tiers (bench : 0 piège end-to-end sur corpus adversarial)
 
 ## 🚀 Démarrage rapide (Linux)
@@ -213,6 +227,17 @@ mnemos query "qu'est-ce que tu sais sur moi ?"
 **Claude Desktop** (Linux beta ≥ juin 2026) — dans `~/.config/Claude/claude_desktop_config.json` : voir l'exemple de la section anglaise.
 
 **Consolidation automatique** — service systemd user (`mnemos worker` : tick horaire + dump mensuel des archives, verrou d'instance unique) : voir `scripts/`.
+
+## 🌌 Memory Constellation — le visualiseur 3D
+
+Regardez votre mémoire vivre : un graphe en apesanteur où **les entités sont des étoiles** (taille selon leur récurrence), **les faits des liens lumineux** colorés par famille, **les faits supersédés des fantômes** qui flottent derrière leur successeur, et **les souvenirs bruts une poussière en orbite** — opacité = decay, halo = salience. Les souvenirs oubliés s'éteignent littéralement.
+
+```sh
+mnemos serve
+# puis ouvrir  →  http://127.0.0.1:8765/viz
+```
+
+Survol pour les tooltips, clic pour l'inspecteur (avec l'historique complet des versions d'un fait), recherche, filtres par famille et salience minimum. Page single-file (three.js + UnrealBloom + 3d-force-graph via CDN épinglés), nourrie par `GET /v1/graph`, rafraîchie toutes les 30 s — les nouveaux souvenirs apparaissent en pulsant. Fonctionne en démo autonome si l'API est injoignable.
 
 ## 🧰 CLI & API, critère "done", feuille de route
 
