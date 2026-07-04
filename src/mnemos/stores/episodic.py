@@ -7,6 +7,14 @@ Recherche (§9.2) : KNN dense top-50 (vec0, cosine) → filtres Python
 Décroissance (§9.2) : elapsed depuis COALESCE(last_decayed_at, created_at),
 JAMAIS depuis created_at seul (double-comptage → décroissance quadratique).
 Temps via Clock injectable (§6).
+
+Multi-tenant (Lot 1 / P1) : chaque méthode prend un `tenant` (défaut
+DEFAULT_TENANT). write pose le tenant ; search/list/decay/archive/counts
+filtrent dessus. episodes_vec n'a pas de colonne tenant → le tenant est
+filtré côté Python sur l'épisode joint (KNN cross-tenant réduit, mais le
+résultat retourné est strictement du tenant demandé). Les hooks par
+episode_id (mark_consolidated, set_entity_refs, update_salience) restent
+sûrs : un id ULID est unique tous tenants confondus.
 """
 
 from __future__ import annotations
@@ -28,6 +36,7 @@ from mnemos.embeddings.sparse import sparse_encode, sparse_similarity
 from mnemos.logging import get_logger
 from mnemos.models.episodic import Episode, EpisodeSparse
 from mnemos.tagger.salience import SalienceScores
+from mnemos.tenancy import DEFAULT_TENANT
 
 logger = get_logger(__name__)
 
@@ -91,12 +100,14 @@ class EpisodicStore:
         role: str,
         session_id: str | None = None,
         salience_scores: SalienceScores | None = None,
+        tenant: str = DEFAULT_TENANT,
     ) -> Episode:
         now = self._clock.now_ms()
         dense = await self._embedder.embed(content)
         sparse = sparse_encode(content, now)
         episode = Episode(
             id=str(ULID()),
+            tenant=tenant,
             created_at=now,
             session_id=session_id,
             role=role,
@@ -147,6 +158,7 @@ class EpisodicStore:
         session_id: str | None = None,
         time_window: tuple[datetime, datetime] | None = None,
         min_salience: float = 0.0,
+        tenant: str = DEFAULT_TENANT,
     ) -> list[ScoredEpisode]:
         now = self._clock.now_ms()
         dense = await self._embedder.embed(query)
@@ -175,9 +187,13 @@ class EpisodicStore:
                 .all()
             )
 
-        # Filtres Python (§9.2 étape 3)
+        # Filtres Python (§9.2 étape 3). Le tenant est filtré ici : episodes_vec
+        # (vec0) n'a pas de métadonnée, donc le KNN est cross-tenant mais AUCUN
+        # épisode d'un autre tenant ne franchit ce filtre.
         scored: list[ScoredEpisode] = []
         for episode, sparse_bits in episodes:
+            if episode.tenant != tenant:
+                continue
             if episode.archived:
                 continue
             if episode.salience < min_salience:
@@ -207,11 +223,13 @@ class EpisodicStore:
         async with self._sessions() as session:
             return await session.get(Episode, episode_id)
 
-    async def list_recent(self, session_id: str | None = None, n: int = 5) -> list[Episode]:
+    async def list_recent(
+        self, session_id: str | None = None, n: int = 5, tenant: str = DEFAULT_TENANT
+    ) -> list[Episode]:
         """Derniers épisodes (ordre chronologique) — historique du scoring §13.2."""
         stmt = (
             select(Episode)
-            .where(Episode.archived == 0)
+            .where(Episode.tenant == tenant, Episode.archived == 0)
             .order_by(Episode.created_at.desc())
             .limit(n)
         )
@@ -223,16 +241,21 @@ class EpisodicStore:
 
     # ── Consolidation hooks (§15) ─────────────────────────────────────────────
 
-    async def pending_counts(self) -> dict[str, int]:
+    async def pending_counts(self, tenant: str | None = None) -> dict[str, int]:
         """Ce qui attend l'IA locale (observabilité) : épisodes jamais scorés,
-        candidats mûrs pour consolidation, saillants mais trop récents."""
+        candidats mûrs pour consolidation, saillants mais trop récents.
+        tenant=None → tous tenants confondus (vue worker/globale)."""
         now = self._clock.now_ms()
         cutoff = now - int(self._settings.CONSOLIDATION_DELAY_HOURS * 3_600_000)
         threshold = self._settings.SALIENCE_THRESHOLD_CONSOLIDATE
+        tenant_clause = "" if tenant is None else " AND tenant = :tenant"
+        params: dict[str, object] = {"thr": threshold, "cutoff": cutoff}
+        if tenant is not None:
+            params["tenant"] = tenant
         async with self._sessions() as session:
             row = await session.execute(
                 text(
-                    """
+                    f"""
                     SELECT
                       SUM(CASE WHEN surprise IS NULL THEN 1 ELSE 0 END),
                       SUM(CASE WHEN surprise IS NOT NULL AND consolidated_at IS NULL
@@ -241,10 +264,10 @@ class EpisodicStore:
                       SUM(CASE WHEN surprise IS NOT NULL AND consolidated_at IS NULL
                                AND salience > :thr AND created_at > :cutoff
                                THEN 1 ELSE 0 END)
-                    FROM episodes WHERE archived = 0
-                    """
+                    FROM episodes WHERE archived = 0{tenant_clause}
+                    """  # noqa: S608 — tenant_clause est un littéral fixe, pas de l'input
                 ),
-                {"thr": threshold, "cutoff": cutoff},
+                params,
             )
             unscored, ready, too_recent = row.one()
         return {
@@ -253,35 +276,47 @@ class EpisodicStore:
             "consolidation_waiting": int(too_recent or 0),
         }
 
-    async def list_unscored(self, limit: int = 50) -> list[Episode]:
+    async def list_unscored(self, limit: int = 50, tenant: str | None = None) -> list[Episode]:
         """Épisodes jamais passés au scoring de salience (surprise IS NULL,
         §5.1) — jobs perdus quand le process meurt avant que la queue draine.
-        Rattrapés par le worker (§15.1)."""
+        Rattrapés par le worker (§15.1). tenant=None → tous tenants."""
+        stmt = (
+            select(Episode)
+            .where(Episode.surprise.is_(None), Episode.archived == 0)
+            .order_by(Episode.created_at)
+            .limit(limit)
+        )
+        if tenant is not None:
+            stmt = stmt.where(Episode.tenant == tenant)
         async with self._sessions() as session:
-            rows = await session.execute(
-                select(Episode)
-                .where(Episode.surprise.is_(None), Episode.archived == 0)
-                .order_by(Episode.created_at)
-                .limit(limit)
-            )
+            rows = await session.execute(stmt)
             return list(rows.scalars())
 
     async def list_pending_consolidation(
-        self, min_salience: float, min_age_hours: float, limit: int
+        self,
+        min_salience: float,
+        min_age_hours: float,
+        limit: int,
+        tenant: str | None = None,
     ) -> list[Episode]:
+        """Candidats à consolidation. tenant=None → tous tenants (le worker lit
+        episode.tenant par épisode pour écrire les faits dans le bon tenant)."""
         cutoff = self._clock.now_ms() - int(min_age_hours * 3_600_000)
-        async with self._sessions() as session:
-            rows = await session.execute(
-                select(Episode)
-                .where(
-                    Episode.consolidated_at.is_(None),
-                    Episode.archived == 0,
-                    Episode.salience > min_salience,
-                    Episode.created_at <= cutoff,
-                )
-                .order_by(Episode.salience.desc())
-                .limit(limit)
+        stmt = (
+            select(Episode)
+            .where(
+                Episode.consolidated_at.is_(None),
+                Episode.archived == 0,
+                Episode.salience > min_salience,
+                Episode.created_at <= cutoff,
             )
+            .order_by(Episode.salience.desc())
+            .limit(limit)
+        )
+        if tenant is not None:
+            stmt = stmt.where(Episode.tenant == tenant)
+        async with self._sessions() as session:
+            rows = await session.execute(stmt)
             return list(rows.scalars())
 
     async def mark_consolidated(self, episode_id: str, extraction_failed: bool = False) -> None:

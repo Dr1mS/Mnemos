@@ -7,6 +7,11 @@ alembic ET par les fixtures de test. Tables STRICT et vec0 → DDL brut
 Divergence assumée vs spec : `distance_metric=cosine` déclaré sur episodes_vec
 (le spec §9.2 impose le KNN cosine ; le déclarer dans la table évite un
 re-calcul applicatif).
+
+Multi-tenant (Lot 1 / P1) : chaque épisode porte un `tenant` (indexé). Toute
+requête filtre dessus — l'isolation est appliquée au niveau du store, jamais
+au niveau applicatif appelant. Le tenant par défaut est `user` (la mémoire
+personnelle historique, cf. DEFAULT_TENANT).
 """
 
 from __future__ import annotations
@@ -14,11 +19,13 @@ from __future__ import annotations
 from sqlalchemy.orm import Mapped, mapped_column
 
 from mnemos.models.base import Base
+from mnemos.tenancy import DEFAULT_TENANT
 
 EPISODIC_SCHEMA_SQL: list[str] = [
-    """
+    f"""
     CREATE TABLE episodes (
       id                TEXT PRIMARY KEY,             -- ULID
+      tenant            TEXT NOT NULL DEFAULT '{DEFAULT_TENANT}',  -- isolation multi-tenant (P1)
       created_at        INTEGER NOT NULL,             -- epoch ms UTC
       session_id        TEXT,
       role              TEXT NOT NULL,                -- 'user' | 'assistant' | 'system'
@@ -39,6 +46,7 @@ EPISODIC_SCHEMA_SQL: list[str] = [
       entity_refs       TEXT NOT NULL DEFAULT '[]'    -- JSON array of entity names
     ) STRICT
     """,
+    "CREATE INDEX idx_episodes_tenant ON episodes(tenant, created_at DESC)",
     "CREATE INDEX idx_episodes_created_at ON episodes(created_at DESC)",
     "CREATE INDEX idx_episodes_session ON episodes(session_id, created_at DESC)",
     "CREATE INDEX idx_episodes_consolidation ON episodes(consolidated_at, salience DESC)",
@@ -69,6 +77,7 @@ class Episode(Base):
     __tablename__ = "episodes"
 
     id: Mapped[str] = mapped_column(primary_key=True)
+    tenant: Mapped[str] = mapped_column(default=DEFAULT_TENANT)
     created_at: Mapped[int]
     session_id: Mapped[str | None]
     role: Mapped[str]

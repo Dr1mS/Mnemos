@@ -3,6 +3,11 @@
 Faits versionnés à la Memstate : subject + predicate + valid_until=NULL =
 "fait courant". Même convention que models/episodic.py : le DDL brut est
 consommé par la migration ET les fixtures de test.
+
+Multi-tenant (Lot 1 / P1) : `facts` porte un `tenant` (indexé) et l'unicité
+d'un fait courant est désormais (tenant, subject, predicate). `entities` a
+une PK COMPOSITE (tenant, canonical_name) : deux tenants peuvent nommer une
+entité de façon homonyme sans collision ni fuite. Défaut = `user`.
 """
 
 from __future__ import annotations
@@ -10,11 +15,13 @@ from __future__ import annotations
 from sqlalchemy.orm import Mapped, mapped_column
 
 from mnemos.models.base import Base
+from mnemos.tenancy import DEFAULT_TENANT
 
 SEMANTIC_SCHEMA_SQL: list[str] = [
-    """
+    f"""
     CREATE TABLE facts (
       id               TEXT PRIMARY KEY,            -- ULID
+      tenant           TEXT NOT NULL DEFAULT '{DEFAULT_TENANT}',  -- isolation multi-tenant (P1)
       subject          TEXT NOT NULL,
       predicate        TEXT NOT NULL,
       object           TEXT NOT NULL,
@@ -30,20 +37,22 @@ SEMANTIC_SCHEMA_SQL: list[str] = [
       FOREIGN KEY (superseded_by) REFERENCES facts(id)
     ) STRICT
     """,
-    "CREATE INDEX idx_facts_subject ON facts(subject, predicate, valid_until)",
-    "CREATE INDEX idx_facts_current ON facts(valid_until) WHERE valid_until IS NULL",
+    "CREATE INDEX idx_facts_subject ON facts(tenant, subject, predicate, valid_until)",
+    "CREATE INDEX idx_facts_current ON facts(tenant, valid_until) WHERE valid_until IS NULL",
     "CREATE INDEX idx_facts_superseded ON facts(superseded_by)",
-    """
+    f"""
     CREATE TABLE entities (
-      canonical_name   TEXT PRIMARY KEY,
+      tenant           TEXT NOT NULL DEFAULT '{DEFAULT_TENANT}',  -- isolation multi-tenant (P1)
+      canonical_name   TEXT NOT NULL,
       aliases          TEXT NOT NULL DEFAULT '[]',  -- JSON array
       entity_type      TEXT,                        -- person|org|place|concept|product|null
       first_seen       INTEGER NOT NULL,
       last_seen        INTEGER NOT NULL,
-      episode_count    INTEGER NOT NULL DEFAULT 0
+      episode_count    INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (tenant, canonical_name)
     ) STRICT
     """,
-    "CREATE INDEX idx_entities_last_seen ON entities(last_seen DESC)",
+    "CREATE INDEX idx_entities_last_seen ON entities(tenant, last_seen DESC)",
     """
     CREATE VIRTUAL TABLE facts_vec USING vec0(
       fact_id          TEXT PRIMARY KEY,
@@ -63,6 +72,7 @@ class Fact(Base):
     __tablename__ = "facts"
 
     id: Mapped[str] = mapped_column(primary_key=True)
+    tenant: Mapped[str] = mapped_column(default=DEFAULT_TENANT)
     subject: Mapped[str]
     predicate: Mapped[str]
     object: Mapped[str]
@@ -77,6 +87,7 @@ class Fact(Base):
 class Entity(Base):
     __tablename__ = "entities"
 
+    tenant: Mapped[str] = mapped_column(primary_key=True, default=DEFAULT_TENANT)
     canonical_name: Mapped[str] = mapped_column(primary_key=True)
     aliases: Mapped[str] = mapped_column(default="[]")
     entity_type: Mapped[str | None]
