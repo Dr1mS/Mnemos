@@ -89,8 +89,10 @@ class ConsolidationWorker:
                 eta_s=round(avg * (len(candidates) - i + 1)) if avg else None,
             )
             t0 = time.monotonic()
-            extraction = await self._extract_with_retry(episode.id, episode.content,
-                                                        episode.role, episode.created_at)
+            extraction = await self._extract_with_retry(
+                episode.id, episode.content, episode.role, episode.created_at,
+                episode.tenant,
+            )
             durations.append(time.monotonic() - t0)
             if extraction is None:
                 await self._episodic.mark_consolidated(episode.id, extraction_failed=True)
@@ -158,11 +160,11 @@ class ConsolidationWorker:
         return report
 
     async def _extract_with_retry(
-        self, episode_id: str, content: str, role: str, created_at: int
+        self, episode_id: str, content: str, role: str, created_at: int, tenant: str
     ) -> Extraction | None:
         for attempt in range(1, EXTRACTION_ATTEMPTS + 1):
             try:
-                return await self._extractor.extract(content, role, created_at)
+                return await self._extractor.extract(content, role, created_at, tenant)
             except Exception as exc:  # noqa: BLE001 — anti-pattern 8
                 logger.warning(
                     "extraction_attempt_failed",

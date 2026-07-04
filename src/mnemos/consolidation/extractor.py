@@ -4,6 +4,14 @@ Les exemples de bascule sont la partie du prompt qui porte : un 4B
 sur-supprime avec des règles abstraites seules (passé composé, has_goal).
 Ne pas les retirer pour "raccourcir le prompt" (cf. poc/RESULTS.md).
 
+Sujet canonique (P2) : le sujet par défaut des faits n'est plus `user` en
+dur. Il est résolu depuis le tenant (mnemos.tenancy.canonical_subject) et
+INJECTÉ dans le prompt via {subject}. Pour la mémoire personnelle, subject =
+`user` (comportement d'avant, le v4 du POC reste valide). Pour un tenant
+applicatif (`atelios`) ou un NPC, c'est son sujet canonique. La règle de
+bascule vers un tiers nommé est inchangée : elle prime sur le sujet par
+défaut quand la phrase désigne explicitement un autre acteur.
+
 Validation post-parsing : predicate ∈ vocabulaire (sinon mapping fuzzy ou
 FALLBACK_PREDICATE — anti-pattern 3 : jamais de predicate à la volée),
 subject/object non vides, confidence ∈ [0,1], entity_type ∈ vocabulaire ou
@@ -21,9 +29,13 @@ from mnemos.config import Settings
 from mnemos.llm.model_manager import ModelManager
 from mnemos.logging import get_logger
 from mnemos.ontology import ENTITY_TYPES, FALLBACK_PREDICATE, PREDICATES
+from mnemos.tenancy import DEFAULT_TENANT, canonical_subject
 
 logger = get_logger(__name__)
 
+# {subject} = sujet canonique du tenant (P2), injecté explicitement — le
+# few-shot ne code plus "user" en dur. Les autres accolades sont doublées
+# ({{…}}) pour survivre au .format().
 EXTRACTION_PROMPT = """Extract structured facts and named entities from this conversation episode.
 Output JSON object: {{"facts": [...], "entities": [...]}}.
 Each fact: {{subject, predicate, object, confidence}}.
@@ -35,9 +47,9 @@ Allowed predicates: works_at, lives_in, prefers, dislikes, owns,
                     is_a, has_attribute, knows_about, has_goal, has_skill
 
 Rules:
-- subject is EXACTLY "user" when the fact is about the user speaking; when
-  the sentence explicitly names another person/entity as the actor, that
-  entity is the subject
+- subject is EXACTLY "{subject}" when the fact is about the speaker of this
+  episode; when the sentence explicitly names another person/entity as the
+  actor, that named entity is the subject instead
 - if the actor is a pronoun whose referent is NOT named in this episode,
   extract NOTHING about it
 - extract facts that are CURRENTLY true. A past event that established a
@@ -52,12 +64,12 @@ Rules:
   form as name
 - if nothing extractable, return {{"facts": [], "entities": []}}
 
-Examples:
+Examples (the speaker's subject is "{subject}"):
 - "Avant je bossais chez TechCorp." → facts: []  (state ended, no longer true)
-- "J'ai adopté un chat, Yuzu." → {{"subject": "user", "predicate": "owns", "object": "Yuzu", "confidence": 0.9}}  (past event, current state)
-- "J'aimerais apprendre Rust." → {{"subject": "user", "predicate": "has_goal", "object": "Rust", "confidence": 0.9}}
-- "Mon frère Tom travaille chez Airbus." → {{"subject": "Tom", "predicate": "works_at", "object": "Airbus", "confidence": 0.9}}
-- "Je ne bois plus de thé, je suis passée au maté." → {{"subject": "user", "predicate": "prefers", "object": "maté", "confidence": 0.9}}  (only the NEW preference)
+- "J'ai adopté un chat, Yuzu." → {{"subject": "{subject}", "predicate": "owns", "object": "Yuzu", "confidence": 0.9}}  (past event, current state)
+- "J'aimerais apprendre Rust." → {{"subject": "{subject}", "predicate": "has_goal", "object": "Rust", "confidence": 0.9}}
+- "Mon frère Tom travaille chez Airbus." → {{"subject": "Tom", "predicate": "works_at", "object": "Airbus", "confidence": 0.9}}  (another named actor → that entity is the subject, NOT "{subject}")
+- "Je ne bois plus de thé, je suis passée au maté." → {{"subject": "{subject}", "predicate": "prefers", "object": "maté", "confidence": 0.9}}  (only the NEW preference)
 - "Si je gagnais au loto, j'achèterais une villa." → facts: []  (hypothetical)
 
 Episode (role={role}, timestamp={ts}):
@@ -108,11 +120,21 @@ class FactExtractor:
         self._manager = manager
         self._model = settings.EXTRACTION_MODEL
 
-    async def extract(self, content: str, role: str, timestamp_ms: int) -> Extraction:
-        """Lève en cas d'échec LLM/parse — le worker gère le retry (§15.1)."""
+    async def extract(
+        self,
+        content: str,
+        role: str,
+        timestamp_ms: int,
+        tenant: str = DEFAULT_TENANT,
+    ) -> Extraction:
+        """Lève en cas d'échec LLM/parse — le worker gère le retry (§15.1).
+
+        Le sujet par défaut des faits est le canonical_subject du tenant (P2),
+        injecté explicitement dans le prompt."""
         ts = datetime.fromtimestamp(timestamp_ms / 1000, tz=UTC).isoformat()
+        subject = canonical_subject(tenant)
         raw = await self._manager.generate(
-            EXTRACTION_PROMPT.format(role=role, ts=ts, content=content),
+            EXTRACTION_PROMPT.format(subject=subject, role=role, ts=ts, content=content),
             self._model,
             format="json",
             options={"temperature": 0.0, "num_predict": 768},
