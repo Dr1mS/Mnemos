@@ -13,12 +13,20 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import FileResponse
 
-from mnemos.api.deps import get_orchestrator, get_queue, get_store, get_wm, require_api_key
+from mnemos.api.deps import (
+    get_orchestrator,
+    get_queue,
+    get_semantic,
+    get_store,
+    get_wm,
+    require_api_key,
+)
 from mnemos.api.schemas import (
     ConsolidationReportOut,
     DecayReportOut,
     EpisodeCreate,
     EpisodeOut,
+    FactOut,
     HealthOut,
     QueryIn,
     QueryResultOut,
@@ -26,15 +34,21 @@ from mnemos.api.schemas import (
 )
 from mnemos.router.orchestrator import RouterOrchestrator
 from mnemos.stores.episodic import EpisodicStore
+from mnemos.stores.semantic import SemanticStore
 from mnemos.stores.working import WorkingMemoryRegistry
 from mnemos.tagger.salience import ScoringJob, ScoringQueue
+from mnemos.tenancy import DEFAULT_TENANT
 
 router = APIRouter(prefix="/v1", dependencies=[Depends(require_api_key)])
 
 StoreDep = Annotated[EpisodicStore, Depends(get_store)]
+SemanticDep = Annotated[SemanticStore, Depends(get_semantic)]
 QueueDep = Annotated[ScoringQueue, Depends(get_queue)]
 WMDep = Annotated[WorkingMemoryRegistry, Depends(get_wm)]
 OrchestratorDep = Annotated[RouterOrchestrator, Depends(get_orchestrator)]
+
+# Query param tenant partagé par les GET : optionnel, défaut = tenant personnel.
+TenantQuery = Annotated[str, Query(min_length=1, max_length=128)]
 
 
 @router.post("/episodes", status_code=201)
@@ -42,10 +56,16 @@ async def create_episode(
     payload: EpisodeCreate, store: StoreDep, queue: QueueDep, wm: WMDep
 ) -> EpisodeOut:
     # Historique AVANT le write : le nouvel épisode ne doit pas être
-    # son propre contexte de scoring (§13.2).
-    history = [e.content for e in await store.list_recent(payload.session_id, n=5)]
+    # son propre contexte de scoring (§13.2). Historique borné au tenant.
+    history = [
+        e.content
+        for e in await store.list_recent(payload.session_id, n=5, tenant=payload.tenant)
+    ]
     episode = await store.write(
-        content=payload.content, role=payload.role, session_id=payload.session_id
+        content=payload.content,
+        role=payload.role,
+        session_id=payload.session_id,
+        tenant=payload.tenant,
     )
     queue.enqueue(
         ScoringJob(episode_id=episode.id, content=episode.content, recent_history=history)
@@ -59,7 +79,9 @@ async def create_episode(
 
 @router.post("/query")
 async def query(payload: QueryIn, orchestrator: OrchestratorDep) -> QueryResultOut:
-    result = await orchestrator.query(payload.q, session_id=payload.session_id, k=payload.k)
+    result = await orchestrator.query(
+        payload.q, session_id=payload.session_id, k=payload.k, tenant=payload.tenant
+    )
     return QueryResultOut.from_result(result)
 
 
@@ -75,9 +97,39 @@ async def search_episodes(
     k: Annotated[int, Query(ge=1, le=100)] = 10,
     session_id: str | None = None,
     min_salience: Annotated[float, Query(ge=0.0, le=1.0)] = 0.0,
+    tenant: TenantQuery = DEFAULT_TENANT,
 ) -> list[ScoredEpisodeOut]:
-    results = await store.search(q, k=k, session_id=session_id, min_salience=min_salience)
+    results = await store.search(
+        q, k=k, session_id=session_id, min_salience=min_salience, tenant=tenant
+    )
     return [ScoredEpisodeOut.from_scored(s) for s in results]
+
+
+@router.get("/facts")
+async def list_facts(
+    semantic: SemanticDep,
+    subject: str | None = None,
+    predicate: str | None = None,
+    tenant: TenantQuery = DEFAULT_TENANT,
+) -> list[FactOut]:
+    """Faits courants (valid_until IS NULL) du tenant. Contrat Atelios."""
+    facts = await semantic.get_current_facts(
+        subject=subject, predicate=predicate, tenant=tenant
+    )
+    return [FactOut.from_fact(f) for f in facts]
+
+
+@router.get("/facts/history")
+async def facts_history(
+    semantic: SemanticDep,
+    subject: Annotated[str, Query(min_length=1)],
+    predicate: Annotated[str, Query(min_length=1)],
+    tenant: TenantQuery = DEFAULT_TENANT,
+) -> list[FactOut]:
+    """Historique complet (chaîne de versioning) d'une paire subject/predicate
+    dans le tenant, du plus ancien au plus récent."""
+    facts = await semantic.get_history(subject, predicate, tenant=tenant)
+    return [FactOut.from_fact(f) for f in facts]
 
 
 @router.get("/episodes/{episode_id}")
@@ -112,12 +164,16 @@ async def health(request: Request, queue: QueueDep, store: StoreDep) -> HealthOu
 
 
 @router.get("/graph")
-async def graph(request: Request, store: StoreDep) -> dict[str, object]:
-    """Graphe mémoire pour le visualiseur — contrat {entities, facts, memories}."""
+async def graph(
+    request: Request, store: StoreDep, tenant: TenantQuery = DEFAULT_TENANT
+) -> dict[str, object]:
+    """Graphe mémoire pour le visualiseur — contrat {entities, facts, memories}.
+    Filtré par tenant (défaut = tenant personnel)."""
     from mnemos.api.graph import build_graph
 
-    payload = await build_graph(store, request.app.state.semantic)
+    payload = await build_graph(store, request.app.state.semantic, tenant=tenant)
     payload["generated_at"] = request.app.state.clock.now_ms()
+    payload["tenant"] = tenant
     return payload
 
 

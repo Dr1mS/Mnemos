@@ -18,6 +18,7 @@ from mnemos.stores.episodic import EpisodicStore, ScoredEpisode
 from mnemos.stores.procedural import ProceduralStore
 from mnemos.stores.semantic import ScoredFact, SemanticStore
 from mnemos.stores.working import WMItem, WorkingMemoryRegistry
+from mnemos.tenancy import DEFAULT_TENANT
 
 _EPISODIC_TYPES = frozenset(
     {QueryType.EPISODIC_TEMPORAL, QueryType.EPISODIC_FUZZY, QueryType.UNKNOWN}
@@ -51,17 +52,23 @@ class RouterOrchestrator:
         self._procedural = procedural
 
     async def query(
-        self, q: str, session_id: str | None = None, k: int = 10
+        self,
+        q: str,
+        session_id: str | None = None,
+        k: int = 10,
+        tenant: str = DEFAULT_TENANT,
     ) -> QueryResult:
         qtype = classify(q)
 
         episodes_task = (
-            asyncio.create_task(self._episodic.search(q, k=k, session_id=session_id))
+            asyncio.create_task(
+                self._episodic.search(q, k=k, session_id=session_id, tenant=tenant)
+            )
             if qtype in _EPISODIC_TYPES
             else None
         )
         facts_task = (
-            asyncio.create_task(self._semantic.search_facts(q, k=k))
+            asyncio.create_task(self._semantic.search_facts(q, k=k, tenant=tenant))
             if qtype in _SEMANTIC_TYPES
             else None
         )
@@ -77,7 +84,9 @@ class RouterOrchestrator:
                 pair = (scored.fact.subject, scored.fact.predicate)
                 if pair not in seen:
                     seen.add(pair)
-                    history.extend(await self._semantic.get_history(*pair))
+                    history.extend(
+                        await self._semantic.get_history(*pair, tenant=tenant)
+                    )
 
         working: list[WMItem] = []
         if qtype is QueryType.WORKING and session_id is not None:

@@ -12,6 +12,11 @@ from mnemos.router.orchestrator import QueryResult
 from mnemos.stores.episodic import ScoredEpisode
 from mnemos.stores.semantic import ScoredFact
 from mnemos.stores.working import WMItem
+from mnemos.tenancy import DEFAULT_TENANT
+
+# Champ tenant réutilisé sur tous les inputs : optionnel, défaut = tenant
+# personnel → les clients existants n'ont rien à changer (P1).
+TenantField = Field(default=DEFAULT_TENANT, min_length=1, max_length=128)
 
 
 class EpisodeCreate(BaseModel):
@@ -20,10 +25,12 @@ class EpisodeCreate(BaseModel):
     content: str = Field(min_length=1, max_length=32_000)
     role: Literal["user", "assistant", "system"]
     session_id: str | None = Field(default=None, max_length=256)
+    tenant: str = TenantField
 
 
 class EpisodeOut(BaseModel):
     id: str
+    tenant: str
     created_at: int
     session_id: str | None
     role: str
@@ -44,6 +51,7 @@ class EpisodeOut(BaseModel):
         scored = ep.surprise is not None
         return cls(
             id=ep.id,
+            tenant=ep.tenant,
             created_at=ep.created_at,
             session_id=ep.session_id,
             role=ep.role,
@@ -83,10 +91,12 @@ class QueryIn(BaseModel):
     q: str = Field(min_length=1, max_length=4_000)
     session_id: str | None = Field(default=None, max_length=256)
     k: int = Field(default=10, ge=1, le=100)
+    tenant: str = TenantField
 
 
 class FactOut(BaseModel):
     id: str
+    tenant: str
     subject: str
     predicate: str
     object: str
@@ -99,6 +109,7 @@ class FactOut(BaseModel):
     def from_fact(cls, f: Fact) -> FactOut:
         return cls(
             id=f.id,
+            tenant=f.tenant,
             subject=f.subject,
             predicate=f.predicate,
             object=f.object,

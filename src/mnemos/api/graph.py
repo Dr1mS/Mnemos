@@ -29,6 +29,7 @@ from mnemos.models.episodic import Episode
 from mnemos.models.semantic import Entity, Fact
 from mnemos.stores.episodic import EpisodicStore
 from mnemos.stores.semantic import SemanticStore
+from mnemos.tenancy import DEFAULT_TENANT, canonical_subject
 
 MAX_EPISODES = 300  # les plus récents — au-delà le rendu devient une bouillie
 LABEL_MAX = 90
@@ -81,16 +82,27 @@ def _truncate(text: str, limit: int) -> str:
     return text if len(text) <= limit else text[: limit - 1] + "…"
 
 
-async def build_graph(episodic: EpisodicStore, semantic: SemanticStore) -> dict[str, Any]:
+async def build_graph(
+    episodic: EpisodicStore, semantic: SemanticStore, tenant: str = DEFAULT_TENANT
+) -> dict[str, Any]:
+    # Tout est borné au tenant : entités, faits et épisodes du tenant demandé
+    # uniquement — le visualiseur d'un tenant ne montre jamais un autre.
+    subject_root = canonical_subject(tenant)
     async with semantic._sessions() as session:  # noqa: SLF001 — lecture seule
-        db_entities = list((await session.execute(select(Entity))).scalars())
-        db_facts = list((await session.execute(select(Fact))).scalars())
+        db_entities = list(
+            (
+                await session.execute(select(Entity).where(Entity.tenant == tenant))
+            ).scalars()
+        )
+        db_facts = list(
+            (await session.execute(select(Fact).where(Fact.tenant == tenant))).scalars()
+        )
     async with episodic._sessions() as session:  # noqa: SLF001
         db_episodes = list(
             (
                 await session.execute(
                     select(Episode)
-                    .where(Episode.archived == 0)
+                    .where(Episode.tenant == tenant, Episode.archived == 0)
                     .order_by(Episode.created_at.desc())
                     .limit(MAX_EPISODES)
                 )
@@ -136,8 +148,8 @@ async def build_graph(episodic: EpisodicStore, semantic: SemanticStore) -> dict[
     for fact in db_facts:
         if fact.valid_until is not None:
             continue  # invalidés : rendus via history/fantômes
-        if fact.subject.lower() != "user":
-            continue  # la page trace user → object ; faits tiers hors scope v1
+        if fact.subject.lower() != subject_root.lower():
+            continue  # la page trace <sujet canonique> → object ; faits tiers hors scope v1
         object_id = resolve_object(fact)
         history: list[dict[str, Any]] = []
         ancestor = by_successor.get(fact.id)

@@ -11,6 +11,7 @@ from fastapi import Header, HTTPException, Request
 from mnemos.config import Settings
 from mnemos.router.orchestrator import RouterOrchestrator
 from mnemos.stores.episodic import EpisodicStore
+from mnemos.stores.semantic import SemanticStore
 from mnemos.stores.working import WorkingMemoryRegistry
 from mnemos.tagger.salience import ScoringQueue
 
@@ -23,6 +24,11 @@ def get_app_settings(request: Request) -> Settings:
 def get_store(request: Request) -> EpisodicStore:
     store: EpisodicStore = request.app.state.store
     return store
+
+
+def get_semantic(request: Request) -> SemanticStore:
+    semantic: SemanticStore = request.app.state.semantic
+    return semantic
 
 
 def get_queue(request: Request) -> ScoringQueue:

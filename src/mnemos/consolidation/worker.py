@@ -96,10 +96,12 @@ class ConsolidationWorker:
                 await self._episodic.mark_consolidated(episode.id, extraction_failed=True)
                 report.extraction_failures += 1
                 continue
-            # DB uniquement à partir d'ici — hors tier (§15.1).
+            # DB uniquement à partir d'ici — hors tier (§15.1). Tout est écrit
+            # dans le tenant de l'épisode source : isolation stricte, un épisode
+            # d'un tenant ne peut jamais produire de faits dans un autre.
             for entity in extraction.entities:
                 await self._semantic.upsert_entity(
-                    entity.name, entity.entity_type, entity.aliases
+                    entity.name, entity.entity_type, entity.aliases, tenant=episode.tenant
                 )
                 report.entities_upserted += 1
             await self._episodic.set_entity_refs(
@@ -112,6 +114,7 @@ class ConsolidationWorker:
                     object_=fact.object,
                     source_episode_ids=[episode.id],
                     confidence=fact.confidence,
+                    tenant=episode.tenant,
                 )
                 if result.action == "inserted":
                     report.facts_inserted += 1
