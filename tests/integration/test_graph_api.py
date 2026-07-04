@@ -66,6 +66,37 @@ async def test_graph_contrat_complet(client: httpx.AsyncClient) -> None:
     assert memory["anchor"] == "Nexora"
 
 
+async def test_graph_isole_par_tenant(client: httpx.AsyncClient) -> None:
+    """Le graphe d'un tenant ne montre jamais les faits/entités/épisodes d'un
+    autre. Le filtre subject utilise le canonical_subject du tenant."""
+    semantic = client.app_state.semantic  # type: ignore[attr-defined]
+    store = client.app_state.store  # type: ignore[attr-defined]
+
+    # Tenant personnel : subject 'user'
+    await semantic.add_fact("user", "lives_in", "Annecy", ["e"], tenant="user")
+    await store.write("note perso", role="user", tenant="user")
+    # Tenant applicatif atelios : subject 'atelios' (canonical_subject fallback)
+    await semantic.add_fact("atelios", "lives_in", "Paris", ["e"], tenant="atelios")
+    await store.write("note atelios", role="user", tenant="atelios")
+
+    user_graph = (await client.get("/v1/graph")).json()
+    atelios_graph = (await client.get("/v1/graph", params={"tenant": "atelios"})).json()
+
+    # Objects rendus en entités-concepts synthétiques (Annecy/Paris ne sont pas
+    # des entités enregistrées) → on vérifie via les labels des entités du graphe.
+    def entity_labels(graph: dict) -> set[str]:
+        return {e["label"] for e in graph["entities"]}
+
+    assert "Annecy" in entity_labels(user_graph)
+    assert "Paris" not in entity_labels(user_graph)  # tenant atelios n'a pas fuité
+    assert "Paris" in entity_labels(atelios_graph)
+    assert "Annecy" not in entity_labels(atelios_graph)  # tenant user n'a pas fuité
+    assert atelios_graph["tenant"] == "atelios"
+    assert user_graph["tenant"] == "user"
+    assert all("atelios" not in m["label"] for m in user_graph["memories"])
+    assert all("perso" not in m["label"] for m in atelios_graph["memories"])
+
+
 async def test_graph_vide_et_page_viz(client: httpx.AsyncClient) -> None:
     body = (await client.get("/v1/graph")).json()
     assert body["entities"] == [] and body["facts"] == [] and body["memories"] == []

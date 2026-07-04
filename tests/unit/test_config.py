@@ -27,3 +27,15 @@ def test_paths_are_paths() -> None:
     s = Settings(_env_file=None)
     assert isinstance(s.EPISODIC_DB, Path)
     assert isinstance(s.DATA_DIR, Path)
+
+
+def test_tenant_defaut_est_user() -> None:
+    """P1 : le tenant appliqué par les surfaces mono-tenant (MCP, CLI) est
+    `user` par défaut → non-régression des clients existants."""
+    assert Settings(_env_file=None).TENANT == "user"
+
+
+def test_tenant_configurable_par_env(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """Une instance MCP par tenant : TENANT dans le .mcp.json (env)."""
+    monkeypatch.setenv("TENANT", "atelios")
+    assert Settings(_env_file=None).TENANT == "atelios"

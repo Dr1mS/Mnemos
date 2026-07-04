@@ -54,6 +54,11 @@ class AppContext:
     client: OllamaClient
     engines: list[object]
 
+    @property
+    def tenant(self) -> str:
+        """Tenant appliqué à tous les appels (mono-tenant côté MCP, §P1)."""
+        return self.settings.TENANT
+
 
 @asynccontextmanager
 async def app_lifespan(_server: FastMCP) -> AsyncIterator[AppContext]:
@@ -134,8 +139,13 @@ async def memory_write(
     asynchronously — the episode is searchable immediately.
     """
     app = _app(ctx)
-    history = [e.content for e in await app.episodic.list_recent(session_id, n=5)]
-    episode = await app.episodic.write(content, role="user", session_id=session_id)
+    history = [
+        e.content
+        for e in await app.episodic.list_recent(session_id, n=5, tenant=app.tenant)
+    ]
+    episode = await app.episodic.write(
+        content, role="user", session_id=session_id, tenant=app.tenant
+    )
     app.queue.enqueue(ScoringJob(episode.id, episode.content, history))
     return f"mémorisé ({episode.id}) — salience et consolidation en arrière-plan"
 
@@ -151,7 +161,9 @@ async def memory_query(
     preferences, projects, or what was said before.
     """
     app = _app(ctx)
-    result = await app.orchestrator.query(q, session_id=DEFAULT_SESSION, k=k)
+    result = await app.orchestrator.query(
+        q, session_id=DEFAULT_SESSION, k=k, tenant=app.tenant
+    )
     lines = [f"[route : {result.type.value}]"]
     if result.facts:
         lines.append("Faits :")
@@ -191,9 +203,9 @@ async def memory_facts(
     if history:
         if not subject or not predicate:
             return "erreur : history=true exige subject ET predicate"
-        facts = await app.semantic.get_history(subject, predicate)
+        facts = await app.semantic.get_history(subject, predicate, tenant=app.tenant)
     else:
-        facts = await app.semantic.get_current_facts(subject, predicate)
+        facts = await app.semantic.get_current_facts(subject, predicate, tenant=app.tenant)
     if not facts:
         return "(aucun fait)"
     return "\n".join(f"• {_fmt_fact(f)}" for f in facts)
@@ -214,10 +226,14 @@ async def memory_forget(
     if unsure, the tool lists the candidates so you can retry.
     """
     app = _app(ctx)
-    retracted = await app.semantic.retract_fact(subject, predicate, object)
+    retracted = await app.semantic.retract_fact(
+        subject, predicate, object, tenant=app.tenant
+    )
     if retracted is not None:
         return f"rétracté : {_fmt_fact(retracted)}"
-    candidates = await app.semantic.get_current_facts(subject, predicate)
+    candidates = await app.semantic.get_current_facts(
+        subject, predicate, tenant=app.tenant
+    )
     if not candidates:
         return f"aucun fait courant {subject}/{predicate}"
     listing = "\n".join(f"  • {f.object}" for f in candidates)

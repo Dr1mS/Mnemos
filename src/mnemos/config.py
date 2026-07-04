@@ -10,6 +10,8 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from mnemos.tenancy import DEFAULT_TENANT
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -17,6 +19,12 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    # Multi-tenant (P1). Le tenant appliqué par les surfaces mono-tenant
+    # (serveur MCP, CLI) quand aucun tenant explicite n'est fourni. Défaut =
+    # mémoire personnelle. Une instance MCP par tenant (ex. un NPC Tomodochi)
+    # se configure via TENANT dans son .mcp.json.
+    TENANT: str = DEFAULT_TENANT
 
     # Ollama
     OLLAMA_HOST: str = "http://localhost:11434"
