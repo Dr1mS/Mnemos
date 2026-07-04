@@ -141,25 +141,60 @@ async def get_episode(episode_id: str, store: StoreDep, request: Request) -> Epi
 
 
 @router.get("/health")
-async def health(request: Request, queue: QueueDep, store: StoreDep) -> HealthOut:
+async def health(
+    request: Request, queue: QueueDep, store: StoreDep, semantic: SemanticDep
+) -> HealthOut:
+    """Santé opérationnelle (§Santé) — appelée par Atelios à chaque tick.
+
+    Vérifie ce qui rend Mnemos utilisable : les deux DB répondent à une vraie
+    requête ET l'endpoint d'embedding Ollama (/api/embed) répond. Une panne de
+    /api/embed casse query ET write — d'où une sonde dédiée, pas seulement
+    /api/version. `failures` nomme précisément la dépendance en panne. Timeout
+    court côté sonde embedding (2 s).
+    """
     import json as json_
 
     settings = request.app.state.settings
-    ollama_ok: bool = await request.app.state.manager.health_check()
-    dbs = {
-        "episodic": settings.EPISODIC_DB.exists(),
-        "semantic": settings.SEMANTIC_DB.exists(),
-    }
+    manager = request.app.state.manager
+    failures: dict[str, str] = {}
+
+    ollama_ok: bool = await manager.health_check()
+    if not ollama_ok:
+        failures["ollama"] = f"/api/version injoignable ({settings.OLLAMA_HOST})"
+
+    # Sonde embedding réelle — None = OK, sinon message de panne (§Santé).
+    embed_error = await manager.embed_probe()
+    embedding_ok = embed_error is None
+    if embed_error is not None:
+        failures["embedding"] = embed_error
+
+    # DB : vraie requête, pas un test d'existence de fichier.
+    epi_error = await store.ping()
+    sem_error = await semantic.ping()
+    dbs = {"episodic": epi_error is None, "semantic": sem_error is None}
+    if epi_error is not None:
+        failures["episodic_db"] = epi_error
+    if sem_error is not None:
+        failures["semantic_db"] = sem_error
+
+    # pending_counts touche la DB : ne doit pas faire 500 le health check si la
+    # DB est justement en panne (déjà signalée dans failures ci-dessus).
+    pending: dict[str, int] | None = None
+    if epi_error is None:
+        pending = await store.pending_counts()
+
     marker = settings.DATA_DIR / "worker_last_run"
     status_file = settings.DATA_DIR / "worker_status.json"
     return HealthOut(
-        ok=ollama_ok and all(dbs.values()),
+        ok=ollama_ok and embedding_ok and all(dbs.values()),
         ollama=ollama_ok,
+        embedding=embedding_ok,
         dbs=dbs,
+        failures=failures,
         salience_queue_depth=queue.depth,
         worker_last_run=marker.read_text().strip() if marker.exists() else None,
         worker=json_.loads(status_file.read_text()) if status_file.exists() else None,
-        pending=await store.pending_counts(),
+        pending=pending,
     )
 
 

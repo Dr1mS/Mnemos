@@ -223,6 +223,17 @@ class EpisodicStore:
         async with self._sessions() as session:
             return await session.get(Episode, episode_id)
 
+    async def ping(self) -> str | None:
+        """Sonde DB pour /health (§Santé) : exécute une vraie requête (pas un
+        simple test d'existence de fichier — un .db corrompu ou verrouillé
+        existe mais ne répond pas). None si OK, sinon le message d'erreur."""
+        try:
+            async with self._sessions() as session:
+                await session.execute(text("SELECT 1 FROM episodes LIMIT 1"))
+        except Exception as exc:  # noqa: BLE001 — diagnostic, jamais de crash
+            return f"episodic DB inaccessible : {exc}"
+        return None
+
     async def list_recent(
         self, session_id: str | None = None, n: int = 5, tenant: str = DEFAULT_TENANT
     ) -> list[Episode]:

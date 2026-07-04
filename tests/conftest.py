@@ -40,6 +40,9 @@ class StubLLMManager:
     async def health_check(self) -> bool:
         return True
 
+    async def embed_probe(self) -> str | None:
+        return None  # sonde /api/embed OK (§Santé)
+
 
 async def make_stub_app(
     tmp_path: Path, settings: Settings | None = None, clock: Clock | None = None

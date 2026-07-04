@@ -24,6 +24,7 @@ EMBED_TIMEOUT_S = 60.0
 GENERATE_TIMEOUT_S = 300.0
 RETRY_ATTEMPTS = 3
 RETRY_BASE_DELAY_S = 0.5
+HEALTH_TIMEOUT_S = 2.0  # sonde /health : court, appelé à chaque tick Atelios
 
 
 class OllamaError(Exception):
@@ -106,3 +107,35 @@ class OllamaClient:
             return resp.status_code == 200
         except httpx.HTTPError:
             return False
+
+    async def embed_probe(self, model: str) -> str | None:
+        """Sonde réelle de /api/embed (§Santé) : la panne qui a rendu query ET
+        write inutilisables était sur cet endpoint, pas sur /api/version — un
+        simple health_check() ne l'aurait pas vue.
+
+        Retourne None si l'embedding répond, sinon une chaîne décrivant la
+        panne (à afficher dans /health). Timeout court (2 s)."""
+        try:
+            resp = await self._client.post(
+                f"{self._host}/api/embed",
+                json={"model": model, "input": ["ping"]},
+                timeout=HEALTH_TIMEOUT_S,
+            )
+        except httpx.TimeoutException:
+            # >2s : soit /api/embed est vraiment en peine, soit le modèle
+            # d'embedding est en cours de chargement (cold start après un
+            # restart Ollama ou l'expiration du keep_alive). Dans les deux cas
+            # l'embedding n'est pas prêt à servir CE tick — on le signale.
+            return (
+                f"timeout > {HEALTH_TIMEOUT_S:g}s sur /api/embed ({self._host}) "
+                f"— modèle {model} en chargement (cold start) ou endpoint en peine"
+            )
+        except httpx.HTTPError as exc:
+            return f"/api/embed injoignable ({self._host}) : {exc}"
+        if resp.status_code != 200:
+            # Modèle non pullé → 404 ; c'est le cas typique d'une panne embed.
+            return f"/api/embed HTTP {resp.status_code} (modèle {model} ?) : {resp.text[:120]}"
+        embeddings = resp.json().get("embeddings")
+        if not embeddings:
+            return f"/api/embed a répondu sans embeddings (modèle {model})"
+        return None

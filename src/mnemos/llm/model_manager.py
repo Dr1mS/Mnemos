@@ -44,6 +44,7 @@ class ModelManager:
     def __init__(self, settings: Settings, client: OllamaClient) -> None:
         self._client = client
         self._think = settings.LLM_THINK
+        self._embed_model = settings.EMBED_MODEL  # sonde /health (§Santé)
         self._limits = {
             Tier.SMALL: settings.LLM_TIER_SMALL_CONCURRENCY,
             Tier.MEDIUM: settings.LLM_TIER_MEDIUM_CONCURRENCY,
@@ -108,3 +109,10 @@ class ModelManager:
     async def health_check(self) -> bool:
         # Pas de tier : simple GET /api/version, aucune inférence.
         return await self._client.health_check()
+
+    async def embed_probe(self) -> str | None:
+        """Sonde /api/embed avec le modèle d'embedding configuré (§Santé).
+        HORS tier volontairement : la sonde doit rester rapide et ne jamais
+        attendre qu'une tier se libère. Retourne None si OK, sinon le message
+        de panne."""
+        return await self._client.embed_probe(self._embed_model)

@@ -331,6 +331,16 @@ class SemanticStore:
         scored.sort(key=lambda s: s.score, reverse=True)
         return scored[:k]
 
+    async def ping(self) -> str | None:
+        """Sonde DB pour /health (§Santé) : exécute une vraie requête. None si
+        OK, sinon le message d'erreur."""
+        try:
+            async with self._sessions() as session:
+                await session.execute(text("SELECT 1 FROM facts LIMIT 1"))
+        except Exception as exc:  # noqa: BLE001 — diagnostic, jamais de crash
+            return f"semantic DB inaccessible : {exc}"
+        return None
+
     async def count_duplicate_current(self, tenant: str | None = None) -> int:
         """Nombre de paires (subject, predicate, object) courantes en doublon —
         doit rester 0 (quality gate §21). Sans tenant : compte les doublons

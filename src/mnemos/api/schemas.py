@@ -161,8 +161,12 @@ class QueryResultOut(BaseModel):
 
 class HealthOut(BaseModel):
     ok: bool
-    ollama: bool
-    dbs: dict[str, bool]
+    ollama: bool  # /api/version joignable
+    embedding: bool  # /api/embed répond (§Santé — la panne qui casse query+write)
+    dbs: dict[str, bool]  # episodic/semantic répondent à une vraie requête
+    # Détail nommé des dépendances en panne : {dépendance: message}. Vide si
+    # tout va bien. C'est ce que lit Atelios pour savoir QUOI est cassé.
+    failures: dict[str, str] = {}
     salience_queue_depth: int
     worker_last_run: str | None = None
     worker: dict[str, object] | None = None  # contenu de worker_status.json
