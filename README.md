@@ -42,7 +42,7 @@ The golden rule, borrowed from neuroscience: **memories are never overwritten, t
 - 🔍 **Hybrid search** — `0.7·dense + 0.3·sparse + 0.1·recency`, with time-window filters
 - 🗂️ **Versioned facts** — supersession on functional predicates, coexistence on multi, explicit retraction, full audit chain
 - 🧭 **FR/EN router** — lexical classification ("yesterday" → episodic, "what do you know about" → semantic, "how did my preference change" → history)
-- 🔌 **Native MCP** — 5 tools (`memory_query`, `memory_write`, `memory_forget`, `memory_facts`, `memory_consolidate`) for Claude Code & Claude Desktop
+- 🔌 **Native MCP** — 5 tools (`memory_query`, `memory_write`, `memory_forget`, `memory_facts`, `memory_consolidate`) for Antigravity CLI (`agy`), Claude Code & Claude Desktop
 - 🏛️ **Multi-tenant** — a `tenant` dimension isolates parallel memories (personal, an app, an NPC…) with strict end-to-end sealing. Optional everywhere, defaults to `user` — existing clients are untouched. Contract: **[MNEMOS_API.md](MNEMOS_API.md)**
 - 🌌 **3D visualizer** — your memory as a living constellation: entities as stars, facts as glowing links, superseded facts as tethered ghosts, memories as dust that literally fades with decay
 - 🛡️ **Measured defense in depth** — salience filters emotional-but-impersonal content, the extractor rejects hypotheticals/past-tense/third-party statements (bench: 0 traps end-to-end on an adversarial corpus)
@@ -66,11 +66,27 @@ mnemos search "maté"
 mnemos query "what do you know about me?"
 ```
 
-### Connecting Claude
+### Connecting Antigravity CLI, Claude & AI Agents
+
+**Antigravity CLI (`agy`)**:
+- **Workspace plugin** (automatic): the repository contains `.agents/plugins/mnemos/` — opening `agy` in this repository automatically discovers and connects the `mnemos` MCP server.
+- **Global config**: add `mnemos` to `~/.gemini/config/mcp_config.json`:
+  ```json
+  {
+    "mcpServers": {
+      "mnemos": {
+        "command": "/path/to/Mnemos/.venv/bin/mnemos-mcp",
+        "env": {
+          "DATA_DIR": "/path/to/Mnemos/data/memory"
+        }
+      }
+    }
+  }
+  ```
 
 **Claude Code**: the project's `.mcp.json` is enough — open a session in the repo and approve the `mnemos` server.
 
-**Claude Desktop** (Linux beta ≥ June 2026) — in `~/.config/Claude/claude_desktop_config.json`:
+**Claude Desktop** (Linux beta ≥ June 2026 / Windows) — in `~/.config/Claude/claude_desktop_config.json` (or `%APPDATA%\Claude\claude_desktop_config.json` on Windows):
 
 ```json
 {
@@ -83,7 +99,9 @@ mnemos query "what do you know about me?"
 }
 ```
 
-**Automatic consolidation** — user systemd service running `mnemos worker` (hourly tick + monthly archive dump, single-instance lock): see `scripts/`.
+**Automatic background service**:
+- **Linux**: user systemd service running `mnemos worker` (hourly tick + monthly archive dump, single-instance lock).
+- **Windows**: scheduled task via PowerShell (`scripts/register_task.ps1`) or background scripts (`scripts/serve.ps1` / `scripts/serve.bat`).
 
 ## 🌌 Memory Constellation — the 3D visualizer
 
@@ -204,7 +222,7 @@ La règle d'or héritée de la neuro : **on n'écrase jamais un souvenir, on le 
 - 🔍 **Recherche hybride** — `0.7·dense + 0.3·sparse + 0.1·récence`, avec fenêtres temporelles
 - 🗂️ **Faits versionnés** — supersession sur les prédicats fonctionnels, coexistence sur les multi, rétractation explicite, chaîne d'audit complète
 - 🧭 **Router FR/EN** — classification lexicale (« hier » → épisodique, « qu'est-ce que tu sais sur » → sémantique, « comment ma préférence a évolué » → historique)
-- 🔌 **MCP natif** — 5 tools (`memory_query`, `memory_write`, `memory_forget`, `memory_facts`, `memory_consolidate`) pour Claude Code & Claude Desktop
+- 🔌 **MCP natif** — 5 tools (`memory_query`, `memory_write`, `memory_forget`, `memory_facts`, `memory_consolidate`) pour Antigravity CLI (`agy`), Claude Code & Claude Desktop
 - 🏛️ **Multi-tenant** — une dimension `tenant` isole des mémoires parallèles (perso, une app, un NPC…) avec étanchéité stricte end-to-end. Optionnel partout, défaut `user` — les clients existants ne changent pas. Contrat : **[MNEMOS_API.md](MNEMOS_API.md)**
 - 🌌 **Visualiseur 3D** — votre mémoire en constellation vivante : entités-étoiles, faits-liens lumineux, faits supersédés en fantômes rattachés, souvenirs en poussière qui s'éteint littéralement avec le decay
 - 🛡️ **Défense en profondeur mesurée** — la salience filtre l'émotionnel-non-personnel, l'extracteur rejette hypothétiques/temps passé/tiers (bench : 0 piège end-to-end sur corpus adversarial)
@@ -228,13 +246,19 @@ mnemos search "maté"
 mnemos query "qu'est-ce que tu sais sur moi ?"
 ```
 
-### Brancher Claude
+### Brancher Antigravity CLI, Claude & les agents
+
+**Antigravity CLI (`agy`)** :
+- **Plugin de workspace** (automatique) : le repo contient `.agents/plugins/mnemos/` — lancer `agy` dans ce projet détecte et active automatiquement le serveur MCP `mnemos`.
+- **Config globale** : déclarer `mnemos` dans `~/.gemini/config/mcp_config.json` (voir l'exemple JSON de la section anglaise).
 
 **Claude Code** : le `.mcp.json` du projet suffit — ouvrez une session dans le repo et approuvez le serveur `mnemos`.
 
-**Claude Desktop** (Linux beta ≥ juin 2026) — dans `~/.config/Claude/claude_desktop_config.json` : voir l'exemple de la section anglaise.
+**Claude Desktop** (Linux beta ≥ juin 2026 / Windows) — dans `~/.config/Claude/claude_desktop_config.json` (ou `%APPDATA%\Claude\claude_desktop_config.json` sous Windows) : voir l'exemple de la section anglaise.
 
-**Consolidation automatique** — service systemd user (`mnemos worker` : tick horaire + dump mensuel des archives, verrou d'instance unique) : voir `scripts/`.
+**Service d'arrière-plan & consolidation automatique** :
+- **Linux** : service systemd user (`mnemos worker` : tick horaire + dump mensuel des archives, verrou d'instance unique).
+- **Windows** : tâche planifiée via PowerShell (`scripts/register_task.ps1`) ou scripts d'arrière-plan (`scripts/serve.ps1` / `scripts/serve.bat`).
 
 ## 🌌 Memory Constellation — le visualiseur 3D
 
