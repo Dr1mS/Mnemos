@@ -90,7 +90,7 @@ class RouterOrchestrator:
 
         working: list[WMItem] = []
         if qtype is QueryType.WORKING and session_id is not None:
-            wm = self._working.peek(session_id)
+            wm = self._working.peek(session_id, tenant=tenant)
             if wm is not None:
                 working = wm.get_context()
 

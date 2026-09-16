@@ -71,3 +71,23 @@ def test_registry_persiste_entre_instances(
     ProceduralStore(root, fixed_clock).register_skill("s", "code", make_meta("s"))
     reloaded = ProceduralStore(root, fixed_clock)
     assert [m.name for m in reloaded.list_skills()] == ["s"]
+
+
+def test_utf8_encoding_accents_et_emojis(store: ProceduralStore) -> None:
+    """Vérifie que l'encodage UTF-8 est préservé même sur Windows (évite bug cp1252)."""
+    nom = "analyse_donnees"
+    desc = "Analyse poussée des données financières avec visualisations 📊 & graphiques clés 🚀"
+    code = (
+        "# Encodage UTF-8 test : é, à, ç, œ, €\n"
+        "def analyse(données: str) -> dict:\n"
+        "    return {'résultat': 'succès'}\n"
+    )
+    meta = SkillMeta(name=nom, desc=desc, signature="analyse(données: str) -> dict")
+
+    store.register_skill(nom, code, meta)
+    skill = store.get_skill(nom)
+    assert skill is not None
+    assert "données" in skill.code
+    assert "📊" in skill.meta.desc
+    assert "résultat" in skill.code
+

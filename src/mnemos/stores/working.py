@@ -9,6 +9,8 @@ from __future__ import annotations
 from collections import OrderedDict, deque
 from dataclasses import dataclass
 
+from mnemos.tenancy import DEFAULT_TENANT
+
 WM_MAX_ITEMS = 5
 REGISTRY_MAX_SESSIONS = 100
 
@@ -43,31 +45,41 @@ class WorkingMemory:
 
 
 class WorkingMemoryRegistry:
-    """dict[session_id, WorkingMemory] avec éviction LRU (§11)."""
+    """dict[(tenant, session_id), WorkingMemory] avec éviction LRU (§11)."""
 
     def __init__(self, max_sessions: int = REGISTRY_MAX_SESSIONS) -> None:
-        self._sessions: OrderedDict[str, WorkingMemory] = OrderedDict()
+        self._sessions: OrderedDict[tuple[str, str], WorkingMemory] = OrderedDict()
         self._max_sessions = max_sessions
 
-    def get_or_create(self, session_id: str) -> WorkingMemory:
-        if session_id in self._sessions:
-            self._sessions.move_to_end(session_id)
-            return self._sessions[session_id]
+    def _key(self, session_id: str, tenant: str = DEFAULT_TENANT) -> tuple[str, str]:
+        return (tenant, session_id)
+
+    def get_or_create(
+        self, session_id: str, tenant: str = DEFAULT_TENANT
+    ) -> WorkingMemory:
+        key = self._key(session_id, tenant)
+        if key in self._sessions:
+            self._sessions.move_to_end(key)
+            return self._sessions[key]
         wm = WorkingMemory()
-        self._sessions[session_id] = wm
+        self._sessions[key] = wm
         if len(self._sessions) > self._max_sessions:
-            evicted, _ = self._sessions.popitem(last=False)
+            self._sessions.popitem(last=False)
         return wm
 
-    def peek(self, session_id: str) -> WorkingMemory | None:
+    def peek(
+        self, session_id: str, tenant: str = DEFAULT_TENANT
+    ) -> WorkingMemory | None:
         """Lecture sans création (queries sur session inconnue)."""
-        wm = self._sessions.get(session_id)
+        key = self._key(session_id, tenant)
+        wm = self._sessions.get(key)
         if wm is not None:
-            self._sessions.move_to_end(session_id)
+            self._sessions.move_to_end(key)
         return wm
 
-    def reset(self, session_id: str) -> bool:
-        wm = self._sessions.get(session_id)
+    def reset(self, session_id: str, tenant: str = DEFAULT_TENANT) -> bool:
+        key = self._key(session_id, tenant)
+        wm = self._sessions.get(key)
         if wm is None:
             return False
         wm.reset()

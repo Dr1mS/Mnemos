@@ -21,11 +21,11 @@ null. Toute extraction invalide est skippée et loggée.
 from __future__ import annotations
 
 import difflib
-import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 from mnemos.config import Settings
+from mnemos.llm.json_cleaner import parse_llm_json
 from mnemos.llm.model_manager import ModelManager
 from mnemos.logging import get_logger
 from mnemos.ontology import ENTITY_TYPES, FALLBACK_PREDICATE, PREDICATES
@@ -139,7 +139,7 @@ class FactExtractor:
             format="json",
             options={"temperature": 0.0, "num_predict": 768},
         )
-        data = json.loads(raw)
+        data = parse_llm_json(raw)
         return Extraction(
             facts=self._validate_facts(data.get("facts", [])),
             entities=self._validate_entities(data.get("entities", [])),

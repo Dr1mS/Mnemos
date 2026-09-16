@@ -56,6 +56,7 @@ SEMANTIC_SCHEMA_SQL: list[str] = [
     """
     CREATE VIRTUAL TABLE facts_vec USING vec0(
       fact_id          TEXT PRIMARY KEY,
+      tenant           TEXT,
       embedding        FLOAT[1024] distance_metric=cosine
     )
     """,

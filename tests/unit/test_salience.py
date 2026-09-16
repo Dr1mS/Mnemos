@@ -88,6 +88,21 @@ async def test_score_exception_manager_fallback() -> None:
     assert scores["combined"] == 0.5
 
 
+async def test_score_sortie_llm_avec_think_et_markdown() -> None:
+    """Sortie avec balises <think> et bloc ```json parsée avec succès."""
+    raw = """<think>
+Message à forte composante personnelle.
+</think>
+```json
+{"surprise": 0.3, "arousal": 0.2, "self_ref": 0.9, "recurrence": 0.0}
+```"""
+    tagger, _ = make_tagger(raw)
+    scores = await tagger.score("je suis marié depuis 10 ans", [])
+    assert scores["self_ref"] == 0.9
+    assert scores["combined"] == 0.9
+
+
+
 # ── ScoringQueue ──────────────────────────────────────────────────────────────
 
 

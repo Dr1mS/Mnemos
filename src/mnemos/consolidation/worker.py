@@ -194,7 +194,8 @@ class ConsolidationWorker:
         }
         try:
             (self._settings.DATA_DIR / "worker_status.json").write_text(
-                json.dumps(status, ensure_ascii=False)
+                json.dumps(status, ensure_ascii=False),
+                encoding="utf-8",
             )
         except OSError as exc:
             logger.warning("worker_status_write_failed", error=str(exc))

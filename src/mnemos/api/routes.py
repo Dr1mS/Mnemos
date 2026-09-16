@@ -71,7 +71,7 @@ async def create_episode(
         ScoringJob(episode_id=episode.id, content=episode.content, recent_history=history)
     )
     if payload.session_id is not None:
-        wm.get_or_create(payload.session_id).push(
+        wm.get_or_create(payload.session_id, tenant=payload.tenant).push(
             episode.content, episode.role, episode.created_at
         )
     return EpisodeOut.from_episode(episode)
@@ -86,8 +86,10 @@ async def query(payload: QueryIn, orchestrator: OrchestratorDep) -> QueryResultO
 
 
 @router.post("/sessions/{session_id}/reset", status_code=204)
-async def reset_session(session_id: str, wm: WMDep) -> None:
-    wm.reset(session_id)  # idempotent : session inconnue = no-op (§16.1)
+async def reset_session(
+    session_id: str, wm: WMDep, tenant: TenantQuery = DEFAULT_TENANT
+) -> None:
+    wm.reset(session_id, tenant=tenant)  # idempotent : session inconnue = no-op (§16.1)
 
 
 @router.get("/episodes/search")
@@ -192,8 +194,14 @@ async def health(
         dbs=dbs,
         failures=failures,
         salience_queue_depth=queue.depth,
-        worker_last_run=marker.read_text().strip() if marker.exists() else None,
-        worker=json_.loads(status_file.read_text()) if status_file.exists() else None,
+        worker_last_run=(
+            marker.read_text(encoding="utf-8").strip() if marker.exists() else None
+        ),
+        worker=(
+            json_.loads(status_file.read_text(encoding="utf-8"))
+            if status_file.exists()
+            else None
+        ),
         pending=pending,
     )
 

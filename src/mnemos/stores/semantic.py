@@ -204,9 +204,14 @@ class SemanticStore:
                         count=len(current),
                     )
                 superseded = current[0]
-                superseded.valid_until = now
-                superseded.superseded_by = new_fact.id
-                session.add(superseded)
+                for prev in current:
+                    prev.valid_until = now
+                    prev.superseded_by = new_fact.id
+                    session.add(prev)
+                    await session.execute(
+                        text("DELETE FROM facts_vec WHERE fact_id = :id"),
+                        {"id": prev.id},
+                    )
             # Cas 4 (multi) : insert additionnel, JAMAIS de supersession.
 
             session.add(new_fact)
@@ -214,8 +219,15 @@ class SemanticStore:
                 f"{new_fact.subject} {new_fact.predicate} {new_fact.object}"
             )
             await session.execute(
-                text("INSERT INTO facts_vec(fact_id, embedding) VALUES (:id, :emb)"),
-                {"id": new_fact.id, "emb": sqlite_vec.serialize_float32(embedding)},
+                text(
+                    "INSERT INTO facts_vec(fact_id, tenant, embedding) "
+                    "VALUES (:id, :tenant, :emb)"
+                ),
+                {
+                    "id": new_fact.id,
+                    "tenant": tenant,
+                    "emb": sqlite_vec.serialize_float32(embedding),
+                },
             )
             action: WriteAction = "superseded" if superseded is not None else "inserted"
             logger.info("fact_written", fact_id=new_fact.id, action=action, predicate=predicate)
@@ -253,6 +265,10 @@ class SemanticStore:
                 if fact.object.lower() == object_.lower():
                     fact.valid_until = self._clock.now_ms()
                     session.add(fact)
+                    await session.execute(
+                        text("DELETE FROM facts_vec WHERE fact_id = :id"),
+                        {"id": fact.id},
+                    )
                     logger.info("fact_retracted", fact_id=fact.id, predicate=predicate)
                     return fact
         return None
@@ -307,15 +323,17 @@ class SemanticStore:
             knn = await session.execute(
                 text(
                     "SELECT fact_id, distance FROM facts_vec "
-                    "WHERE embedding MATCH :emb AND k = :k"
+                    "WHERE embedding MATCH :emb AND k = :k AND tenant = :tenant"
                 ),
-                {"emb": sqlite_vec.serialize_float32(embedding), "k": SEARCH_OVERFETCH * k},
+                {
+                    "emb": sqlite_vec.serialize_float32(embedding),
+                    "k": k,
+                    "tenant": tenant,
+                },
             )
             distances = {row[0]: float(row[1]) for row in knn}
             if not distances:
                 return []
-            # JOIN + filtre tenant + valid_until IS NULL en SQL (anti-pattern 6 +
-            # isolation : facts_vec n'a pas de colonne tenant, on filtre au JOIN).
             facts = list(
                 (
                     await session.execute(

@@ -12,11 +12,11 @@ qui remonte au write path.
 from __future__ import annotations
 
 import asyncio
-import json
 from dataclasses import dataclass, field
 from typing import Protocol, TypedDict
 
 from mnemos.config import Settings
+from mnemos.llm.json_cleaner import parse_llm_json
 from mnemos.llm.model_manager import ModelManager
 from mnemos.logging import get_logger
 
@@ -91,7 +91,7 @@ class SalienceTagger:
                 format="json",
                 options={"temperature": 0.0, "num_predict": 256},
             )
-            data = json.loads(raw)
+            data = parse_llm_json(raw)
             surprise = _clamp(float(data["surprise"]))
             arousal = _clamp(float(data["arousal"]))
             self_ref = _clamp(float(data["self_ref"]))

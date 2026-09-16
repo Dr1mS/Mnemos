@@ -327,7 +327,7 @@ def status() -> None:
     settings = get_settings()
     status_file = settings.DATA_DIR / "worker_status.json"
     if status_file.exists():
-        worker_status = json_.loads(status_file.read_text())
+        worker_status = json_.loads(status_file.read_text(encoding="utf-8"))
         phase = worker_status.get("phase", "?")
         if phase == "idle":
             last = worker_status.get("last_run", {})

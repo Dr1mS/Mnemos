@@ -236,3 +236,65 @@ async def test_recherche_episodique_non_masquee_par_autre_tenant_plus_proche(
     assert len(results) == 1
     assert results[0].episode.id == target.id
     assert results[0].episode.tenant == TENANT_B
+
+
+async def test_recherche_facts_non_masquee_par_autre_tenant_plus_proche(
+    stores: tuple[EpisodicStore, SemanticStore],
+) -> None:
+    """Vérifie que sqlite-vec partitionne nativement par tenant dans facts_vec.
+
+    Même si tenant A contient plus de 60 faits très proches de la requête,
+    la recherche sémantique dans tenant B ne doit JAMAIS être masquée.
+    """
+    _, semantic = stores
+    for i in range(60):
+        await semantic.add_fact(
+            f"sujet_{i}", "knows_about", f"robotique_{i}", ["e"], tenant=TENANT_A
+        )
+
+    target_res = await semantic.add_fact(
+        "sujet_cible", "knows_about", "robotique_atelios", ["e"], tenant=TENANT_B
+    )
+    target_id = target_res.fact.id
+
+    results = await semantic.search_facts("knows about robotique", k=10, tenant=TENANT_B)
+    assert len(results) == 1
+    assert results[0].fact.id == target_id
+    assert results[0].fact.tenant == TENANT_B
+
+
+async def test_facts_superseded_ne_masquent_pas_fait_courant_dans_facts_vec(
+    stores: tuple[EpisodicStore, SemanticStore], fixed_clock: FixedClock
+) -> None:
+    """Vérifie que facts_vec ne contient QUE les faits actifs (valid_until IS NULL).
+
+    Après N supersessions sur un prédicat fonctionnel, les anciens faits
+    sont purgés de facts_vec pour éviter le bug Mem0 où les faits périmés
+    saturent le top-K et masquent le fait courant.
+    """
+    _, semantic = stores
+    # 30 supersessions successives
+    for i in range(30):
+        fixed_clock.advance(1_000)
+        await semantic.add_fact("user", "works_at", f"Company_{i}", ["e"], tenant=TENANT_A)
+
+    # Le fait courant est Company_29
+    current_facts = await semantic.get_current_facts("user", "works_at", tenant=TENANT_A)
+    assert len(current_facts) == 1
+    assert current_facts[0].object == "Company_29"
+
+    # Recherche vectorielle : doit trouver Company_29 avec k=5
+    results = await semantic.search_facts("works at Company", k=5, tenant=TENANT_A)
+    assert len(results) == 1
+    assert results[0].fact.object == "Company_29"
+
+    # Vérification directe dans la table virtuelle facts_vec
+    async with semantic._sessions() as session:
+        count = (
+            await session.execute(
+                text("SELECT count(*) FROM facts_vec WHERE tenant = :t"),
+                {"t": TENANT_A},
+            )
+        ).scalar_one()
+        assert count == 1
+

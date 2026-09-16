@@ -58,7 +58,7 @@ class ProceduralStore:
         if not path.exists():
             return {}
         try:
-            data = json.loads(path.read_text())
+            data = json.loads(path.read_text(encoding="utf-8"))
             return data if isinstance(data, dict) else {}
         except (json.JSONDecodeError, OSError) as exc:
             logger.error("procedural_registry_corrupt", error=str(exc))
@@ -66,7 +66,8 @@ class ProceduralStore:
 
     def _save_registry(self, registry: dict[str, dict[str, object]]) -> None:
         self._registry_path().write_text(
-            json.dumps(registry, indent=2, ensure_ascii=False)
+            json.dumps(registry, indent=2, ensure_ascii=False),
+            encoding="utf-8",
         )
 
     # ── API (§12) ─────────────────────────────────────────────────────────────
@@ -84,7 +85,7 @@ class ProceduralStore:
             return None
         return Skill(
             meta=SkillMeta(**registry[name]),  # type: ignore[arg-type]
-            code=code_path.read_text(),
+            code=code_path.read_text(encoding="utf-8"),
         )
 
     def register_skill(self, name: str, code: str, meta: SkillMeta) -> None:
@@ -93,9 +94,10 @@ class ProceduralStore:
             raise ValueError(f"nom de skill invalide : {name!r}")
         skill_dir = self._root / name
         skill_dir.mkdir(parents=True, exist_ok=True)
-        (skill_dir / "skill.py").write_text(code)
+        (skill_dir / "skill.py").write_text(code, encoding="utf-8")
         (skill_dir / "meta.json").write_text(
-            json.dumps(asdict(meta), indent=2, ensure_ascii=False)
+            json.dumps(asdict(meta), indent=2, ensure_ascii=False),
+            encoding="utf-8",
         )
         registry = self._load_registry()
         registry[name] = asdict(meta)

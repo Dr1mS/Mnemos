@@ -54,3 +54,27 @@ def test_peek_ne_cree_pas() -> None:
     reg = WorkingMemoryRegistry()
     assert reg.peek("jamais-vue") is None
     assert len(reg) == 0
+
+
+def test_registry_multi_tenant_isolation() -> None:
+    """Deux tenants utilisant le même session_id ne partagent pas leur working memory."""
+    reg = WorkingMemoryRegistry()
+    wm_a = reg.get_or_create("chat", tenant="tenant_a")
+    wm_b = reg.get_or_create("chat", tenant="tenant_b")
+    assert wm_a is not wm_b
+
+    wm_a.push("message secret tenant A", "user", 1)
+    wm_b.push("message secret tenant B", "user", 2)
+
+    assert [item.content for item in wm_a.get_context()] == ["message secret tenant A"]
+    assert [item.content for item in wm_b.get_context()] == ["message secret tenant B"]
+
+    # Reset de session chez A ne touche pas B
+    assert reg.reset("chat", tenant="tenant_a") is True
+    assert wm_a.get_context() == []
+    assert len(wm_b.get_context()) == 1
+
+    # Défaut retombe sur "user"
+    wm_default = reg.get_or_create("chat")
+    assert reg.peek("chat", tenant="user") is wm_default
+

@@ -48,6 +48,7 @@ class AppContext:
     settings: Settings
     episodic: EpisodicStore
     semantic: SemanticStore
+    working: WorkingMemoryRegistry
     orchestrator: RouterOrchestrator
     worker: ConsolidationWorker
     queue: ScoringQueue
@@ -72,8 +73,9 @@ async def app_lifespan(_server: FastMCP) -> AsyncIterator[AppContext]:
     sem_engine = make_async_engine(settings.SEMANTIC_DB)
     episodic = EpisodicStore(epi_engine, embedder, clock, settings)
     semantic = SemanticStore(sem_engine, embedder, clock, settings)
+    working = WorkingMemoryRegistry()
     orchestrator = RouterOrchestrator(
-        episodic, semantic, WorkingMemoryRegistry(),
+        episodic, semantic, working,
         ProceduralStore(settings.PROCEDURAL_DIR, clock),
     )
     tagger = SalienceTagger(manager, settings)
@@ -92,8 +94,8 @@ async def app_lifespan(_server: FastMCP) -> AsyncIterator[AppContext]:
     try:
         yield AppContext(
             settings=settings, episodic=episodic, semantic=semantic,
-            orchestrator=orchestrator, worker=worker, queue=queue,
-            client=client, engines=[epi_engine, sem_engine],
+            working=working, orchestrator=orchestrator, worker=worker,
+            queue=queue, client=client, engines=[epi_engine, sem_engine],
         )
     finally:
         await queue.stop(drain_timeout_s=5)
@@ -152,6 +154,10 @@ async def memory_write(
         content, role="user", session_id=session_id, tenant=app.tenant
     )
     app.queue.enqueue(ScoringJob(episode.id, episode.content, history))
+    if session_id:
+        app.working.get_or_create(session_id, tenant=app.tenant).push(
+            episode.content, episode.role, episode.created_at
+        )
     return f"mémorisé ({episode.id}) — salience et consolidation en arrière-plan"
 
 

@@ -261,7 +261,7 @@ async def test_worker_rescore_les_episodes_non_scores(tmp_path) -> None:  # type
     assert report.candidates == 1  # devenu candidat et consolidé dans le même run
 
     # worker_status.json : idle + rapport du dernier run
-    status = _json.loads((tmp_path / "worker_status.json").read_text())
+    status = _json.loads((tmp_path / "worker_status.json").read_text(encoding="utf-8"))
     assert status["phase"] == "idle"
     assert status["last_run"]["consolidated"] == 1
     assert status["last_run"]["rescored"] == 1
@@ -270,3 +270,30 @@ async def test_worker_rescore_les_episodes_non_scores(tmp_path) -> None:  # type
     assert counts["unscored"] == 0 and counts["consolidation_ready"] == 0
     await epi_engine.dispose()
     await sem_engine.dispose()
+
+
+async def test_extraction_sortie_llm_polluee_markdown_et_think() -> None:
+    """Modèles de raisonnement (DeepSeek-R1, Qwen reasoning) avec <think> et markdown fences."""
+    raw_response = """<think>
+Analyse du message : l'utilisateur indique habiter à Annecy.
+Prédicat standard : lives_in.
+</think>
+```json
+{
+  "facts": [
+    {"subject": "user", "predicate": "lives_in", "object": "Annecy", "confidence": 0.95}
+  ],
+  "entities": [
+    {"name": "Annecy", "entity_type": "place", "aliases": []}
+  ]
+}
+```"""
+    stub = StubManager(raw_response)
+    extractor = FactExtractor(stub, Settings(_env_file=None))  # type: ignore[arg-type]
+    result = await extractor.extract("j'habite à Annecy désormais", "user", 1_782_727_200_000)
+    assert len(result.facts) == 1
+    assert result.facts[0].predicate == "lives_in"
+    assert result.facts[0].object == "Annecy"
+    assert len(result.entities) == 1
+    assert result.entities[0].name == "Annecy"
+
