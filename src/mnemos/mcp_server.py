@@ -81,7 +81,12 @@ async def app_lifespan(_server: FastMCP) -> AsyncIterator[AppContext]:
         episodic, semantic, FactExtractor(manager, settings), settings, clock,
         tagger=tagger,
     )
-    queue = ScoringQueue(tagger, episodic)
+    queue = ScoringQueue(
+        tagger,
+        episodic,
+        maxsize=settings.SALIENCE_QUEUE_MAXSIZE,
+        workers=settings.SALIENCE_QUEUE_WORKERS,
+    )
     await queue.start()
     logger.info("mcp_server_started", episodic_db=str(settings.EPISODIC_DB))
     try:

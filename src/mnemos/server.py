@@ -68,7 +68,12 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
         )
     if not hasattr(state, "queue"):
         tagger = SalienceTagger(state.manager, settings)
-        state.queue = ScoringQueue(tagger, state.store)
+        state.queue = ScoringQueue(
+            tagger,
+            state.store,
+            maxsize=settings.SALIENCE_QUEUE_MAXSIZE,
+            workers=settings.SALIENCE_QUEUE_WORKERS,
+        )
     await state.queue.start()
     logger.info("server_started", host=settings.API_HOST, port=settings.API_PORT)
     yield

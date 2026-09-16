@@ -128,8 +128,11 @@ class EpisodicStore:
             session.add(episode)
             session.add(EpisodeSparse(episode_id=episode.id, sparse_bits=sparse))
             await session.execute(
-                text("INSERT INTO episodes_vec(episode_id, embedding) VALUES (:id, :emb)"),
-                {"id": episode.id, "emb": sqlite_vec.serialize_float32(dense)},
+                text(
+                    "INSERT INTO episodes_vec(episode_id, tenant, embedding) "
+                    "VALUES (:id, :tenant, :emb)"
+                ),
+                {"id": episode.id, "tenant": tenant, "emb": sqlite_vec.serialize_float32(dense)},
             )
         logger.info("episode_written", episode_id=episode.id, session_id=session_id, role=role)
         return episode
@@ -168,9 +171,13 @@ class EpisodicStore:
             knn = await session.execute(
                 text(
                     "SELECT episode_id, distance FROM episodes_vec "
-                    "WHERE embedding MATCH :emb AND k = :k"
+                    "WHERE embedding MATCH :emb AND k = :k AND tenant = :tenant"
                 ),
-                {"emb": sqlite_vec.serialize_float32(dense), "k": KNN_CANDIDATES},
+                {
+                    "emb": sqlite_vec.serialize_float32(dense),
+                    "k": KNN_CANDIDATES,
+                    "tenant": tenant,
+                },
             )
             distances = {row[0]: float(row[1]) for row in knn}
             if not distances:
@@ -187,9 +194,9 @@ class EpisodicStore:
                 .all()
             )
 
-        # Filtres Python (§9.2 étape 3). Le tenant est filtré ici : episodes_vec
-        # (vec0) n'a pas de métadonnée, donc le KNN est cross-tenant mais AUCUN
-        # épisode d'un autre tenant ne franchit ce filtre.
+        # Filtres Python (§9.2 étape 3). episodes_vec (vec0) est partitionné par
+        # tenant à la source. Les filtres suivants éliminent archivés, salience
+        # sous le seuil, sessions et fenêtres temporelles.
         scored: list[ScoredEpisode] = []
         for episode, sparse_bits in episodes:
             if episode.tenant != tenant:

@@ -57,9 +57,11 @@ class Settings(BaseSettings):
     CONSOLIDATION_INTERVAL_MINUTES: int = 60
     CONSOLIDATION_BATCH_SIZE: int = 20
 
-    # Concurrency (ModelManager §7.2)
+    # Concurrency (ModelManager §7.2) & Queue (§13.3)
     LLM_TIER_SMALL_CONCURRENCY: int = 4
     LLM_TIER_MEDIUM_CONCURRENCY: int = 1
+    SALIENCE_QUEUE_MAXSIZE: int = 1000
+    SALIENCE_QUEUE_WORKERS: int = 2
 
 
 @lru_cache

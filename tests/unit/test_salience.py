@@ -146,3 +146,55 @@ async def test_queue_job_rate_ne_tue_pas_le_worker() -> None:
     await asyncio.wait_for(queue.join(), timeout=5)
     await queue.stop()
     assert "ok" in store.updates  # le worker a survécu au job raté
+
+
+async def test_queue_auto_drain_unscored_from_store() -> None:
+    """Vérifie que ScoringQueue dépile les épisodes unscored de la DB quand la queue est idle."""
+    from dataclasses import dataclass
+
+    @dataclass
+    class FakeEpisode:
+        id: str
+        content: str
+        session_id: str | None = None
+        tenant: str = "user"
+
+    class DrainableStore:
+        def __init__(self) -> None:
+            self.unscored: list[FakeEpisode] = [
+                FakeEpisode(id="ep_dropped_1", content="je vis à Annecy"),
+                FakeEpisode(id="ep_dropped_2", content="mon chat s'appelle Miso"),
+            ]
+            self.updates: dict[str, SalienceScores] = {}
+
+        async def list_unscored(self, limit: int = 5) -> list[FakeEpisode]:
+            batch = self.unscored[:limit]
+            self.unscored = self.unscored[limit:]
+            return batch
+
+        async def list_recent(
+            self, session_id: str | None = None, n: int = 5, tenant: str = "user"
+        ) -> list[FakeEpisode]:
+            return []
+
+        async def update_salience(self, episode_id: str, scores: SalienceScores) -> None:
+            self.updates[episode_id] = scores
+
+    tagger, _ = make_tagger(
+        json.dumps({"surprise": 0.8, "arousal": 0.7, "self_ref": 0.9, "recurrence": 0.0})
+    )
+    store = DrainableStore()
+    queue = ScoringQueue(tagger, store, maxsize=10, workers=1)
+    await queue.start()
+
+    # On n'enqueue rien en mémoire : le worker doit constater que la queue est vide
+    # et auto-drainer les épisodes depuis la base.
+    for _ in range(30):
+        if len(store.updates) == 2:
+            break
+        await asyncio.sleep(0.1)
+
+    await queue.stop()
+    assert "ep_dropped_1" in store.updates
+    assert "ep_dropped_2" in store.updates
+    assert store.updates["ep_dropped_1"]["combined"] == 0.9

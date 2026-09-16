@@ -126,14 +126,20 @@ class SalienceStoreProtocol(Protocol):
 
 
 class ScoringQueue:
-    """Queue bornée + workers en tâche de fond. Drop si pleine (§13.3)."""
+    """Queue bornée + workers en tâche de fond (§13.3).
+
+    Traite en priorité les jobs en mémoire. Dès que la file est inactive,
+    dépile automatiquement les épisodes non encore scorés en base (list_unscored)
+    en reconstituant leur contexte récent (list_recent), évitant tout blocage
+    de souvenir à salience=0.5 suite à un burst ou un redémarrage.
+    """
 
     def __init__(
         self,
         tagger: SalienceTagger,
         store: SalienceStoreProtocol,
-        maxsize: int = 100,
-        workers: int = 1,
+        maxsize: int = 1000,
+        workers: int = 2,
     ) -> None:
         self._tagger = tagger
         self._store = store
@@ -146,8 +152,8 @@ class ScoringQueue:
             self._queue.put_nowait(job)
             return True
         except asyncio.QueueFull:
-            # L'épisode garde salience=0.5 — jamais de backpressure sur le write.
-            logger.warning("salience_queue_full_drop", episode_id=job.episode_id)
+            # L'épisode garde surprise=NULL en base — sera rattrapé dès que la queue désemplit.
+            logger.warning("salience_queue_full_deferred", episode_id=job.episode_id)
             return False
 
     @property
@@ -174,18 +180,58 @@ class ScoringQueue:
         """Attend que tous les jobs enqueued soient traités (tests)."""
         await self._queue.join()
 
-    async def _worker(self) -> None:
-        while True:
-            job = await self._queue.get()
-            try:
-                scores = await self._tagger.score(job.content, job.recent_history)
-                await self._store.update_salience(job.episode_id, scores)
+    async def _drain_unscored(self, limit: int = 5) -> None:
+        list_unscored_fn = getattr(self._store, "list_unscored", None)
+        if list_unscored_fn is None:
+            return
+        try:
+            unscored = await list_unscored_fn(limit=limit)
+            for episode in unscored:
+                if not self._queue.empty():
+                    break
+                history: list[str] = []
+                list_recent_fn = getattr(self._store, "list_recent", None)
+                session_id = getattr(episode, "session_id", None)
+                tenant = getattr(episode, "tenant", "user")
+                if list_recent_fn is not None:
+                    recents = await list_recent_fn(session_id=session_id, n=5, tenant=tenant)
+                    history = [r.content for r in recents if getattr(r, "id", None) != episode.id]
+                content = getattr(episode, "content", "")
+                ep_id = getattr(episode, "id", "")
+                scores = await self._tagger.score(content, history)
+                await self._store.update_salience(ep_id, scores)
                 logger.info(
-                    "salience_scored",
-                    episode_id=job.episode_id,
+                    "salience_auto_drained",
+                    episode_id=ep_id,
                     combined=scores["combined"],
                 )
-            except Exception as exc:  # noqa: BLE001 — un job raté ne tue pas le worker
-                logger.error("salience_job_failed", episode_id=job.episode_id, error=str(exc))
-            finally:
-                self._queue.task_done()
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("salience_drain_skipped", error=str(exc))
+
+    async def _worker(self) -> None:
+        while True:
+            job: ScoringJob | None = None
+            try:
+                # Attend un job en mémoire avec un court timeout
+                job = await asyncio.wait_for(self._queue.get(), timeout=1.0)
+            except TimeoutError:
+                job = None
+            except asyncio.CancelledError:
+                break
+
+            if job is not None:
+                try:
+                    scores = await self._tagger.score(job.content, job.recent_history)
+                    await self._store.update_salience(job.episode_id, scores)
+                    logger.info(
+                        "salience_scored",
+                        episode_id=job.episode_id,
+                        combined=scores["combined"],
+                    )
+                except Exception as exc:  # noqa: BLE001 — un job raté ne tue pas le worker
+                    logger.error("salience_job_failed", episode_id=job.episode_id, error=str(exc))
+                finally:
+                    self._queue.task_done()
+            else:
+                # La queue mémoire est vide : dépile automatiquement les épisodes non scorés en base
+                await self._drain_unscored()

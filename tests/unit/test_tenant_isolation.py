@@ -213,3 +213,26 @@ async def test_defaut_est_tenant_personnel(
     facts = await semantic.get_current_facts()  # pas de tenant
     assert {f.object for f in facts} == {"Annecy"}
     assert all(f.tenant == "user" for f in facts)
+
+
+async def test_recherche_episodique_non_masquee_par_autre_tenant_plus_proche(
+    stores: tuple[EpisodicStore, SemanticStore],
+) -> None:
+    """Vérifie que sqlite-vec partitionne nativement par tenant dans episodes_vec.
+
+    Même si tenant A contient plus de KNN_CANDIDATES (50+) épisodes très proches
+    de la requête, la recherche dans tenant B ne doit JAMAIS être masquée.
+    """
+    episodic, _ = stores
+    # 60 épisodes dans TENANT_A (tous sur le même sujet que la requête)
+    for i in range(60):
+        await episodic.write(f"projet secret robotique numéro {i}", "user", tenant=TENANT_A)
+
+    # 1 seul épisode dans TENANT_B
+    target = await episodic.write("projet secret robotique chez atelios", "user", tenant=TENANT_B)
+
+    # Recherche dans TENANT_B : doit retourner l'épisode de TENANT_B sans être masqué
+    results = await episodic.search("projet secret robotique", k=10, tenant=TENANT_B)
+    assert len(results) == 1
+    assert results[0].episode.id == target.id
+    assert results[0].episode.tenant == TENANT_B

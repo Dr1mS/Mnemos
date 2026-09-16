@@ -54,6 +54,7 @@ EPISODIC_SCHEMA_SQL: list[str] = [
     """
     CREATE VIRTUAL TABLE episodes_vec USING vec0(
       episode_id      TEXT PRIMARY KEY,
+      tenant          TEXT,
       embedding       FLOAT[1024] distance_metric=cosine
     )
     """,
