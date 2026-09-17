@@ -21,3 +21,4 @@ Thumbs.db
 # private memory
 Adrien_memory_dump/
 backups/
+.worktrees/

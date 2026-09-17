@@ -61,6 +61,7 @@ select = ["E", "F", "I", "UP", "B", "SIM", "ASYNC"]
 "src/mnemos/cli.py" = ["B008"]
 # Benchmarks : chaînes markdown longues et stats disque synchrones
 "benchmarks/**" = ["E501", "ASYNC240"]
+"bench/**" = ["E501", "ASYNC240", "B008"]
 
 [tool.mypy]
 strict = true
