@@ -224,7 +224,12 @@ async def test_worker_rescore_les_episodes_non_scores(tmp_path) -> None:  # type
                 return _json.dumps(
                     {"surprise": 0.2, "arousal": 0.2, "self_ref": 0.9, "recurrence": 0.0}
                 )
-            return _json.dumps({"facts": [], "entities": []})
+            return _json.dumps({
+                "facts": [
+                    {"subject": "user", "predicate": "is_a", "object": "dev", "confidence": 0.9}
+                ],
+                "entities": [],
+            })
 
     clock = FixedClock(start_ms=1_782_727_200_000)
     settings = Settings(_env_file=None, DATA_DIR=tmp_path)

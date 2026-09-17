@@ -124,14 +124,21 @@ class ConsolidationWorker:
                     report.facts_superseded += 1
                 else:
                     report.facts_duplicate += 1
-            await self._episodic.mark_consolidated(episode.id)
-            report.consolidated += 1
-            logger.info(
-                "episode_consolidated",
-                episode_id=episode.id,
-                facts=len(extraction.facts),
-                entities=len(extraction.entities),
-            )
+            if extraction.facts:
+                await self._episodic.mark_consolidated(episode.id)
+                report.consolidated += 1
+                logger.info(
+                    "episode_consolidated",
+                    episode_id=episode.id,
+                    facts=len(extraction.facts),
+                    entities=len(extraction.entities),
+                )
+            else:
+                logger.info(
+                    "episode_unconsolidated_zero_facts",
+                    episode_id=episode.id,
+                    entities=len(extraction.entities),
+                )
         report.decay = await self._episodic.apply_decay()
         report.archive = await self._episodic.archive_old()
         self._write_last_run_marker()

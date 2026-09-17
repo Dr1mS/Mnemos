@@ -397,6 +397,7 @@ class EpisodicStore:
             Episode.archived == 0,
             Episode.decay_state < 0.1,
             Episode.consolidated_at.is_not(None),
+            Episode.salience < self._settings.SALIENCE_THRESHOLD_CONSOLIDATE,
         )
         rule2 = (
             Episode.archived == 0,
