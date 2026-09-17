@@ -88,6 +88,7 @@ class ConsolidationWorker:
                 current=episode.id,
                 eta_s=round(avg * (len(candidates) - i + 1)) if avg else None,
             )
+            await self._episodic.record_extraction_attempt(episode.id)
             t0 = time.monotonic()
             extraction = await self._extract_with_retry(
                 episode.id, episode.content, episode.role, episode.created_at,

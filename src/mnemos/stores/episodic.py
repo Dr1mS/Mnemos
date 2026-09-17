@@ -324,6 +324,7 @@ class EpisodicStore:
             select(Episode)
             .where(
                 Episode.consolidated_at.is_(None),
+                Episode.extraction_attempted_at.is_(None),
                 Episode.archived == 0,
                 Episode.salience > min_salience,
                 Episode.created_at <= cutoff,
@@ -337,13 +338,23 @@ class EpisodicStore:
             rows = await session.execute(stmt)
             return list(rows.scalars())
 
+    async def record_extraction_attempt(self, episode_id: str) -> None:
+        async with self._sessions() as session, session.begin():
+            await session.execute(
+                update(Episode)
+                .where(Episode.id == episode_id)
+                .values(extraction_attempted_at=self._clock.now_ms())
+            )
+
     async def mark_consolidated(self, episode_id: str, extraction_failed: bool = False) -> None:
+        now = self._clock.now_ms()
         async with self._sessions() as session, session.begin():
             await session.execute(
                 update(Episode)
                 .where(Episode.id == episode_id)
                 .values(
-                    consolidated_at=self._clock.now_ms(),
+                    consolidated_at=now,
+                    extraction_attempted_at=now,
                     extraction_failed=1 if extraction_failed else 0,
                 )
             )

@@ -90,6 +90,11 @@ async def test_zero_facts_extraction_leaves_episode_unconsolidated(tmp_path: Pat
     after_ep = await episodic.get_by_id(ep.id)
     assert after_ep is not None
     assert after_ep.consolidated_at is None, "consolidated_at doit rester NULL si 0 fait extrait"
+    assert after_ep.extraction_attempted_at is not None, "extraction_attempted_at doit être enregistré"
+
+    # Deuxième passage de consolidation : l'épisode ne doit PAS être re-traité
+    report2 = await worker.run_once()
+    assert report2.candidates == 0, "Un épisode déjà tenté ne doit pas être ré-extrait en boucle"
 
     await epi_engine.dispose()
     await sem_engine.dispose()

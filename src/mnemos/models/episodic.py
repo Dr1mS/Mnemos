@@ -40,6 +40,7 @@ EPISODIC_SCHEMA_SQL: list[str] = [
       decay_state       REAL NOT NULL DEFAULT 1.0,
       last_decayed_at   INTEGER,
       consolidated_at   INTEGER,
+      extraction_attempted_at INTEGER,
       extraction_failed INTEGER NOT NULL DEFAULT 0,
       archived          INTEGER NOT NULL DEFAULT 0,
       -- Refs
@@ -91,6 +92,7 @@ class Episode(Base):
     decay_state: Mapped[float] = mapped_column(default=1.0)
     last_decayed_at: Mapped[int | None]
     consolidated_at: Mapped[int | None]
+    extraction_attempted_at: Mapped[int | None]
     extraction_failed: Mapped[int] = mapped_column(default=0)
     archived: Mapped[int] = mapped_column(default=0)
     entity_refs: Mapped[str] = mapped_column(default="[]")
