@@ -227,6 +227,7 @@ class EpisodicStore:
         dense = await self._embedder.embed(query)
         query_sparse = sparse_encode(query, now)
 
+        knn_candidates = max(k * 2, KNN_CANDIDATES)
         async with self._sessions() as session:
             knn = await session.execute(
                 text(
@@ -235,7 +236,7 @@ class EpisodicStore:
                 ),
                 {
                     "emb": sqlite_vec.serialize_float32(dense),
-                    "k": KNN_CANDIDATES,
+                    "k": knn_candidates,
                     "tenant": tenant,
                 },
             )

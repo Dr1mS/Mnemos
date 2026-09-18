@@ -44,7 +44,9 @@ class AMLSearchRequest(BaseModel):
     query: str = Field(..., min_length=1, description="Question originale du benchmark")
     options: list[str] | None = Field(default=None, description="Options de QCM le cas échéant")
     user_id: str = Field(..., min_length=1, description="Périmètre d'isolation mémoire")
-    top_k: int = Field(default=100, ge=1, description="Nombre maximum de résultats demandés")
+    top_k: int = Field(
+        ..., ge=1, description="Nombre maximum de résultats demandés (Requis, formel = 100)"
+    )
 
 
 class AMLMemoryItem(BaseModel):

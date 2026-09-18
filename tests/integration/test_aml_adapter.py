@@ -224,6 +224,26 @@ async def test_aml_top_k_clamping(client: httpx.AsyncClient) -> None:
     )
     assert len(resp_200.json()["data"]) <= 100
 
+    # Vérification que top_k > 50 (ex: 60) fonctionne sans le plafond de 50
+    user_large = "user_large_topk"
+    messages_large = [
+        {"role": "user", "content": f"Élément {i} pour grand top_k"} for i in range(60)
+    ]
+    await client.post(
+        "/add",
+        json={
+            "request_id": "req_large",
+            "messages": messages_large,
+            "user_id": user_large,
+            "session_id": "sess_large",
+        },
+    )
+    resp_60 = await client.post(
+        "/search",
+        json={"query": "Élément grand top_k", "user_id": user_large, "top_k": 60},
+    )
+    assert len(resp_60.json()["data"]) == 60
+
 
 async def test_aml_auth_schemes(authed_client: httpx.AsyncClient) -> None:
     """L'authentification supporte Bearer, Token et X-API-Key."""
@@ -282,12 +302,26 @@ async def test_aml_validation_errors(client: httpx.AsyncClient) -> None:
     )
     assert resp_add.status_code == 422
 
-    # Search sans query
+    # Search sans query -> 422
     resp_search = await client.post(
         "/search",
         json={"user_id": "u1", "top_k": 10},
     )
     assert resp_search.status_code == 422
+
+    # Search sans top_k (requis par AML) -> 422
+    resp_search_no_topk = await client.post(
+        "/search",
+        json={"query": "Test query", "user_id": "u1"},
+    )
+    assert resp_search_no_topk.status_code == 422
+
+    # Search avec top_k <= 0 -> 422
+    resp_search_zero = await client.post(
+        "/search",
+        json={"query": "Test query", "user_id": "u1", "top_k": 0},
+    )
+    assert resp_search_zero.status_code == 422
 
 
 async def test_aml_add_multi_message_batch(client: httpx.AsyncClient) -> None:
