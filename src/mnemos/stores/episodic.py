@@ -74,6 +74,16 @@ class ArchiveReport:
 
 
 @dataclass(frozen=True)
+class BatchEpisodeItem:
+    content: str
+    role: str
+    session_id: str | None = None
+    salience_scores: SalienceScores | None = None
+    tenant: str = DEFAULT_TENANT
+    created_at: int | None = None
+
+
+@dataclass(frozen=True)
 class ArchiveDumpReport:
     dumped: int
     path: str | None
@@ -103,40 +113,89 @@ class EpisodicStore:
         tenant: str = DEFAULT_TENANT,
         created_at: int | None = None,
     ) -> Episode:
-        now = created_at if created_at is not None else self._clock.now_ms()
-        dense = await self._embedder.embed(content)
-        sparse = sparse_encode(content, now)
-        episode = Episode(
-            id=str(ULID()),
-            tenant=tenant,
-            created_at=now,
-            session_id=session_id,
-            role=role,
-            content=content,
-            **(
-                {
-                    "salience": salience_scores["combined"],
-                    "surprise": salience_scores["surprise"],
-                    "arousal": salience_scores["arousal"],
-                    "self_ref": salience_scores["self_ref"],
-                    "recurrence": salience_scores["recurrence"],
-                }
-                if salience_scores is not None
-                else {}
-            ),
-        )
-        async with self._sessions() as session, session.begin():
-            session.add(episode)
-            session.add(EpisodeSparse(episode_id=episode.id, sparse_bits=sparse))
-            await session.execute(
-                text(
-                    "INSERT INTO episodes_vec(episode_id, tenant, embedding) "
-                    "VALUES (:id, :tenant, :emb)"
-                ),
-                {"id": episode.id, "tenant": tenant, "emb": sqlite_vec.serialize_float32(dense)},
+        items = [
+            BatchEpisodeItem(
+                content=content,
+                role=role,
+                session_id=session_id,
+                salience_scores=salience_scores,
+                tenant=tenant,
+                created_at=created_at,
             )
+        ]
+        episodes = await self.write_batch(items)
+        episode = episodes[0]
         logger.info("episode_written", episode_id=episode.id, session_id=session_id, role=role)
         return episode
+
+    async def write_batch(
+        self,
+        items: list[BatchEpisodeItem],
+    ) -> list[Episode]:
+        """Écrit un lot d'épisodes de manière synchrone et atomique (§13.3).
+
+        Effectue un batch embedding unique via le DenseEmbedder (un seul appel
+        HTTP groupé à Ollama /api/embed) et insère tous les épisodes, bits
+        épars et vecteurs au sein d'une seule transaction SQLite (session.begin()).
+        """
+        if not items:
+            return []
+
+        texts = [it.content for it in items]
+        dense_vectors = await self._embedder.embed_batch(texts)
+
+        records: list[tuple[Episode, EpisodeSparse, dict[str, Any]]] = []
+        now_default = self._clock.now_ms()
+
+        for it, dense in zip(items, dense_vectors, strict=True):
+            now = it.created_at if it.created_at is not None else now_default
+            sparse = sparse_encode(it.content, now)
+            ep = Episode(
+                id=str(ULID()),
+                tenant=it.tenant,
+                created_at=now,
+                session_id=it.session_id,
+                role=it.role,
+                content=it.content,
+                **(
+                    {
+                        "salience": it.salience_scores["combined"],
+                        "surprise": it.salience_scores["surprise"],
+                        "arousal": it.salience_scores["arousal"],
+                        "self_ref": it.salience_scores["self_ref"],
+                        "recurrence": it.salience_scores["recurrence"],
+                    }
+                    if it.salience_scores is not None
+                    else {}
+                ),
+            )
+            sp = EpisodeSparse(episode_id=ep.id, sparse_bits=sparse)
+            vec_param = {
+                "id": ep.id,
+                "tenant": it.tenant,
+                "emb": sqlite_vec.serialize_float32(dense),
+            }
+            records.append((ep, sp, vec_param))
+
+        async with self._sessions() as session, session.begin():
+            session.add_all([r[0] for r in records])
+            session.add_all([r[1] for r in records])
+            for _, _, vec_param in records:
+                await session.execute(
+                    text(
+                        "INSERT INTO episodes_vec(episode_id, tenant, embedding) "
+                        "VALUES (:id, :tenant, :emb)"
+                    ),
+                    vec_param,
+                )
+
+        episodes = [r[0] for r in records]
+        logger.info(
+            "episodes_batch_written",
+            count=len(episodes),
+            tenant=items[0].tenant if items else DEFAULT_TENANT,
+        )
+        return episodes
 
     async def update_salience(self, episode_id: str, scores: SalienceScores) -> None:
         """Mise à jour asynchrone post-scoring (§13.3) — hors write path."""

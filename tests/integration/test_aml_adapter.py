@@ -288,3 +288,45 @@ async def test_aml_validation_errors(client: httpx.AsyncClient) -> None:
         json={"user_id": "u1", "top_k": 10},
     )
     assert resp_search.status_code == 422
+
+
+async def test_aml_add_multi_message_batch(client: httpx.AsyncClient) -> None:
+    """POST /add avec un lot de messages (chunking standard AML) persiste tous les messages."""
+    n_messages = 10
+    messages = [
+        {
+            "role": "user" if i % 2 == 0 else "assistant",
+            "content": f"Tour de parole numéro {i} dans la conversation.",
+            "timestamp": 1704067200000 + (i * 10000),
+        }
+        for i in range(n_messages)
+    ]
+    payload = {
+        "request_id": "eval:run_batch:chunk_01",
+        "user_id": "eval:run_batch:user_multi",
+        "session_id": "eval:run_batch:session_01",
+        "messages": messages,
+    }
+
+    resp = await client.post("/add", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["success"] is True
+    assert data["request_id"] == payload["request_id"]
+    assert data["user_id"] == payload["user_id"]
+    assert data["session_id"] == payload["session_id"]
+
+    # Vérification que chaque message est immédiatement cherchable
+    search_resp = await client.post(
+        "/search",
+        json={
+            "query": "Tour de parole numéro 7",
+            "user_id": "eval:run_batch:user_multi",
+            "top_k": 10,
+        },
+    )
+    assert search_resp.status_code == 200
+    search_data = search_resp.json()
+    assert len(search_data["data"]) >= 1
+    contents = [item["content"] for item in search_data["data"]]
+    assert any("numéro 7" in c for c in contents)

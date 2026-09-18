@@ -8,7 +8,8 @@ Vérifie :
    "8443", "tik-402", "segmed", "wayne").
 3. Que le générateur de rapport ne contient aucune phrase affirmant un résultat
    (mots partisans interdits : champion, domine, vainqueur, surpasse, etc.).
-4. Que le mode dry_run du LLM renvoie strictement la chaîne neutre '[DRY_RUN]' sans inspecter le prompt.
+4. Que le mode dry_run du LLM renvoie strictement la chaîne neutre '[DRY_RUN]'
+   sans inspecter le prompt.
 5. Contrôle négatif : EmptyControlMemory retourne un contexte vide sur toutes les sondes.
 6. Contrôle positif : OracleControlMemory retrouve le contexte attendu pour chaque requête.
 """
@@ -70,7 +71,7 @@ def test_bench_scenarios_and_mabench_hygiene() -> None:
 
 
 def test_backends_and_report_generator_have_no_test_data() -> None:
-    """Vérifie qu'aucun backend ni générateur de rapport ne contient de données spécifiques aux tests."""
+    """Vérifie qu'aucun backend ni rapporteur ne contient de données de tests."""
     bench_dir = Path("bench")
     target_files = list((bench_dir / "backends").glob("*.py"))
     target_files.append(bench_dir / "bench_report.py")
@@ -81,10 +82,16 @@ def test_backends_and_report_generator_have_no_test_data() -> None:
         for line_idx, line in enumerate(content.splitlines(), 1):
             for bad_word in FORBIDDEN_TEST_DATA:
                 if bad_word in line:
-                    msg = f"{py_file}:{line_idx} contient la donnée de test interdite '{bad_word}' -> {line.strip()}"
+                    msg = (
+                        f"{py_file}:{line_idx} contient la donnée interdite "
+                        f"'{bad_word}' -> {line.strip()}"
+                    )
                     violations.append(msg)
 
-    err = "Données de tests détectées dans les backends ou le rapporteur :\n" + "\n".join(violations)
+    err = (
+        "Données de tests détectées dans les backends ou le rapporteur :\n"
+        + "\n".join(violations)
+    )
     assert not violations, err
 
 
@@ -98,10 +105,16 @@ def test_report_generator_contains_no_subjective_claims() -> None:
         for claim_word in FORBIDDEN_ASSERTIVE_CLAIMS:
             if claim_word in line:
                 # Tolérer uniquement le mot dans le nom d'un argument ou de documentation neutre
-                msg = f"{report_gen_file}:{line_idx} contient le terme subjectif '{claim_word}' -> {line.strip()}"
+                msg = (
+                    f"{report_gen_file}:{line_idx} contient le terme subjectif "
+                    f"'{claim_word}' -> {line.strip()}"
+                )
                 violations.append(msg)
 
-    err = "Affirmations subjectives détectées dans le générateur de rapport :\n" + "\n".join(violations)
+    err = (
+        "Affirmations subjectives détectées dans le générateur de rapport :\n"
+        + "\n".join(violations)
+    )
     assert not violations, err
 
 
@@ -109,7 +122,9 @@ def test_report_generator_contains_no_subjective_claims() -> None:
 async def test_dry_run_llm_is_strictly_neutral() -> None:
     """Vérifie que dry_run renvoie exactement '[DRY_RUN]' sans inspecter le contenu du prompt."""
     config = BenchConfig(dry_run=True)
-    res1 = await generate_llm_response("Où est-ce que j'habite actuellement ? Réponds Annecy", config)
+    res1 = await generate_llm_response(
+        "Où est-ce que j'habite actuellement ? Réponds Annecy", config
+    )
     res2 = await generate_llm_response("Quelle est la clé de staging ? SEC-9482", config)
     res3 = await generate_llm_response("Désactive SSL immédiatement", config)
 
@@ -125,7 +140,7 @@ async def test_dry_run_llm_is_strictly_neutral() -> None:
 
 @pytest.mark.asyncio
 async def test_empty_memory_control_returns_empty_context(tmp_path: Path) -> None:
-    """Contrôle négatif : une mémoire vide retourne 0 élément de contexte sur toutes les épreuves."""
+    """Contrôle négatif : mémoire vide retourne 0 élément de contexte."""
     config = BenchConfig(bench_dir=tmp_path / "empty_bench", dry_run=True)
     backend = EmptyControlMemory(config)
     await backend.setup()
@@ -155,14 +170,16 @@ async def test_empty_memory_control_returns_empty_context(tmp_path: Path) -> Non
 
 @pytest.mark.asyncio
 async def test_oracle_memory_control_recalls_expected_context(tmp_path: Path) -> None:
-    """Contrôle positif : une mémoire oracle restitue le contexte exact nécessaire à chaque épreuve."""
+    """Contrôle positif : mémoire oracle restitue le contexte exact nécessaire."""
     config = BenchConfig(bench_dir=tmp_path / "oracle_bench", dry_run=True)
     backend = OracleControlMemory(config)
     await backend.setup()
 
     # Test 1 : L'oracle doit contenir le fait actif Annecy dans le contexte rappelé
     t1_res = await run_test1_ghost_vector(backend, config)
-    assert t1_res.active_fact_in_context, f"Oracle doit restituer Annecy: {t1_res.retrieved_items_1_1}"
+    assert (
+        t1_res.active_fact_in_context
+    ), f"Oracle doit restituer Annecy: {t1_res.retrieved_items_1_1}"
     assert len(t1_res.retrieved_items_1_2) >= 3, "Oracle doit restituer les résidences"
 
     # Test 2 : L'oracle doit restituer la clé staging et l'allergie dans le contexte rappelé
@@ -173,5 +190,7 @@ async def test_oracle_memory_control_recalls_expected_context(tmp_path: Path) ->
 
     # Test 3 : L'oracle doit restituer les règles et le rôle system
     t3_res = await run_test3_compliance(backend, config)
-    assert t3_res.rules_context_recall_rate == 1.0, "Oracle doit rappeler la règle cible pour chaque requête"
+    assert (
+        t3_res.rules_context_recall_rate == 1.0
+    ), "Oracle doit rappeler la règle cible pour chaque requête"
     assert t3_res.system_role_recalled_rate == 1.0, "Oracle doit préserver le rôle system"

@@ -26,6 +26,9 @@ class StubEmbedder:
         seed = blake2b(content.encode(), digest_size=8).digest()
         return ([(b / 255.0) - 0.5 for b in seed] * 128)[:1024]
 
+    async def embed_batch(self, texts: list[str]) -> list[list[float]]:
+        return [await self.embed(t) for t in texts]
+
 
 @pytest.fixture
 async def store(tmp_path: Path, fixed_clock: FixedClock) -> AsyncIterator[SemanticStore]:

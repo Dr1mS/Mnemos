@@ -17,7 +17,7 @@ from mnemos.clock import FixedClock
 from mnemos.config import Settings
 from mnemos.models.base import make_async_engine
 from mnemos.models.episodic import EPISODIC_SCHEMA_SQL
-from mnemos.stores.episodic import DAY_MS, EpisodicStore
+from mnemos.stores.episodic import DAY_MS, BatchEpisodeItem, EpisodicStore
 from mnemos.tagger.salience import SalienceScores
 
 
@@ -28,6 +28,9 @@ class StubEmbedder:
         seed = blake2b(content.encode(), digest_size=8).digest()
         base = [(b / 255.0) - 0.5 for b in seed]
         return (base * 128)[:1024]
+
+    async def embed_batch(self, texts: list[str]) -> list[list[float]]:
+        return [await self.embed(t) for t in texts]
 
 
 def scores(combined: float, self_ref: float = 0.5) -> SalienceScores:
@@ -235,3 +238,34 @@ async def test_update_salience_async(store: EpisodicStore) -> None:
     assert got is not None
     assert got.salience == 0.85
     assert got.self_ref == 0.9
+
+
+async def test_write_batch(store: EpisodicStore, fixed_clock: FixedClock) -> None:
+    items = [
+        BatchEpisodeItem(
+            content=f"Message {i} de la session de test",
+            role="user" if i % 2 == 0 else "assistant",
+            session_id="s_batch",
+            created_at=fixed_clock.now_ms() + (i * 1000),
+        )
+        for i in range(5)
+    ]
+    episodes = await store.write_batch(items)
+    assert len(episodes) == 5
+
+    for i, ep in enumerate(episodes):
+        assert ep.content == f"Message {i} de la session de test"
+        assert ep.role == ("user" if i % 2 == 0 else "assistant")
+        assert ep.created_at == fixed_clock.now_ms() + (i * 1000)
+        got = await store.get_by_id(ep.id)
+        assert got is not None
+        assert got.content == ep.content
+
+    # Recherche vectorielle et hybride sur un élément du lot
+    results = await store.search("Message 3", k=5, session_id="s_batch")
+    assert any("Message 3" in r.episode.content for r in results)
+
+
+async def test_write_batch_empty(store: EpisodicStore) -> None:
+    episodes = await store.write_batch([])
+    assert episodes == []

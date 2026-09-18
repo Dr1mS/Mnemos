@@ -17,7 +17,7 @@ from mnemos.config import Settings
 from mnemos.consolidation.extractor import FactExtractor
 from mnemos.consolidation.worker import ConsolidationWorker
 from mnemos.models.base import make_async_engine
-from mnemos.models.episodic import EPISODIC_SCHEMA_SQL, Episode
+from mnemos.models.episodic import EPISODIC_SCHEMA_SQL
 from mnemos.models.semantic import SEMANTIC_SCHEMA_SQL
 from mnemos.stores.episodic import EpisodicStore
 from mnemos.stores.semantic import SemanticStore
@@ -27,6 +27,9 @@ from mnemos.tagger.salience import SalienceScores
 class StubEmbedder:
     async def embed(self, content: str) -> list[float]:
         return [0.0] * 1024
+
+    async def embed_batch(self, texts: list[str]) -> list[list[float]]:
+        return [[0.0] * 1024 for _ in texts]
 
 
 class StubManager:
@@ -90,7 +93,9 @@ async def test_zero_facts_extraction_leaves_episode_unconsolidated(tmp_path: Pat
     after_ep = await episodic.get_by_id(ep.id)
     assert after_ep is not None
     assert after_ep.consolidated_at is None, "consolidated_at doit rester NULL si 0 fait extrait"
-    assert after_ep.extraction_attempted_at is not None, "extraction_attempted_at doit être enregistré"
+    assert (
+        after_ep.extraction_attempted_at is not None
+    ), "extraction_attempted_at doit être enregistré"
 
     # Deuxième passage de consolidation : l'épisode ne doit PAS être re-traité
     report2 = await worker.run_once()
@@ -131,7 +136,9 @@ async def test_archive_old_protects_high_salience_episodes(tmp_path: Path) -> No
     async with episodic._sessions() as session, session.begin():
         for ep_id in [ep_high.id, ep_low.id]:
             await session.execute(
-                text("UPDATE episodes SET decay_state = 0.05, consolidated_at = :now WHERE id = :id"),
+                text(
+                    "UPDATE episodes SET decay_state = 0.05, consolidated_at = :now WHERE id = :id"
+                ),
                 {"now": clock.now_ms(), "id": ep_id},
             )
 
@@ -146,6 +153,8 @@ async def test_archive_old_protects_high_salience_episodes(tmp_path: Path) -> No
 
     stored_low = await episodic.get_by_id(ep_low.id)
     assert stored_low is not None
-    assert stored_low.archived == 1, "L'épisode à basse saillance consolidé et decayé doit être archivé"
+    assert (
+        stored_low.archived == 1
+    ), "L'épisode à basse saillance consolidé et decayé doit être archivé"
 
     await epi_engine.dispose()

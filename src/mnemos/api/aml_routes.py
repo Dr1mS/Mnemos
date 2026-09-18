@@ -28,7 +28,7 @@ from mnemos.api.deps import (
     get_wm,
     require_api_key,
 )
-from mnemos.stores.episodic import EpisodicStore
+from mnemos.stores.episodic import BatchEpisodeItem, EpisodicStore
 from mnemos.stores.semantic import SemanticStore
 from mnemos.stores.working import WorkingMemoryRegistry
 from mnemos.tagger.salience import ScoringJob, ScoringQueue
@@ -63,38 +63,43 @@ async def aml_add(
     L'écriture est persistée en SQLite (WAL + sqlite-vec) avant de renvoyer
     HTTP 200 pour garantir que le souvenir est immédiatement cherchable.
     Le périmètre user_id AML correspond directement au tenant Mnemos.
+    Optimisé via batch embedding vectoriel et transaction atomique unique.
     """
     tenant = payload.user_id
     session_id = payload.session_id
 
-    for msg in payload.messages:
-        # Récupération de l'historique récent pour le contexte de saillance
-        history = [
-            e.content
-            for e in await store.list_recent(session_id, n=5, tenant=tenant)
-        ]
+    # Récupération initiale de l'historique récent avant ce lot
+    recent_episodes = await store.list_recent(session_id, n=5, tenant=tenant)
+    history: list[str] = [e.content for e in recent_episodes]
 
-        # Écriture synchrone avec embedding et horodatage préservé
-        episode = await store.write(
+    # Préparation du lot d'épisodes
+    items = [
+        BatchEpisodeItem(
             content=msg.content,
             role=msg.role,
             session_id=session_id,
             tenant=tenant,
             created_at=msg.timestamp,
         )
+        for msg in payload.messages
+    ]
 
-        # File de scoring de saillance en tâche de fond
+    # Écriture synchrone groupée (batch embedding Ollama + transaction atomique SQLite)
+    episodes = await store.write_batch(items)
+
+    # Post-traitement : mémoire de travail et file de saillance asynchrone
+    wm_session = wm.get_or_create(session_id, tenant=tenant)
+    for episode in episodes:
         queue.enqueue(
             ScoringJob(
                 episode_id=episode.id,
                 content=episode.content,
-                recent_history=history,
+                recent_history=list(history[-5:]),
                 tenant=tenant,
             )
         )
-
-        # Enregistrement dans la mémoire de travail de la session
-        wm.get_or_create(session_id, tenant=tenant).push(
+        history.append(episode.content)
+        wm_session.push(
             episode.content, episode.role, episode.created_at
         )
 
