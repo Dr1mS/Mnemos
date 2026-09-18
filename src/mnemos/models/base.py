@@ -32,6 +32,7 @@ def make_async_engine(db_path: Path | str) -> AsyncEngine:
         cursor = dbapi_conn.cursor()
         cursor.execute("PRAGMA journal_mode=WAL")
         cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA busy_timeout = 30000")
         cursor.close()
 
     return engine
