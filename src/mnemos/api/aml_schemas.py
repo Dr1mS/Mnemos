@@ -7,45 +7,92 @@ Conforme au contrat officiel :
 
 from __future__ import annotations
 
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
 class AMLMessage(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
-    role: str = Field(..., min_length=1, description="user ou assistant")
-    content: str = Field(..., min_length=1, description="Contenu textuel du souvenir")
-    timestamp: int | None = Field(default=None, description="Timestamp Unix en millisecondes")
+    role: str = Field(..., min_length=1, description="The message role is user or assistant.")
+    content: str | list[dict[str, Any]] = Field(
+        ...,
+        description=(
+            "A string for Textual and Coding, or an ordered ContentPart[] array for Multimodal."
+        ),
+    )
+    timestamp: int | None = Field(
+        default=None, description="Sent when the source has a timestamp, in Unix milliseconds."
+    )
 
 
 class AMLAddRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
-    request_id: str = Field(..., min_length=1, description="Identifiant logique de l'écriture")
-    messages: list[AMLMessage] = Field(
-        ..., min_length=1, description="Messages dans l'ordre source"
+    request_id: str = Field(
+        ...,
+        min_length=1,
+        description=(
+            "Identifier for this logical write. "
+            "Retries keep the same value; echo it in the response."
+        ),
     )
-    user_id: str = Field(..., min_length=1, description="Périmètre d'isolation mémoire")
-    session_id: str = Field(..., min_length=1, description="Identifiant de la session source")
+    messages: list[AMLMessage] = Field(
+        ...,
+        min_length=1,
+        description="Messages in source order. Store and process them in this order.",
+    )
+    user_id: str = Field(
+        ...,
+        min_length=1,
+        description="Memory isolation scope; later Search requests use the same value.",
+    )
+    session_id: str = Field(
+        ..., min_length=1, description="Identifier for the source conversation or session."
+    )
 
 
 class AMLAddResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    success: bool = Field(default=True, description="True après persistance synchrone")
-    request_id: str = Field(..., description="request_id exactement répercuté")
-    user_id: str = Field(..., description="user_id exactement répercuté")
-    session_id: str = Field(..., description="session_id exactement répercuté")
+    success: bool = Field(
+        default=True,
+        description=(
+            "Must be true after the messages are durably stored and immediately searchable."
+        ),
+    )
+    request_id: str = Field(..., description="Exact request_id received in the Add request.")
+    user_id: str = Field(..., description="Exact user_id received in the Add request.")
+    session_id: str = Field(..., description="Exact session_id received in the Add request.")
 
 
 class AMLSearchRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
-    query: str = Field(..., min_length=1, description="Question originale du benchmark")
-    options: list[str] | None = Field(default=None, description="Options de QCM le cas échéant")
-    user_id: str = Field(..., min_length=1, description="Périmètre d'isolation mémoire")
+    query: str | list[dict[str, Any]] = Field(
+        ...,
+        description=(
+            "The original benchmark question: a string for Textual and Coding, "
+            "or ordered ContentPart[] for Multimodal."
+        ),
+    )
+    options: list[str] | None = Field(
+        default=None,
+        description=(
+            "Sent at the top level for multiple-choice questions, including Streaming; "
+            "absent for open questions. Never contains the gold answer."
+        ),
+    )
+    user_id: str = Field(
+        ...,
+        min_length=1,
+        description="The same memory isolation scope supplied in the corresponding Add request.",
+    )
     top_k: int = Field(
-        ..., ge=1, description="Nombre maximum de résultats demandés (Requis, formel = 100)"
+        ...,
+        ge=1,
+        description="Maximum result count; formal external evaluations use 100.",
     )
 
 

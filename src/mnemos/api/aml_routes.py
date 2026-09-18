@@ -9,7 +9,7 @@ Fournit les endpoints conformes au contrat de la compétition :
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
 
@@ -46,6 +46,19 @@ def _ts_to_iso(ts_ms: int) -> str:
     return datetime.fromtimestamp(ts_ms / 1000.0, tz=UTC).isoformat()
 
 
+def _extract_text(val: str | list[dict[str, Any]]) -> str:
+    """Extrait le texte brut d'une chaîne ou d'une liste ordonnée de ContentPart (multimodal)."""
+    if isinstance(val, str):
+        return val
+    parts = [
+        str(p.get("text", ""))
+        for p in val
+        if isinstance(p, dict) and p.get("type") == "text"
+    ]
+    text_content = " ".join(filter(None, parts))
+    return text_content if text_content else str(val)
+
+
 @aml_router.post(
     "/add", response_model=AMLAddResponse, dependencies=[Depends(require_api_key)]
 )
@@ -75,7 +88,7 @@ async def aml_add(
     # Préparation du lot d'épisodes
     items = [
         BatchEpisodeItem(
-            content=msg.content,
+            content=_extract_text(msg.content),
             role=msg.role,
             session_id=session_id,
             tenant=tenant,
@@ -131,12 +144,13 @@ async def aml_search(
     """
     tenant = payload.user_id
     top_k = min(payload.top_k, 100)
+    query_str = _extract_text(payload.query)
 
     # 1. Recherche sémantique des faits actifs
-    facts = await semantic.search_facts(payload.query, k=top_k, tenant=tenant)
+    facts = await semantic.search_facts(query_str, k=top_k, tenant=tenant)
 
     # 2. Recherche épisodique (hybride dense + sparse + récence)
-    episodes = await store.search(payload.query, k=top_k, tenant=tenant)
+    episodes = await store.search(query_str, k=top_k, tenant=tenant)
 
     items: list[AMLMemoryItem] = []
     seen_contents: set[str] = set()

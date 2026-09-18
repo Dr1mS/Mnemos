@@ -364,3 +364,52 @@ async def test_aml_add_multi_message_batch(client: httpx.AsyncClient) -> None:
     assert len(search_data["data"]) >= 1
     contents = [item["content"] for item in search_data["data"]]
     assert any("numéro 7" in c for c in contents)
+
+
+async def test_aml_multimodal_content_parts_support(client: httpx.AsyncClient) -> None:
+    """Vérifie la robustesse face aux tableaux de ContentPart (multimodal) pour Add et Search."""
+    user_id = "user_mm_support"
+    add_payload = {
+        "request_id": "req_mm_01",
+        "user_id": user_id,
+        "session_id": "sess_mm_01",
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "Photo du chat Yuzu à Annecy"},
+                    {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,mock"}},
+                ],
+            }
+        ],
+    }
+    resp_add = await client.post("/add", json=add_payload)
+    assert resp_add.status_code == 200
+
+    # Search avec query sous forme de ContentPart[] et options conditionnelles
+    search_payload = {
+        "query": [
+            {"type": "text", "text": "Comment s'appelle le chat ?"},
+            {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,mock"}},
+        ],
+        "options": ["A. Yuzu", "B. Félix"],
+        "user_id": user_id,
+        "top_k": 5,
+    }
+    resp_search = await client.post("/search", json=search_payload)
+    assert resp_search.status_code == 200
+    assert len(resp_search.json()["data"]) >= 1
+    assert any("Yuzu" in item["content"] for item in resp_search.json()["data"])
+
+    # Search sans options (question ouverte) reste valide
+    search_open = {
+        "query": "Chat Yuzu",
+        "user_id": user_id,
+        "top_k": 5,
+    }
+    resp_open = await client.post("/search", json=search_open)
+    assert resp_open.status_code == 200
+
+    # user_id manquant -> 422
+    resp_no_uid = await client.post("/search", json={"query": "Chat Yuzu", "top_k": 5})
+    assert resp_no_uid.status_code == 422
