@@ -10,7 +10,8 @@ dist/
 .env
 
 # Data (gitignored per spec §3)
-data/
+/data/
+!bench/data/
 
 # IDE / OS
 .vscode/
