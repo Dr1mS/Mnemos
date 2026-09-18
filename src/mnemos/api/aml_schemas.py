@@ -23,7 +23,11 @@ class AMLMessage(BaseModel):
         ),
     )
     timestamp: int | None = Field(
-        default=None, description="Sent when the source has a timestamp, in Unix milliseconds."
+        default=None,
+        description=(
+            "Sent when the source has a timestamp, in Unix milliseconds. "
+            "Chunking does not change its value or message order."
+        ),
     )
 
 
@@ -57,7 +61,7 @@ class AMLAddResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     success: bool = Field(
-        default=True,
+        ...,
         description=(
             "Must be true after the messages are durably stored and immediately searchable."
         ),
