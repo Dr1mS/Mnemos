@@ -42,8 +42,8 @@ QueueDep = Annotated[ScoringQueue, Depends(get_queue)]
 
 
 def _ts_to_iso(ts_ms: int) -> str:
-    """Convertit un timestamp en millisecondes en chaîne ISO 8601 UTC."""
-    return datetime.fromtimestamp(ts_ms / 1000.0, tz=UTC).isoformat()
+    """Convertit un timestamp en millisecondes en chaîne ISO 8601 UTC avec suffixe Z."""
+    return datetime.fromtimestamp(ts_ms / 1000.0, tz=UTC).isoformat().replace("+00:00", "Z")
 
 
 def _extract_text(val: str | list[dict[str, Any]]) -> str:

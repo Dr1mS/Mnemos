@@ -103,15 +103,29 @@ class AMLSearchRequest(BaseModel):
 class AMLMemoryItem(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    id: str = Field(..., min_length=1, description="Identifiant stable du souvenir")
-    content: str = Field(..., min_length=1, description="Texte de la preuve de mémoire")
-    score: float | None = Field(default=None, description="Score de pertinence numérique")
-    created_at: str | None = Field(default=None, description="Horodatage de persistance ou source")
+    id: str = Field(..., min_length=1, description="Stable identifier for each returned memory.")
+    content: str | list[dict[str, Any]] = Field(
+        ...,
+        description=(
+            "Non-empty string for Textual and Coding, or ordered ContentPart[] for Multimodal; "
+            "preserved for audit and passed to Answer in returned order."
+        ),
+    )
+    score: float | None = Field(
+        default=None,
+        description="Numeric relevance score. Higher values must indicate greater relevance.",
+    )
+    created_at: str | None = Field(
+        default=None, description="Source or persistence timestamp for the memory."
+    )
 
 
 class AMLSearchResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     data: list[AMLMemoryItem] = Field(
-        default_factory=list, description="Mémoires ordonnées par pertinence"
+        ...,
+        description=(
+            "Array in retrieval rank order. Return [] when there are no results; do not omit data."
+        ),
     )
