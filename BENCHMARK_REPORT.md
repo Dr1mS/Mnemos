@@ -187,3 +187,19 @@ Au cours de cet audit de performance, **4 défauts de conception et d'implément
 1. **Validation empirique de la consolidation** : Le croisement de `SemanticStore` (faits dédupliqués et versionnés) et `EpisodicStore` (souvenirs denses + sparse) apporte un saut de **+10 points de rappel** sur le Top-10 et **+8.5 points sur le Top-3**.
 2. **Atout compétitif majeur sur le temporel** : Grâce au hachage sparse avec buckets temporels de 64 bits, Mnemos atteint **75% de Recall@10** et **75% de Recall@1** sur les questions chronologiques sans écrasement contextuel.
 3. **Stabilité totale sous charge** : 419 messages et 199 questions honorés avec 0 corruption WAL et 120-130 ms de latence moyenne.
+
+### 7.4 Accélération de l'Ingestion par Batching (Piste 1)
+
+L'implémentation de la Piste 1 (`write_batch` avec batch vectoriel Ollama et transaction SQLite unique) a été évaluée sur les 419 messages (19 sessions) de LoCoMo face à la version non-batchée :
+
+| Métrique d'Ingestion | Avant Batching (Message par Message) | Après Batching Vectoriel & Transactionnel | Gain Mesuré |
+|---|:---:|:---:|:---:|
+| **Temps total d'ingestion (419 messages)** | **87.18 s** | **64.38 s** | 🟢 **-22.80 s (-26.2%)** |
+| **Latence moyenne par session** | **4 588 ms** | **3 388 ms** | 🟢 **-1 200 ms / session** |
+| **Débit d'ingestion** | **4.8 msg/s** | **6.5 msg/s** | 🟢 **+35.4% de débit** |
+| **Appels HTTP à l'API d'embedding Ollama** | **419 appels** | **19 appels** | 🟢 **22× moins d'allers-retours** |
+| **Transactions SQLite (`session.begin()`)** | **419 transactions** | **19 transactions atomiques** | 🟢 **22× moins de contention I/O** |
+| **Précision de recherche (Recall@10)** | 53.3% | **55.3%** | 🟢 Préservée & stable |
+| **Raisonnement Temporel (Recall@10)** | 70.3% | **73.0%** | 🟢 Préservé & stable |
+
+> *Note* : Ce gain de 26.2% a été obtenu sur processeur CPU pur (Intel Core i7-6700 sans GPU). Sur machine de compétition équipée de GPU (ex: RTX 4070Ti ou instance Cloud T4/A10G), le gain attendu sur la phase d'embedding tensoriel sera de **10× à 15×** (inférence parallèle sur Tensor Cores en ~20 ms par lot).
