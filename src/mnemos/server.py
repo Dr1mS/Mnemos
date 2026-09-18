@@ -6,8 +6,9 @@ s'ils sont déjà posés sur app.state (injection de doubles par les tests).
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 
 from fastapi import FastAPI
 
@@ -31,6 +32,30 @@ from mnemos.stores.working import WorkingMemoryRegistry
 from mnemos.tagger.salience import SalienceTagger, ScoringQueue
 
 logger = get_logger(__name__)
+
+
+async def _consolidation_loop(
+    worker: ConsolidationWorker,
+    interval_s: float,
+) -> None:
+    """Tâche d'arrière-plan exécutant périodiquement la consolidation cognitive."""
+    logger.info("consolidation_loop_started", interval_s=interval_s)
+    while True:
+        try:
+            await asyncio.sleep(interval_s)
+            report = await worker.run_once()
+            if report.candidates > 0:
+                logger.info(
+                    "consolidation_cycle_complete",
+                    candidates=report.candidates,
+                    facts_inserted=report.facts_inserted,
+                    entities=report.entities_upserted,
+                )
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            logger.warning("consolidation_loop_error", error=str(e))
+    logger.info("consolidation_loop_stopped")
 
 
 @asynccontextmanager
@@ -75,9 +100,19 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
             maxsize=settings.SALIENCE_QUEUE_MAXSIZE,
             workers=settings.SALIENCE_QUEUE_WORKERS,
         )
+    consolidation_task: asyncio.Task[None] | None = None
+    if settings.CONSOLIDATION_AUTO:
+        consolidation_task = asyncio.create_task(
+            _consolidation_loop(state.worker, settings.CONSOLIDATION_INTERVAL_SECONDS),
+            name="consolidation-worker-loop",
+        )
     await state.queue.start()
     logger.info("server_started", host=settings.API_HOST, port=settings.API_PORT)
     yield
+    if consolidation_task is not None:
+        consolidation_task.cancel()
+        with suppress(asyncio.CancelledError):
+            await consolidation_task
     await state.queue.stop()
     if owns_engine:
         await state.engine.dispose()

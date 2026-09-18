@@ -88,6 +88,11 @@ ollama serve
    SALIENCE_MODEL=qwen2.5:3b
    EXTRACTION_MODEL=qwen2.5:3b
    LLM_THINK=false
+
+   # Consolidation Cognitive en continu (Essentiel pour l'Arena AML)
+   CONSOLIDATION_AUTO=true
+   CONSOLIDATION_INTERVAL_SECONDS=5.0
+   CONSOLIDATION_DELAY_HOURS=0.0
    ```
 
 ---

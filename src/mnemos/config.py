@@ -54,6 +54,8 @@ class Settings(BaseSettings):
     EPISODIC_RETENTION_DAYS: int = 90
 
     # Consolidation worker
+    CONSOLIDATION_AUTO: bool = True
+    CONSOLIDATION_INTERVAL_SECONDS: float = 5.0
     CONSOLIDATION_INTERVAL_MINUTES: int = 60
     CONSOLIDATION_BATCH_SIZE: int = 20
 
