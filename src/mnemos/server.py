@@ -12,6 +12,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from mnemos import __version__
+from mnemos.api.aml_routes import aml_router
 from mnemos.api.routes import router, viz_router
 from mnemos.clock import Clock
 from mnemos.config import Settings, get_settings
@@ -92,4 +93,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.include_router(router)
     app.include_router(viz_router)
+    app.include_router(aml_router)
     return app

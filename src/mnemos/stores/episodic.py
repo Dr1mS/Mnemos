@@ -101,8 +101,9 @@ class EpisodicStore:
         session_id: str | None = None,
         salience_scores: SalienceScores | None = None,
         tenant: str = DEFAULT_TENANT,
+        created_at: int | None = None,
     ) -> Episode:
-        now = self._clock.now_ms()
+        now = created_at if created_at is not None else self._clock.now_ms()
         dense = await self._embedder.embed(content)
         sparse = sparse_encode(content, now)
         episode = Episode(

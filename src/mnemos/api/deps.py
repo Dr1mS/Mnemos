@@ -47,10 +47,23 @@ def get_orchestrator(request: Request) -> RouterOrchestrator:
 
 
 async def require_api_key(
-    request: Request, x_api_key: str | None = Header(default=None)
+    request: Request,
+    x_api_key: str | None = Header(default=None),
+    authorization: str | None = Header(default=None),
 ) -> None:
     """Auth optionnelle (§16) : si API_KEY est défini dans la config,
-    le header X-API-Key doit correspondre. Sinon ouvert (localhost)."""
+    le header X-API-Key ou Authorization (Bearer / Token) doit correspondre.
+    Sinon ouvert (localhost). Compatible avec le contrat AML."""
     expected = get_app_settings(request).API_KEY
-    if expected is not None and x_api_key != expected:
-        raise HTTPException(status_code=401, detail="X-API-Key invalide ou manquant")
+    if expected is None:
+        return
+
+    if x_api_key == expected:
+        return
+
+    if authorization is not None:
+        parts = authorization.split(maxsplit=1)
+        if len(parts) == 2 and parts[0].lower() in ("bearer", "token") and parts[1] == expected:
+            return
+
+    raise HTTPException(status_code=401, detail="API Key invalide ou manquante")
