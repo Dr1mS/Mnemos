@@ -89,6 +89,7 @@ async def aml_add(
                 episode_id=episode.id,
                 content=episode.content,
                 recent_history=history,
+                tenant=tenant,
             )
         )
 

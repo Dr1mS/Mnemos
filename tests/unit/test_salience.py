@@ -213,3 +213,19 @@ async def test_queue_auto_drain_unscored_from_store() -> None:
     assert "ep_dropped_1" in store.updates
     assert "ep_dropped_2" in store.updates
     assert store.updates["ep_dropped_1"]["combined"] == 0.9
+
+
+async def test_score_tenant_aware() -> None:
+    """Le prompt de saillance doit injecter le sujet canonique du tenant."""
+    tagger, stub = make_tagger(
+        json.dumps({"surprise": 0.5, "arousal": 0.5, "self_ref": 0.7, "recurrence": 0.0})
+    )
+    scores = await tagger.score(
+        "Sortie du moteur de simulation v2 en septembre",
+        ["mise au point terminée"],
+        tenant="atelios",
+    )
+    assert scores["combined"] == 0.7
+    assert "Target subject of this memory stream: atelios" in stub.prompts[0]
+    assert 'reveals about "atelios"' in stub.prompts[0]
+

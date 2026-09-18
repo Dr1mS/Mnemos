@@ -153,7 +153,14 @@ async def memory_write(
     episode = await app.episodic.write(
         content, role="user", session_id=session_id, tenant=app.tenant
     )
-    app.queue.enqueue(ScoringJob(episode.id, episode.content, history))
+    app.queue.enqueue(
+        ScoringJob(
+            episode_id=episode.id,
+            content=episode.content,
+            recent_history=history,
+            tenant=app.tenant,
+        )
+    )
     if session_id:
         app.working.get_or_create(session_id, tenant=app.tenant).push(
             episode.content, episode.role, episode.created_at

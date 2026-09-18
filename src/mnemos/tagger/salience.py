@@ -19,6 +19,7 @@ from mnemos.config import Settings
 from mnemos.llm.json_cleaner import parse_llm_json
 from mnemos.llm.model_manager import ModelManager
 from mnemos.logging import get_logger
+from mnemos.tenancy import DEFAULT_TENANT, canonical_subject
 
 logger = get_logger(__name__)
 
@@ -34,11 +35,13 @@ class SalienceScores(TypedDict):
 
 
 SALIENCE_PROMPT = """You score the salience of a single message for memory consolidation.
+Target subject of this memory stream: {subject}
 Return JSON with four floats in [0,1]:
 
 - surprise: how unexpected/novel is this content vs typical conversation
 - arousal: emotional intensity (positive or negative, both score high)
-- self_ref: how much the user reveals about themselves (preferences, identity, life facts)
+- self_ref: how much the message reveals about "{subject}"
+  (identity, preferences, mission, projects, life facts)
 - recurrence: 0 if this topic is new in the recent history, higher if it repeats
 
 Recent history (last 5 turns):
@@ -79,8 +82,15 @@ class SalienceTagger:
         self._manager = manager
         self._model = settings.SALIENCE_MODEL
 
-    async def score(self, content: str, recent_history: list[str]) -> SalienceScores:
+    async def score(
+        self,
+        content: str,
+        recent_history: list[str],
+        tenant: str = DEFAULT_TENANT,
+    ) -> SalienceScores:
+        subject = canonical_subject(tenant)
         prompt = SALIENCE_PROMPT.format(
+            subject=subject,
             recent_history="\n".join(recent_history[-5:]) or EMPTY_HISTORY_PLACEHOLDER,
             content=content,
         )
@@ -116,6 +126,7 @@ class ScoringJob:
     episode_id: str
     content: str
     recent_history: list[str] = field(default_factory=list)
+    tenant: str = DEFAULT_TENANT
 
 
 class SalienceStoreProtocol(Protocol):
@@ -198,7 +209,7 @@ class ScoringQueue:
                     history = [r.content for r in recents if getattr(r, "id", None) != episode.id]
                 content = getattr(episode, "content", "")
                 ep_id = getattr(episode, "id", "")
-                scores = await self._tagger.score(content, history)
+                scores = await self._tagger.score(content, history, tenant=tenant)
                 await self._store.update_salience(ep_id, scores)
                 logger.info(
                     "salience_auto_drained",
@@ -221,7 +232,9 @@ class ScoringQueue:
 
             if job is not None:
                 try:
-                    scores = await self._tagger.score(job.content, job.recent_history)
+                    scores = await self._tagger.score(
+                        job.content, job.recent_history, tenant=job.tenant
+                    )
                     await self._store.update_salience(job.episode_id, scores)
                     logger.info(
                         "salience_scored",

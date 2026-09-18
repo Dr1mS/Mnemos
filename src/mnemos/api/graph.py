@@ -128,12 +128,17 @@ async def build_graph(
             return known
         concept_id = f"c:{fact.object.lower()}"
         if concept_id not in entities:
-            family = FACT_TYPE.get(fact.predicate, "projet")
+            if fact.predicate == "lives_in":
+                node_type = "lieu"
+            elif fact.predicate == "works_at":
+                node_type = "organisation"
+            elif fact.predicate in ("is_a", "has_attribute"):
+                node_type = "personne"
+            else:
+                node_type = "projet"
             entities[concept_id] = {
                 "id": concept_id,
-                "type": {"localisation": "lieu", "emploi": "organisation"}.get(
-                    family, "projet"
-                ),
+                "type": node_type,
                 "label": _truncate(fact.object, OBJECT_LABEL_MAX),
                 "mentions": 1,
             }

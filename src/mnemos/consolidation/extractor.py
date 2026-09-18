@@ -62,14 +62,25 @@ Rules:
 - confidence is a number between 0.0 and 1.0
 - entities: only entities actually mentioned; use the most complete surface
   form as name
+- distinguish predicate families strictly:
+  * works_at (employer/organization) vs lives_in (city/region/country)
+  * has_skill (active proficiency) vs has_goal (future aspiration/desire to learn)
+  * prefers/dislikes (tastes/preferences) vs has_attribute (measurements, stats, revenue, physical traits)
+  * is_a (role/profession) vs owns (possessions/pets)
 - if nothing extractable, return {{"facts": [], "entities": []}}
 
 Examples (the speaker's subject is "{subject}"):
 - "Avant je bossais chez TechCorp." → facts: []  (state ended, no longer true)
-- "J'ai adopté un chat, Yuzu." → {{"subject": "{subject}", "predicate": "owns", "object": "Yuzu", "confidence": 0.9}}  (past event, current state)
+- "J'ai adopté un chat, Yuzu." → {{"subject": "{subject}", "predicate": "owns", "object": "Yuzu", "confidence": 0.9}}
 - "J'aimerais apprendre Rust." → {{"subject": "{subject}", "predicate": "has_goal", "object": "Rust", "confidence": 0.9}}
-- "Mon frère Tom travaille chez Airbus." → {{"subject": "Tom", "predicate": "works_at", "object": "Airbus", "confidence": 0.9}}  (another named actor → that entity is the subject, NOT "{subject}")
-- "Je ne bois plus de thé, je suis passée au maté." → {{"subject": "{subject}", "predicate": "prefers", "object": "maté", "confidence": 0.9}}  (only the NEW preference)
+- "Je code couramment en Python." → {{"subject": "{subject}", "predicate": "has_skill", "object": "Python", "confidence": 0.9}}
+- "Mon frère Tom travaille chez Airbus." → {{"subject": "Tom", "predicate": "works_at", "object": "Airbus", "confidence": 0.9}}
+- "J'habite à Annecy depuis deux ans." → {{"subject": "{subject}", "predicate": "lives_in", "object": "Annecy", "confidence": 0.9}}
+- "Je ne bois plus de thé, je suis passée au maté." → {{"subject": "{subject}", "predicate": "prefers", "object": "maté", "confidence": 0.9}}
+- "Je déteste le café froid." → {{"subject": "{subject}", "predicate": "dislikes", "object": "café froid", "confidence": 0.9}}
+- "Je suis ingénieur backend freelance." → {{"subject": "{subject}", "predicate": "is_a", "object": "ingénieur backend freelance", "confidence": 0.9}}
+- "Je mesure 1m81 et mon revenu est de 0€." → [{{"subject": "{subject}", "predicate": "has_attribute", "object": "1m81", "confidence": 0.9}}, {{"subject": "{subject}", "predicate": "has_attribute", "object": "revenu de 0€", "confidence": 0.9}}]
+- "Je connais bien l'architecture microservices." → {{"subject": "{subject}", "predicate": "knows_about", "object": "architecture microservices", "confidence": 0.9}}
 - "Si je gagnais au loto, j'achèterais une villa." → facts: []  (hypothetical)
 
 Episode (role={role}, timestamp={ts}):
@@ -111,7 +122,7 @@ def map_predicate(raw: str, object_: str) -> tuple[str, str]:
     if close:
         logger.info("predicate_fuzzy_mapped", raw=raw, mapped=close[0])
         return close[0], object_
-    logger.info("predicate_fallback", raw=raw)
+    logger.warning("predicate_fallback", raw=raw, fallback=FALLBACK_PREDICATE)
     return FALLBACK_PREDICATE, f"{predicate}: {object_}"
 
 

@@ -302,3 +302,119 @@ Prédicat standard : lives_in.
     assert len(result.entities) == 1
     assert result.entities[0].name == "Annecy"
 
+
+def test_extraction_prompt_covers_all_ten_predicates() -> None:
+    """Vérifie que le prompt few-shot illustre les 10 prédicats autorisés."""
+    from mnemos.consolidation.extractor import EXTRACTION_PROMPT
+    from mnemos.ontology import PREDICATES
+
+    for predicate in PREDICATES:
+        assert f'"predicate": "{predicate}"' in EXTRACTION_PROMPT, (
+            f"Le prédicat {predicate} doit être illustré dans le few-shot du prompt"
+        )
+
+
+async def test_extraction_aberrant_facts_non_regression() -> None:
+    """Vérifie que les traits physiques et données financières sont bien en has_attribute."""
+    extractor = make_extractor(
+        {
+            "facts": [
+                {
+                    "subject": "user",
+                    "predicate": "has_attribute",
+                    "object": "1m81",
+                    "confidence": 0.9,
+                },
+                {
+                    "subject": "user",
+                    "predicate": "has_attribute",
+                    "object": "zéro revenu",
+                    "confidence": 0.9,
+                },
+                {
+                    "subject": "user",
+                    "predicate": "has_attribute",
+                    "object": "66 à 98% du revenu total",
+                    "confidence": 0.85,
+                },
+            ],
+            "entities": [],
+        }
+    )
+    result = await extractor.extract(
+        "Je mesure 1m81, j'ai zéro revenu actuellement, ça représente 66 à 98% du revenu total",
+        "user",
+        1_782_727_200_000,
+    )
+    assert len(result.facts) == 3
+    for f in result.facts:
+        assert f.predicate == "has_attribute"
+        assert f.predicate != "prefers"
+        assert f.predicate != "owns"
+
+
+async def test_extraction_discrimination_predicates() -> None:
+    """Vérifie la bonne attribution des prédicats sémantiques distincts."""
+    extractor = make_extractor(
+        {
+            "facts": [
+                {
+                    "subject": "user",
+                    "predicate": "lives_in",
+                    "object": "Annecy",
+                    "confidence": 0.95,
+                },
+                {
+                    "subject": "user",
+                    "predicate": "works_at",
+                    "object": "Atelios",
+                    "confidence": 0.95,
+                },
+                {
+                    "subject": "user",
+                    "predicate": "has_skill",
+                    "object": "Rust",
+                    "confidence": 0.9,
+                },
+                {
+                    "subject": "user",
+                    "predicate": "has_goal",
+                    "object": "lancer un SaaS",
+                    "confidence": 0.9,
+                },
+                {
+                    "subject": "user",
+                    "predicate": "dislikes",
+                    "object": "réunions inutiles",
+                    "confidence": 0.8,
+                },
+                {
+                    "subject": "user",
+                    "predicate": "knows_about",
+                    "object": "Kubernetes",
+                    "confidence": 0.85,
+                },
+                {
+                    "subject": "user",
+                    "predicate": "is_a",
+                    "object": "architecte cloud",
+                    "confidence": 0.9,
+                },
+            ],
+            "entities": [
+                {"name": "Annecy", "entity_type": "place", "aliases": []},
+                {"name": "Atelios", "entity_type": "org", "aliases": []},
+            ],
+        }
+    )
+    result = await extractor.extract("...", "user", 0)
+    preds = {f.predicate: f.object for f in result.facts}
+    assert preds["lives_in"] == "Annecy"
+    assert preds["works_at"] == "Atelios"
+    assert preds["has_skill"] == "Rust"
+    assert preds["has_goal"] == "lancer un SaaS"
+    assert preds["dislikes"] == "réunions inutiles"
+    assert preds["knows_about"] == "Kubernetes"
+    assert preds["is_a"] == "architecte cloud"
+
+

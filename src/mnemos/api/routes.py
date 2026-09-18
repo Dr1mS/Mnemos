@@ -68,7 +68,12 @@ async def create_episode(
         tenant=payload.tenant,
     )
     queue.enqueue(
-        ScoringJob(episode_id=episode.id, content=episode.content, recent_history=history)
+        ScoringJob(
+            episode_id=episode.id,
+            content=episode.content,
+            recent_history=history,
+            tenant=payload.tenant,
+        )
     )
     if payload.session_id is not None:
         wm.get_or_create(payload.session_id, tenant=payload.tenant).push(
