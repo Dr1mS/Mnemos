@@ -95,11 +95,20 @@ SALIENCE_MODEL=qwen2.5:3b
 EXTRACTION_MODEL=qwen2.5:3b
 LLM_THINK=false
 
-# Consolidation cognitive en continu
-CONSOLIDATION_AUTO=true
-CONSOLIDATION_INTERVAL_SECONDS=5.0
+# Mode épisodique pour la compétition : aucun LLM pendant l'évaluation, seul bge-m3.
+# Mesuré : le LLM de fond divise le débit par ~2 sans gain en récupération ni en
+# réponse (cf. bench/results/gpu/). Pour réactiver la consolidation :
+# CONSOLIDATION_AUTO=true et retirer SALIENCE_QUEUE_WORKERS.
+CONSOLIDATION_AUTO=false
+SALIENCE_QUEUE_WORKERS=0
 CONSOLIDATION_DELAY_HOURS=0.0
+
+# Pas d'oubli temporel : les messages AML portent leurs dates d'origine (souvent
+# anciennes) ; avec la rétention par défaut, ils seraient archivés comme « vieux ».
+EPISODIC_RETENTION_DAYS=36500
+DECAY_RATE_DAILY=0.0
 ```
+`qwen2.5:3b` n'est alors plus utilisé en production : seul `bge-m3` doit être chargé.
 
 Créer les bases SQLite (une seule fois, sur un clone neuf — lit les chemins depuis `.env`) :
 ```powershell
