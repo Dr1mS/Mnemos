@@ -1,7 +1,18 @@
-"""Benchmark Mnemos sur le jeu de données PersonaMem-v2 (AML Textual Benchmark).
+"""Benchmark PersonaMem-v2 pour Mnemos (Agent Memory Challenge — Textual Track).
 
-Évalue la capacité de Mnemos à ingérer des historiques multi-tours de personas
-et à retrouver les souvenirs / préférences implicites pertinentes parmi des milliers de messages.
+Rejoue les historiques de conversation de personas à travers les endpoints AML
+(POST /add puis POST /search), comme le fait la plateforme, et mesure le rang du
+premier message de preuve (``related_conversation_snippet``) dans les résultats.
+
+Protocole, aligné sur le contrat AML :
+- Add découpé en lots de 20 messages ou 2 000 mots au plus (découpage Textual).
+- Rôles user/assistant uniquement : le message system de PersonaMem contient le
+  profil complet de la persona, que la plateforme n'envoie pas.
+- Search avec top_k=100, la valeur officielle.
+- Les extraits de preuve sont des messages verbatim de l'historique : la
+  correspondance se fait par égalité de texte normalisé.
+- Sans --with-consolidation, aucun fait n'est extrait : /search ne renvoie alors
+  que des épisodes (mémoire épisodique seule).
 """
 
 from __future__ import annotations
@@ -12,48 +23,137 @@ import asyncio
 import csv
 import json
 import shutil
+import subprocess
+import sys
 import tempfile
 import time
 import urllib.request
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncEngine
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from mnemos.clock import Clock
-from mnemos.config import Settings
-from mnemos.embeddings.dense import DenseEmbedder
-from mnemos.llm.model_manager import ModelManager
-from mnemos.llm.ollama_client import OllamaClient
-from mnemos.models.base import make_async_engine
-from mnemos.models.episodic import EPISODIC_SCHEMA_SQL
-from mnemos.models.semantic import SEMANTIC_SCHEMA_SQL
-from mnemos.stores.episodic import BatchEpisodeItem, EpisodicStore
-from mnemos.stores.semantic import SemanticStore
+import httpx
+
+from bench.bench_locomo import drain_consolidation, setup_bench_app
 
 HF_BASE_URL = "https://huggingface.co/datasets/bowen-upenn/PersonaMem-v2/resolve/main"
 VAL_CSV_URL = f"{HF_BASE_URL}/benchmark/text/val.csv"
+DATA_DIR = Path("bench/data/personamem")
+
+# Découpage appliqué par la plateforme AML aux Add du track Textual ordinaire.
+CHUNK_MAX_MESSAGES = 20
+CHUNK_MAX_WORDS = 2000
+TOP_K = 100
+RECALL_KS = (1, 3, 5, 10, 20, 50, 100)
+INGESTED_ROLES = ("user", "assistant")
 
 
 def _normalize(s: str) -> str:
     return " ".join(s.lower().split())
 
 
-def _matches_evidence(candidate: str, snippets: list[str]) -> bool:
-    """Vérifie si le candidat contient au moins un extrait significatif de la preuve."""
-    norm_c = _normalize(candidate)
-    for snip in snippets:
-        norm_s = _normalize(snip)
-        if len(norm_s) < 15:
-            continue
-        # Découpe en sous-phrases de 30 caractères pour tolérance aux variations
-        step = 40
-        for start in range(0, max(1, len(norm_s) - step + 1), step):
-            sub = norm_s[start : start + step]
-            if len(sub) >= 20 and sub in norm_c:
-                return True
-    return False
+def chunk_messages(messages: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
+    """Découpe l'historique en lots d'au plus 20 messages ou 2 000 mots.
+
+    Un message seul de plus de 2 000 mots forme son propre lot."""
+    chunks: list[list[dict[str, Any]]] = []
+    current: list[dict[str, Any]] = []
+    words = 0
+    for m in messages:
+        n = len(str(m["content"]).split())
+        if current and (len(current) >= CHUNK_MAX_MESSAGES or words + n > CHUNK_MAX_WORDS):
+            chunks.append(current)
+            current, words = [], 0
+        current.append(m)
+        words += n
+    if current:
+        chunks.append(current)
+    return chunks
+
+
+def parse_query(raw: str) -> str:
+    """user_query est un dict Python sérialisé : {'role': 'user', 'content': ...}."""
+    try:
+        parsed = ast.literal_eval(raw)
+    except (ValueError, SyntaxError):
+        return raw
+    if isinstance(parsed, dict):
+        return str(parsed.get("content", raw))
+    return raw
+
+
+def parse_evidence(raw: str) -> set[str]:
+    """Messages de preuve (texte normalisé) listés dans related_conversation_snippet."""
+    try:
+        snippets = json.loads(raw or "[]")
+    except json.JSONDecodeError:
+        return set()
+    return {
+        _normalize(str(s["content"]))
+        for s in snippets
+        if isinstance(s, dict) and str(s.get("content", "")).strip()
+    }
+
+
+def rank_metrics(ranks: list[int | None]) -> dict[str, float]:
+    n = len(ranks)
+    metrics: dict[str, float] = {
+        "count": n,
+        "mrr": sum(1.0 / r for r in ranks if r is not None) / n if n else 0.0,
+    }
+    for k in RECALL_KS:
+        metrics[f"recall@{k}"] = sum(1 for r in ranks if r is not None and r <= k) / n if n else 0.0
+    return metrics
+
+
+def breakdown(records: list[dict[str, Any]], key: str) -> dict[str, dict[str, float]]:
+    groups: dict[str, list[int | None]] = {}
+    for r in records:
+        groups.setdefault(str(r[key]) or "(vide)", []).append(r["rank"])
+    return {name: rank_metrics(ranks) for name, ranks in sorted(groups.items())}
+
+
+def _percentile(values: list[float], pct: float) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    return ordered[min(len(ordered) - 1, round(pct / 100 * (len(ordered) - 1)))]
+
+
+def _latency_stats(values: list[float]) -> dict[str, float]:
+    return {
+        "mean": sum(values) / len(values) if values else 0.0,
+        "p50": _percentile(values, 50),
+        "p95": _percentile(values, 95),
+        "max": max(values, default=0.0),
+    }
+
+
+def _run(cmd: list[str]) -> str | None:
+    try:
+        out = subprocess.run(cmd, capture_output=True, text=True, timeout=10, check=True)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return out.stdout.strip()
+
+
+def ollama_loaded_models(host: str) -> list[dict[str, Any]]:
+    """Modèles chargés par Ollama et leur part en VRAM (GET /api/ps)."""
+    try:
+        resp = httpx.get(f"{host}/api/ps", timeout=5.0)
+        resp.raise_for_status()
+    except httpx.HTTPError:
+        return []
+    return [
+        {
+            "name": m.get("name"),
+            "size": m.get("size", 0),
+            "size_vram": m.get("size_vram", 0),
+        }
+        for m in resp.json().get("models", [])
+    ]
 
 
 def _sync_download(url: str, local_path: Path) -> None:
@@ -68,291 +168,311 @@ async def download_file_if_missing(url: str, local_path: Path) -> None:
     local_path.parent.mkdir(parents=True, exist_ok=True)
     print(f"📥 Téléchargement de {url}...")
     await asyncio.to_thread(_sync_download, url, local_path)
-    print(f"✅ Sauvegardé dans {local_path} ({local_path.stat().st_size / 1024:.1f} Ko)")
+
+
+def load_personas(val_csv_path: Path) -> dict[str, list[dict[str, str]]]:
+    """Questions groupées par persona, dans l'ordre du CSV."""
+    csv.field_size_limit(2**31 - 1)
+    with val_csv_path.open(encoding="utf-8", newline="") as f:
+        rows = list(csv.DictReader(f))
+    persona_rows: dict[str, list[dict[str, str]]] = {}
+    for r in rows:
+        persona_rows.setdefault(r["persona_id"], []).append(r)
+    return persona_rows
+
+
+def load_chat(chat_path: Path) -> list[dict[str, str]]:
+    """Messages user/assistant non vides de l'historique 32k, dans l'ordre source."""
+    chat = json.loads(chat_path.read_text(encoding="utf-8"))
+    return [
+        {"role": m["role"], "content": m["content"]}
+        for m in chat.get("chat_history", [])
+        if m.get("role") in INGESTED_ROLES and str(m.get("content", "")).strip()
+    ]
 
 
 async def run_personamem_bench(
     limit_personas: int = 10,
+    llm_model: str = "qwen2.5:3b",
+    with_consolidation: bool = False,
+    salience_workers: int = 2,
     output_report: Path = Path("bench/results/personamem_report.md"),
 ) -> dict[str, Any]:
-    data_dir = Path("bench/data/personamem")
-    data_dir.mkdir(parents=True, exist_ok=True)
-    val_csv_path = data_dir / "val.csv"
-
-    # 1. Téléchargement de val.csv
+    val_csv_path = DATA_DIR / "val.csv"
     await download_file_if_missing(VAL_CSV_URL, val_csv_path)
+    persona_rows = load_personas(val_csv_path)
+    selected = list(persona_rows)[:limit_personas] if limit_personas > 0 else list(persona_rows)
 
-    # 2. Lecture et groupement des requêtes par persona
-    with open(val_csv_path, encoding="utf-8") as f:  # noqa: ASYNC230
-        reader = csv.DictReader(f)
-        all_rows = list(reader)
+    # Téléchargements hors chronométrage
+    chat_paths: dict[str, Path] = {}
+    for pid in selected:
+        link = persona_rows[pid][0]["chat_history_32k_link"]
+        chat_paths[pid] = DATA_DIR / "chats" / Path(link).name
+        await download_file_if_missing(f"{HF_BASE_URL}/{link}", chat_paths[pid])
 
-    persona_to_rows: dict[str, list[dict[str, Any]]] = {}
-    for r in all_rows:
-        pid = r["persona_id"]
-        persona_to_rows.setdefault(pid, []).append(r)
-
-    unique_personas = list(persona_to_rows.keys())
-    selected_personas = unique_personas[:limit_personas]
-    total_eval_queries = sum(len(persona_to_rows[p]) for p in selected_personas)
-
+    mode_label = "cognitif complet (saillance + consolidation)" if with_consolidation else "épisodique seul (sans LLM)"
     print("=" * 70)
-    print(f"🧠 ÉVALUATION PERSONAMEM-V2 SUR {len(selected_personas)} PERSONAS")
-    print(f"   • Total de questions d'évaluation : {total_eval_queries}")
+    print(f"🧠 PERSONAMEM-V2 — {len(selected)} personas, {sum(len(persona_rows[p]) for p in selected)} questions")
+    print(f"   Mode : {mode_label}")
     print("=" * 70)
 
-    # 3. Initialisation de la base temporaire Mnemos
+    engines: list[Any] = []
     tmp_dir = Path(tempfile.mkdtemp(prefix="mnemos_personamem_"))
-    engines: list[AsyncEngine] = []
-
     try:
-        settings = Settings(
-            _env_file=None,  # type: ignore[call-arg]
-            DATA_DIR=tmp_dir,
-            EPISODIC_DB=tmp_dir / "episodic.db",
-            SEMANTIC_DB=tmp_dir / "semantic.db",
-            PROCEDURAL_DIR=tmp_dir / "procedural",
-            EMBED_MODEL="bge-m3:latest",
+        app, engines, settings = await setup_bench_app(
+            tmp_dir,
+            "ollama",
+            llm_model=llm_model,
+            salience_workers=salience_workers if with_consolidation else 0,
         )
-        clock = Clock()
-        epi_engine = make_async_engine(settings.EPISODIC_DB)
-        sem_engine = make_async_engine(settings.SEMANTIC_DB)
-        engines.extend([epi_engine, sem_engine])
-
-        async with epi_engine.begin() as conn:
-            for stmt in EPISODIC_SCHEMA_SQL:
-                await conn.execute(text(stmt))
-        async with sem_engine.begin() as conn:
-            for stmt in SEMANTIC_SCHEMA_SQL:
-                await conn.execute(text(stmt))
-
-        client = OllamaClient(settings)
-        manager = ModelManager(settings, client)
-        embedder = DenseEmbedder(manager, settings)
-        store = EpisodicStore(epi_engine, embedder, clock, settings)
-        _ = SemanticStore(sem_engine, embedder, clock, settings)
-
-        # 4. Ingestion des historiques de conversation par persona
-        chats_dir = data_dir / "chats"
-        total_messages_ingested = 0
-        t_ingest_start = time.perf_counter()
-
-        for idx, pid in enumerate(selected_personas, 1):
-            sample_row = persona_to_rows[pid][0]
-            chat_link = sample_row["chat_history_32k_link"]
-            chat_filename = Path(chat_link).name
-            chat_local_path = chats_dir / chat_filename
-            chat_url = f"{HF_BASE_URL}/{chat_link}"
-
-            await download_file_if_missing(chat_url, chat_local_path)
-
-            with open(chat_local_path, encoding="utf-8") as f:  # noqa: ASYNC230
-                chat_data = json.load(f)
-
-            messages = chat_data.get("chat_history", [])
-            tenant = f"persona_{pid}"
-
-            # Préparation du lot d'épisodes
-            items = []
-            for m in messages:
-                content = m.get("content", "").strip()
-                if not content:
-                    continue
-                role = m.get("role", "user")
-                items.append(
-                    BatchEpisodeItem(
-                        content=content,
-                        role=role,
-                        session_id=f"sess_{pid}",
-                        tenant=tenant,
-                    )
+        async with app.router.lifespan_context(app):
+            transport = httpx.ASGITransport(app=app)
+            async with httpx.AsyncClient(
+                transport=transport, base_url="http://test", timeout=600.0
+            ) as client:
+                # Chargement du modèle d'embedding hors chronométrage
+                warm = await client.post(
+                    "/search", json={"query": "warmup", "user_id": "personamem:warmup", "top_k": 1}
                 )
+                if warm.status_code != 200:
+                    raise RuntimeError(f"Warm-up /search en échec : {warm.status_code} {warm.text}")
 
-            if items:
-                await store.write_batch(items)
-                total_messages_ingested += len(items)
+                # 1. INGESTION via POST /add
+                add_lat_ms: list[float] = []
+                add_errors = 0
+                n_messages = 0
+                ingested: dict[str, set[str]] = {}
+                t_ingest = time.perf_counter()
+                for idx, pid in enumerate(selected, 1):
+                    messages = load_chat(chat_paths[pid])
+                    ingested[pid] = {_normalize(m["content"]) for m in messages}
+                    user_id = f"personamem:{pid}"
+                    for c_idx, chunk in enumerate(chunk_messages(messages)):
+                        request_id = f"{user_id}:chunk-{c_idx}"
+                        t0 = time.perf_counter()
+                        resp = await client.post(
+                            "/add",
+                            json={
+                                "request_id": request_id,
+                                "user_id": user_id,
+                                "session_id": f"{user_id}:chat",
+                                "messages": chunk,
+                            },
+                        )
+                        add_lat_ms.append((time.perf_counter() - t0) * 1000)
+                        body = resp.json() if resp.status_code == 200 else {}
+                        if body.get("success") is not True or body.get("request_id") != request_id:
+                            add_errors += 1
+                            print(f"❌ Add {request_id} : HTTP {resp.status_code} {resp.text[:200]}")
+                    n_messages += len(messages)
+                    if idx % 5 == 0 or idx == len(selected):
+                        elapsed = time.perf_counter() - t_ingest
+                        print(f"  [Ingestion] {idx}/{len(selected)} personas — {n_messages} msgs ({n_messages / elapsed:.1f} msg/s)")
+                ingest_s = time.perf_counter() - t_ingest
+                print(f"✅ Ingestion : {n_messages} messages, {len(add_lat_ms)} Add en {ingest_s:.1f} s\n")
 
-            print(
-                f"  [{idx}/{len(selected_personas)}] Persona {pid} : {len(items)} messages ingérés "
-                f"(tenant: {tenant})"
-            )
+                # 2. CONSOLIDATION (optionnelle)
+                consolidation: dict[str, Any] | None = None
+                if with_consolidation:
+                    print("⏳ Scoring de saillance (drain de la queue)...")
+                    t_cons = time.perf_counter()
+                    await app.state.queue.join()
+                    scoring_s = time.perf_counter() - t_cons
+                    print("🧠 Consolidation sémantique...")
+                    totals = await drain_consolidation(app)
+                    consolidation = {
+                        **totals,
+                        "scoring_s": scoring_s,
+                        "total_s": time.perf_counter() - t_cons,
+                    }
+                    print(f"✅ Consolidation : {totals['facts_inserted']} faits, {totals['entities_upserted']} entités en {consolidation['total_s']:.1f} s\n")
 
-        ingest_duration_s = time.perf_counter() - t_ingest_start
-        throughput = total_messages_ingested / ingest_duration_s if ingest_duration_s > 0 else 0
+                loaded_models = ollama_loaded_models(settings.OLLAMA_HOST)
 
-        print(
-            f"\n⚡ Ingestion terminée : {total_messages_ingested} messages en {ingest_duration_s:.1f} s "
-            f"({throughput:.1f} msg/s)\n"
-        )
+                # 3. RECHERCHE via POST /search
+                records: list[dict[str, Any]] = []
+                search_lat_ms: list[float] = []
+                contract_errors = 0
+                skipped_no_evidence = 0
+                for pid in selected:
+                    user_id = f"personamem:{pid}"
+                    for row in persona_rows[pid]:
+                        evidence = parse_evidence(row.get("related_conversation_snippet", ""))
+                        if not evidence & ingested[pid]:
+                            skipped_no_evidence += 1
+                            continue
+                        t0 = time.perf_counter()
+                        resp = await client.post(
+                            "/search",
+                            json={"query": parse_query(row["user_query"]), "user_id": user_id, "top_k": TOP_K},
+                        )
+                        lat_ms = (time.perf_counter() - t0) * 1000
+                        search_lat_ms.append(lat_ms)
+                        data = resp.json().get("data") if resp.status_code == 200 else None
+                        if (
+                            not isinstance(data, list)
+                            or len(data) > TOP_K
+                            or any(not it.get("id") or not str(it.get("content", "")).strip() for it in data)
+                        ):
+                            contract_errors += 1
+                            data = data if isinstance(data, list) else []
+                        rank = next(
+                            (i for i, it in enumerate(data, 1) if _normalize(str(it.get("content", ""))) in evidence),
+                            None,
+                        )
+                        records.append({
+                            "persona_id": pid,
+                            "pref_type": row.get("pref_type", ""),
+                            "who": row.get("who", ""),
+                            "updated": row.get("updated", ""),
+                            "rank": rank,
+                            "latency_ms": lat_ms,
+                        })
+                        if len(records) % 25 == 0:
+                            m = rank_metrics([r["rank"] for r in records])
+                            print(f"  [Search] Q{len(records)} — MRR {m['mrr']:.3f} | R@10 {m['recall@10'] * 100:.1f}%")
 
-        # 5. Phase d'évaluation de recherche
-        print("🔍 Lancement des requêtes de recherche...")
-        reciprocal_ranks: list[float] = []
-        hits_at_1: list[int] = []
-        hits_at_3: list[int] = []
-        hits_at_5: list[int] = []
-        hits_at_10: list[int] = []
-        hits_at_20: list[int] = []
-        latencies_ms: list[float] = []
-
-        query_idx = 0
-        for pid in selected_personas:
-            tenant = f"persona_{pid}"
-            queries = persona_to_rows[pid]
-
-            for q_row in queries:
-                query_idx += 1
-                try:
-                    uq_dict = ast.literal_eval(q_row["user_query"])
-                    query_text = uq_dict.get("content", str(q_row["user_query"]))
-                except Exception:
-                    query_text = str(q_row["user_query"])
-
-                # Extraits cibles de preuve
-                target_snippets: list[str] = []
-                try:
-                    snips_data = json.loads(q_row.get("related_conversation_snippet", "[]"))
-                    for s in snips_data:
-                        if isinstance(s, dict) and "content" in s:
-                            target_snippets.append(s["content"])
-                except Exception:
-                    pass
-
-                pref = q_row.get("preference", "").strip()
-                if pref:
-                    target_snippets.append(pref)
-
-                t0 = time.perf_counter()
-                results = await store.search(query_text, k=100, tenant=tenant)
-                lat_ms = (time.perf_counter() - t0) * 1000.0
-                latencies_ms.append(lat_ms)
-
-                # Calcul du rang
-                found_rank: int | None = None
-                for rank, res in enumerate(results, 1):
-                    content = res.episode.content
-                    if _matches_evidence(content, target_snippets):
-                        found_rank = rank
-                        break
-
-                if found_rank is not None:
-                    reciprocal_ranks.append(1.0 / found_rank)
-                    hits_at_1.append(1 if found_rank <= 1 else 0)
-                    hits_at_3.append(1 if found_rank <= 3 else 0)
-                    hits_at_5.append(1 if found_rank <= 5 else 0)
-                    hits_at_10.append(1 if found_rank <= 10 else 0)
-                    hits_at_20.append(1 if found_rank <= 20 else 0)
-                else:
-                    reciprocal_ranks.append(0.0)
-                    hits_at_1.append(0)
-                    hits_at_3.append(0)
-                    hits_at_5.append(0)
-                    hits_at_10.append(0)
-                    hits_at_20.append(0)
-
-                if query_idx % 5 == 0 or query_idx == total_eval_queries:
-                    cur_mrr = sum(reciprocal_ranks) / len(reciprocal_ranks)
-                    cur_r10 = (sum(hits_at_10) / len(hits_at_10)) * 100
-                    print(
-                        f"  [Recherche] Q{query_idx}/{total_eval_queries} | "
-                        f"MRR: {cur_mrr:.3f} | Recall@10: {cur_r10:.1f}% | Latence moy: {sum(latencies_ms)/len(latencies_ms):.1f} ms"
-                    )
-
-        n_q = len(reciprocal_ranks)
-        mrr = sum(reciprocal_ranks) / n_q if n_q else 0.0
-        r1 = (sum(hits_at_1) / n_q) * 100 if n_q else 0.0
-        r3 = (sum(hits_at_3) / n_q) * 100 if n_q else 0.0
-        r5 = (sum(hits_at_5) / n_q) * 100 if n_q else 0.0
-        r10 = (sum(hits_at_10) / n_q) * 100 if n_q else 0.0
-        r20 = (sum(hits_at_20) / n_q) * 100 if n_q else 0.0
-        avg_lat = sum(latencies_ms) / len(latencies_ms) if latencies_ms else 0.0
-
-        print("\n" + "=" * 70)
-        print("🎯 RÉSULTATS DU BENCHMARK PERSONAMEM-V2 (AML Textual)")
-        print("=" * 70)
-        print(f"Personas évalués           : {len(selected_personas)}")
-        print(f"Messages totaux ingérés    : {total_messages_ingested}")
-        print(f"Questions évaluées         : {n_q}")
-        print(f"Latence moyenne / requête  : {avg_lat:.2f} ms")
-        print(f"MRR (Mean Reciprocal Rank) : {mrr:.3f}")
-        print(f"Recall@1  : {r1:.1f}%")
-        print(f"Recall@3  : {r3:.1f}%")
-        print(f"Recall@5  : {r5:.1f}%")
-        print(f"Recall@10 : {r10:.1f}%")
-        print(f"Recall@20 : {r20:.1f}%")
-        print("=" * 70)
-
-        # Rapport Markdown
-        output_report.parent.mkdir(parents=True, exist_ok=True)
-        report_content = f"""# 📊 Rapport d'Évaluation PersonaMem-v2 — Mnemos
-## Agent Memory Challenge (Cycle 2) — Track Textual Memory
-
-- **Date** : {time.strftime('%Y-%m-%d %H:%M:%S')}
-- **Personas évalués** : {len(selected_personas)}
-- **Total messages ingérés** : {total_messages_ingested}
-- **Questions évaluées** : {n_q}
-- **Modèle d'embedding** : `bge-m3:latest` (batch ingestion atomique SQLite-vec)
-
----
-
-### 1. Métriques de Récupération (Retrieval Rank Order)
-
-| Rang de Rappel | Score |
-|---|:---:|
-| **MRR (Mean Reciprocal Rank)** | **{mrr:.3f}** |
-| **Recall@1 (Top-1 direct)** | **{r1:.1f}%** |
-| **Recall@3** | **{r3:.1f}%** |
-| **Recall@5** | **{r5:.1f}%** |
-| **Recall@10** | **{r10:.1f}%** |
-| **Recall@20** | **{r20:.1f}%** |
-| **Latence moyenne de recherche** | **{avg_lat:.2f} ms** |
-
----
-
-### 2. Performance d'Ingestion
-
-| Métrique | Valeur |
-|---|:---:|
-| Temps total d'ingestion | **{ingest_duration_s:.1f} s** |
-| Débit d'ingestion | **{throughput:.1f} messages/sec** |
-| Isolation multi-tenant | **1 tenant hermétique par persona (`persona_<id>`)** |
-"""
-        output_report.write_text(report_content, encoding="utf-8")
-        print(f"📄 Rapport écrit dans : {output_report}")
-
-        return {
-            "mrr": mrr,
-            "recall@1": r1,
-            "recall@5": r5,
-            "recall@10": r10,
-            "personas": len(selected_personas),
-            "total_messages": total_messages_ingested,
-            "queries": n_q,
+        overall = rank_metrics([r["rank"] for r in records])
+        commit = _run(["git", "rev-parse", "--short", "HEAD"])
+        dirty = bool(_run(["git", "status", "--porcelain"]))
+        result: dict[str, Any] = {
+            "metadata": {
+                "date": datetime.now().isoformat(timespec="seconds"),
+                "commit": f"{commit}{'-dirty' if dirty else ''}" if commit else None,
+                "gpu": _run(["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"]),
+                "ollama_loaded_models": loaded_models,
+                "mode": mode_label,
+                "embed_model": settings.EMBED_MODEL,
+                "llm_model": llm_model if with_consolidation else None,
+                "top_k": TOP_K,
+                "chunking": {"max_messages": CHUNK_MAX_MESSAGES, "max_words": CHUNK_MAX_WORDS},
+                "personas": len(selected),
+            },
+            "ingestion": {
+                "messages": n_messages,
+                "add_requests": len(add_lat_ms),
+                "add_errors": add_errors,
+                "total_s": ingest_s,
+                "throughput_msg_s": n_messages / ingest_s if ingest_s > 0 else 0.0,
+                "add_latency_ms": _latency_stats(add_lat_ms),
+            },
+            "consolidation": consolidation,
+            "search": {
+                "queries": len(records),
+                "skipped_no_evidence": skipped_no_evidence,
+                "contract_errors": contract_errors,
+                "latency_ms": _latency_stats(search_lat_ms),
+            },
+            "metrics": overall,
+            "by_pref_type": breakdown(records, "pref_type"),
+            "by_who": breakdown(records, "who"),
+            "by_updated": breakdown(records, "updated"),
+            "questions": records,
         }
 
+        print("\n" + "=" * 70)
+        print("🎯 RÉSULTATS PERSONAMEM-V2")
+        print("=" * 70)
+        print(f"Questions évaluées : {len(records)} (sans preuve ingérée : {skipped_no_evidence})")
+        print(f"Erreurs de contrat : Add {add_errors} | Search {contract_errors}")
+        print(f"MRR@{TOP_K} : {overall['mrr']:.3f}")
+        print(" | ".join(f"R@{k} {overall[f'recall@{k}'] * 100:.1f}%" for k in RECALL_KS))
+        print(f"Latence Search p50/p95 : {result['search']['latency_ms']['p50']:.1f} / {result['search']['latency_ms']['p95']:.1f} ms")
+        print(f"Débit d'ingestion : {result['ingestion']['throughput_msg_s']:.1f} msg/s")
+
+        output_report.parent.mkdir(parents=True, exist_ok=True)
+        output_report.with_suffix(".json").write_text(
+            json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+        output_report.write_text(render_report(result), encoding="utf-8")
+        print(f"📄 Rapport : {output_report} (+ {output_report.with_suffix('.json').name})")
+        return result
     finally:
         for eng in engines:
             await eng.dispose()
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Benchmark Mnemos sur PersonaMem-v2")
-    parser.add_argument(
-        "--limit-personas",
-        type=int,
-        default=10,
-        help="Nombre de personas à évaluer (défaut: 10, environ 2000 messages)",
-    )
-    parser.add_argument(
-        "--output",
-        type=Path,
-        default=Path("bench/results/personamem_report.md"),
-        help="Chemin du rapport Markdown de sortie",
-    )
-    args = parser.parse_args()
+def _metrics_row(label: str, m: dict[str, float]) -> str:
+    recalls = " | ".join(f"{m[f'recall@{k}'] * 100:.1f}%" for k in RECALL_KS)
+    return f"| {label} | {int(m['count'])} | {m['mrr']:.3f} | {recalls} |"
 
-    asyncio.run(run_personamem_bench(limit_personas=args.limit_personas, output_report=args.output))
+
+def render_report(result: dict[str, Any]) -> str:
+    meta, ing, search = result["metadata"], result["ingestion"], result["search"]
+    header = "| | Questions | MRR | " + " | ".join(f"R@{k}" for k in RECALL_KS) + " |"
+    sep = "|---|---|---|" + "---|" * len(RECALL_KS)
+    models = ", ".join(
+        f"`{m['name']}` ({m['size_vram'] / m['size'] * 100:.0f}% VRAM)" if m["size"] else f"`{m['name']}`"
+        for m in meta["ollama_loaded_models"]
+    ) or "inconnu"
+    lines = [
+        "# Rapport PersonaMem-v2 — Mnemos",
+        "",
+        f"- **Date** : {meta['date']} — commit `{meta['commit']}`",
+        f"- **Mode** : {meta['mode']}",
+        f"- **GPU** : {meta['gpu'] or 'aucun détecté'} — modèles Ollama chargés : {models}",
+        f"- **Embedding** : `{meta['embed_model']}` — LLM : `{meta['llm_model'] or 'aucun'}`",
+        f"- **Protocole** : endpoints AML `/add` + `/search`, top_k={meta['top_k']}, Add découpés à "
+        f"{meta['chunking']['max_messages']} messages / {meta['chunking']['max_words']} mots, message system exclu",
+        f"- **Échantillon** : {meta['personas']} personas, {search['queries']} questions "
+        f"({search['skipped_no_evidence']} écartées faute de preuve dans l'historique ingéré)",
+        "",
+        "## 1. Récupération de la preuve",
+        "",
+        header,
+        sep,
+        _metrics_row("**Global**", result["metrics"]),
+        "",
+        f"Erreurs de contrat : Add **{ing['add_errors']}** / Search **{search['contract_errors']}**.",
+        "",
+        "## 2. Performance",
+        "",
+        "| Métrique | Valeur |",
+        "|---|---|",
+        f"| Messages ingérés | {ing['messages']} ({ing['add_requests']} requêtes Add) |",
+        f"| Temps d'ingestion | {ing['total_s']:.1f} s |",
+        f"| Débit d'ingestion | {ing['throughput_msg_s']:.1f} msg/s |",
+        f"| Latence Add p50 / p95 | {ing['add_latency_ms']['p50']:.0f} / {ing['add_latency_ms']['p95']:.0f} ms |",
+        f"| Latence Search p50 / p95 | {search['latency_ms']['p50']:.1f} / {search['latency_ms']['p95']:.1f} ms |",
+    ]
+    cons = result["consolidation"]
+    if cons:
+        lines += [
+            f"| Consolidation (scoring + extraction) | {cons['total_s']:.1f} s, {cons['passes']} passes |",
+            f"| Faits / entités extraits | {cons['facts_inserted']} / {cons['entities_upserted']} |",
+            f"| Échecs d'extraction | {cons['extraction_failures']} |",
+        ]
+    for title, key in (
+        ("3. Par type de préférence", "by_pref_type"),
+        ("4. Par titulaire de la préférence (`who`)", "by_who"),
+        ("5. Par préférence mise à jour (`updated`)", "by_updated"),
+    ):
+        lines += ["", f"## {title}", "", header, sep]
+        lines += [_metrics_row(name, m) for name, m in result[key].items()]
+    return "\n".join(lines) + "\n"
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Benchmark Mnemos sur PersonaMem-v2 via les endpoints AML")
+    parser.add_argument("--limit-personas", type=int, default=10, help="Nombre de personas (0 = toutes)")
+    parser.add_argument("--llm-model", default="qwen2.5:3b", help="Modèle de saillance & extraction")
+    parser.add_argument("--with-consolidation", action="store_true", help="Saillance LLM + extraction de faits avant la recherche")
+    parser.add_argument("--salience-workers", type=int, default=2, help="Workers de saillance (avec --with-consolidation)")
+    parser.add_argument("--output", type=Path, default=Path("bench/results/personamem_report.md"))
+    args = parser.parse_args()
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")  # console Windows cp1252 vs emojis
+
+    asyncio.run(
+        run_personamem_bench(
+            limit_personas=args.limit_personas,
+            llm_model=args.llm_model,
+            with_consolidation=args.with_consolidation,
+            salience_workers=args.salience_workers,
+            output_report=args.output,
+        )
+    )
 
 
 if __name__ == "__main__":
