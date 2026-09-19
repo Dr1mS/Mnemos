@@ -1,244 +1,295 @@
-# 🚀 Guide de Déploiement Windows (RTX 4070 Ti) & Cloudflare Tunnel
+# 🚀 Guide de Déploiement Windows (RTX 4070 Ti) — VPS Coolify + Tailscale
 ## Agent Memory Challenge (Cycle 2) — Agent Memory Leaderboard (AML)
 
-Ce guide pas-à-pas explique comment lancer **Mnemos** sur votre machine Windows avec votre GPU (RTX 4070 Ti) et l'exposer publiquement en HTTPS pour la compétition AML via **Cloudflare Tunnel**.
+Ce guide explique comment faire tourner **Mnemos** sur votre PC Windows (GPU RTX 4070 Ti)
+et l'exposer en HTTPS sur une **URL fixe** (`https://mnemos.dr1ms.fr`) via le VPS Coolify.
+
+```
+Plateforme AML ──HTTPS──▶ mnemos.dr1ms.fr (VPS : Traefik/Coolify, certificat Let's Encrypt)
+                              └── Tailscale (VPN chiffré) ──▶ PC Windows :8765 (Mnemos + Ollama GPU)
+```
+
+> **Pourquoi pas un Quick Tunnel Cloudflare (`cloudflared tunnel --url`) ?** L'URL
+> `trycloudflare.com` est aléatoire et change à chaque relance, Cloudflare ne garantit
+> « aucun SLA ni uptime » et limite à 200 requêtes simultanées. Or l'URL fait partie de
+> la version déclarée à AML, et le règlement exige que l'endpoint reste joignable et
+> stable **30 jours après la soumission** d'un run Full. Le Quick Tunnel
+> (`scripts/start_aml_tunnel.ps1`) reste utile pour un test ponctuel, pas pour concourir.
 
 ---
 
 ## 📋 Table des Matières
 1. [Pré-requis](#1-pré-requis)
-2. [Étape 1 : Préparation d'Ollama & VRAM GPU](#étape-1--préparation-dollama--vram-gpu)
-3. [Étape 2 : Préparation du projet Mnemos](#étape-2--préparation-du-projet-mnemos)
-4. [Étape 3 : Installation de Cloudflare Tunnel (cloudflared)](#étape-3--installation-de-cloudflare-tunnel-cloudflared)
+2. [Étape 1 : Ollama & VRAM GPU](#étape-1--ollama--vram-gpu)
+3. [Étape 2 : Projet Mnemos & `.env`](#étape-2--projet-mnemos--env)
+4. [Étape 3 : Tailscale (PC + VPS)](#étape-3--tailscale-pc--vps)
 5. [Étape 4 : Lancement du serveur Mnemos](#étape-4--lancement-du-serveur-mnemos)
-6. [Étape 5 : Ouverture du Tunnel HTTPS Cloudflare](#étape-5--ouverture-du-tunnel-https-cloudflare)
-7. [Étape 6 : Test de validation (Self-Test)](#étape-6--test-de-validation-self-test)
-8. [Étape 7 : Soumission à l'Arena AML](#étape-7--soumission-à-larena-aml)
-9. [Dépannage & FAQ](#dépannage--faq)
+6. [Étape 5 : Route Traefik dans Coolify](#étape-5--route-traefik-dans-coolify)
+7. [Étape 6 : Auto-test du contrat](#étape-6--auto-test-du-contrat)
+8. [Étape 7 : Tenir 30 jours](#étape-7--tenir-30-jours)
+9. [Étape 8 : Demande d'accès AML](#étape-8--demande-daccès-aml)
+10. [Dépannage](#dépannage)
 
 ---
 
 ## 1. Pré-requis
 
-* **OS** : Windows 10/11 (64-bit).
-* **GPU** : NVIDIA GeForce RTX 4070 Ti avec pilotes NVIDIA récents.
-* **Outils** :
-  * [Ollama pour Windows](https://ollama.com/download/windows)
-  * [Python 3.12](https://www.python.org/downloads/) ou [uv](https://github.com/astral-sh/uv)
-  * [Git pour Windows](https://gitforwindows.org/)
-  * [Cloudflare Tunnel CLI (`cloudflared`)](https://github.com/cloudflare/cloudflared/releases)
+* **PC** : Windows 10/11, NVIDIA RTX 4070 Ti, pilotes récents.
+* **VPS** : Coolify avec son proxy Traefik ; le DNS `*.dr1ms.fr` pointe déjà dessus
+  (wildcard OVH → rien à ajouter pour `mnemos.dr1ms.fr`).
+* **Outils PC** : [Ollama](https://ollama.com/download/windows), [uv](https://github.com/astral-sh/uv),
+  [Git](https://gitforwindows.org/), [Tailscale](https://tailscale.com/download/windows).
+* **Compte** Tailscale gratuit.
 
 ---
 
-## Étape 1 : Préparation d'Ollama & VRAM GPU
+## Étape 1 : Ollama & VRAM GPU
 
-### 1.1 Télécharger les modèles nécessaires
-Ouvrez un terminal **PowerShell** et téléchargez les deux modèles requis :
 ```powershell
 ollama pull bge-m3
 ollama pull qwen2.5:3b
 ```
 
-### 1.2 ⚠️ Configuration critique : Empêcher le déchargement de VRAM
-Par défaut sous Windows, Ollama décharge les modèles de la VRAM au bout de 5 minutes d'inactivité. Pour éviter un temps de rechargement à froid (2 à 10 secondes) lors de l'évaluation de l'Arena :
+**Empêcher le déchargement de la VRAM** (sinon rechargement à froid de 2 à 10 s après
+5 min d'inactivité) : `Win + R` → `sysdm.cpl` → **Paramètres système avancés** →
+**Variables d'environnement** → *Variables système* → **Nouvelle** :
+`OLLAMA_KEEP_ALIVE` = `-1`, puis redémarrer Ollama depuis la barre des tâches.
 
-#### Option A — Via les variables d'environnement système Windows (Recommandé) :
-1. Tapez `Touches Win + R`, saisissez `sysdm.cpl` puis Entrée.
-2. Onglet **Paramètres système avancés** > **Variables d'environnement...**
-3. Sous *Variables système*, cliquez sur **Nouvelle...** :
-   * Nom : `OLLAMA_KEEP_ALIVE`
-   * Valeur : `-1`
-4. Redémarrez l'application Ollama depuis la barre des tâches.
-
-#### Option B — En PowerShell avant de lancer Ollama :
+Vérification (les deux modèles doivent afficher `100% GPU` une fois utilisés) :
 ```powershell
-$env:OLLAMA_KEEP_ALIVE = "-1"
-ollama serve
+ollama ps
 ```
 
 ---
 
-## Étape 2 : Préparation du projet Mnemos
+## Étape 2 : Projet Mnemos & `.env`
 
-1. Ouvrez un terminal **PowerShell** dans le dossier de Mnemos.
-2. Basculez sur la branche de compétition :
-   ```powershell
-   git checkout feat/aml-adapter
-   git pull origin feat/aml-adapter
-   ```
-3. Activez votre environnement virtuel Python :
-   ```powershell
-   .\.venv\Scripts\Activate.ps1
-   ```
-   *(Si un message bloque l'exécution de scripts : `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`)*
+```powershell
+git checkout feat/aml-adapter
+git pull origin feat/aml-adapter
+uv sync
+```
 
-4. Créez ou éditez le fichier `.env` à la racine du projet :
-   ```env
-   # Clé d'authentification secrète fournie à l'Arena AML
-   API_KEY=votre_cle_secrete_aml_2026
+Générer la clé secrète que la plateforme utilisera (*Memory System Key*) :
+```powershell
+.\.venv\Scripts\python.exe -c "import secrets; print(secrets.token_urlsafe(32))"
+```
 
-   # Configuration Réseau
-   API_HOST=127.0.0.1
-   API_PORT=8765
-   LOG_LEVEL=INFO
+L'adresse Tailscale du PC (`100.x.y.z`) s'obtient à l'étape 3. Créer ensuite `.env` à la
+racine (fichier ignoré par git — ne jamais commiter la clé) :
+```env
+# Clé déclarée à AML (Memory System Key). Obligatoire : sans elle l'API est ouverte à tous.
+# Seule la valeur de la clé est comparée ; le header peut être Bearer, Token ou X-API-Key.
+API_KEY=<clé générée ci-dessus>
 
-   # Modèles Ollama
-   OLLAMA_HOST=http://localhost:11434
-   EMBED_MODEL=bge-m3
-   SALIENCE_MODEL=qwen2.5:3b
-   EXTRACTION_MODEL=qwen2.5:3b
-   LLM_THINK=false
+# Écoute UNIQUEMENT sur l'interface Tailscale : invisible du réseau local,
+# joignable seulement depuis le VPS.
+API_HOST=100.x.y.z
+API_PORT=8765
+LOG_LEVEL=INFO
 
-   # Consolidation Cognitive en continu (Essentiel pour l'Arena AML)
-   CONSOLIDATION_AUTO=true
-   CONSOLIDATION_INTERVAL_SECONDS=5.0
-   CONSOLIDATION_DELAY_HOURS=0.0
-   ```
+# Modèles Ollama
+OLLAMA_HOST=http://localhost:11434
+EMBED_MODEL=bge-m3
+SALIENCE_MODEL=qwen2.5:3b
+EXTRACTION_MODEL=qwen2.5:3b
+LLM_THINK=false
+
+# Consolidation cognitive en continu
+CONSOLIDATION_AUTO=true
+CONSOLIDATION_INTERVAL_SECONDS=5.0
+CONSOLIDATION_DELAY_HOURS=0.0
+```
+
+Créer les bases SQLite (une seule fois, sur un clone neuf — lit les chemins depuis `.env`) :
+```powershell
+.\.venv\Scripts\python.exe -m alembic upgrade head
+```
 
 ---
 
-## Étape 3 : Installation de Cloudflare Tunnel (`cloudflared`)
+## Étape 3 : Tailscale (PC + VPS)
 
-### Méthode 1 : Via WinGet (Le plus simple)
-Dans PowerShell :
+### 3.1 Sur le PC Windows
 ```powershell
-winget install --id Cloudflare.cloudflared
+winget install --id Tailscale.Tailscale
 ```
-*Fermez et rouvrez PowerShell après l'installation pour que la commande soit dans votre PATH.*
-
-### Méthode 2 : Téléchargement direct de l'exécutable
-1. Téléchargez [`cloudflared-windows-amd64.exe`](https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe).
-2. Renommez-le en `cloudflared.exe`.
-3. Placez-le dans un dossier de votre PATH (ex: `C:\Windows\System32` ou dans le dossier de Mnemos).
-
-Vérifiez l'installation :
+Se connecter via l'icône Tailscale de la barre des tâches, puis relever l'adresse du PC :
 ```powershell
-cloudflared --version
+tailscale ip -4
 ```
+→ reporter cette adresse dans `API_HOST` du `.env`.
+
+### 3.2 Sur le VPS (SSH, sur l'hôte — pas dans un conteneur)
+```bash
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up
+```
+Ouvrir le lien affiché pour rattacher le VPS au même compte.
+
+### 3.3 Dans la console Tailscale (https://login.tailscale.com/admin/machines)
+Pour le PC **et** le VPS : menu `…` → **Disable key expiry**, pour qu'aucune clé
+n'expire pendant la compétition.
 
 ---
 
 ## Étape 4 : Lancement du serveur Mnemos
 
-Dans votre premier terminal PowerShell (avec le venv activé) :
+### 4.1 Pare-feu Windows (PowerShell **administrateur**, une seule fois)
+N'autorise le port 8765 qu'aux adresses Tailscale :
+```powershell
+New-NetFirewallRule -DisplayName "Mnemos AML (Tailscale)" -Direction Inbound `
+  -Protocol TCP -LocalPort 8765 -RemoteAddress 100.64.0.0/10 -Action Allow
+```
+Si Windows affiche une alerte de pare-feu pour `python.exe` / `mnemos.exe` au premier
+lancement, cliquer **Autoriser** : le serveur n'écoute que sur l'interface Tailscale.
+
+### 4.2 Test manuel
 ```powershell
 .\.venv\Scripts\mnemos.exe serve
 ```
-Ou via Uvicorn directement :
-```powershell
-uvicorn mnemos.server:create_app --factory --host 127.0.0.1 --port 8765
-```
+Attendu : `Uvicorn running on http://100.x.y.z:8765`.
 
-Vous devez voir :
-```text
-INFO:     Started server process [...]
-INFO:     Waiting for application startup.
-INFO:     server_started host='127.0.0.1' port=8765
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://127.0.0.1:8765 (Press CTRL+C to quit)
+### 4.3 Démarrage automatique (à l'ouverture de session, relance si le process meurt)
+Arrêter d'abord le serveur lancé à la main (`Ctrl+C`), sinon le port 8765 est occupé.
+```powershell
+.\scripts\register_task.ps1 -TaskName "Mnemos AML" -LogFile "data\aml\serve.log"
+Start-ScheduledTask -TaskName "Mnemos AML"
+```
+Suivre les logs : `Get-Content data\aml\serve.log -Wait -Tail 20`.
+
+Redémarrer (après une mise à jour du code, par exemple). `Stop-ScheduledTask` ne tue que
+`cmd.exe` : le processus Python garde le port 8765 et le redémarrage échouerait, il faut
+donc l'arrêter explicitement :
+```powershell
+Stop-ScheduledTask -TaskName "Mnemos AML"
+Get-NetTCPConnection -LocalPort 8765 -State Listen -ErrorAction SilentlyContinue |
+  ForEach-Object { Stop-Process -Id $_.OwningProcess }
+Start-ScheduledTask -TaskName "Mnemos AML"
 ```
 
 ---
 
-## Étape 5 : Ouverture du Tunnel HTTPS Cloudflare
+## Étape 5 : Route Traefik dans Coolify
 
-Ouvrez un **deuxième terminal PowerShell** et lancez :
-```powershell
-cloudflared tunnel --url http://127.0.0.1:8765
+### 5.1 Vérifier que le proxy Coolify joint le PC (SSH sur le VPS)
+```bash
+curl -s http://100.x.y.z:8765/health
+docker exec coolify-proxy wget -qO- http://100.x.y.z:8765/health
 ```
+Les deux doivent renvoyer `{"status":"healthy",...}`. La seconde commande prouve que le
+conteneur Traefik atteint bien le réseau Tailscale de l'hôte.
 
-Au bout de quelques secondes, repérez la ligne encadrée dans la console :
-```text
-+--------------------------------------------------------------------------------------------+
-|  Your quick Tunnel has been created! Visit it at (it may take some time to be reachable):  |
-|  https://nom-aleatoire-genere.trycloudflare.com                                            |
-+--------------------------------------------------------------------------------------------+
+### 5.2 Ajouter la configuration dynamique
+Coolify → **Servers** → *(le serveur)* → **Proxy** → **Dynamic Configurations** →
+ajouter un fichier `mnemos.yaml` (remplacer `100.x.y.z`) :
+```yaml
+http:
+  routers:
+    mnemos:
+      rule: Host(`mnemos.dr1ms.fr`)
+      entryPoints:
+        - https
+      service: mnemos
+      priority: 1000
+      tls:
+        certResolver: letsencrypt
+    mnemos-http:
+      rule: Host(`mnemos.dr1ms.fr`)
+      entryPoints:
+        - http
+      middlewares:
+        - mnemos-redirect
+      service: mnemos
+      priority: 1000
+  middlewares:
+    mnemos-redirect:
+      redirectScheme:
+        scheme: https
+  services:
+    mnemos:
+      loadBalancer:
+        servers:
+          - url: 'http://100.x.y.z:8765'
 ```
+> Les noms `http`, `https` et `letsencrypt` sont ceux de la configuration Traefik par
+> défaut de Coolify. En cas de doute, les vérifier dans **Proxy → Configuration**
+> (`--entrypoints.<nom>.address` et `--certificatesresolvers.<nom>`).
+> `priority: 1000` garantit que cette route passe avant un éventuel routeur générique.
 
-> ⚠️ **IMPORTANT** : Laissez ce terminal **ouvert**. Tant que `cloudflared` tourne, votre tunnel reste actif avec son URL HTTPS sécurisée.
+Traefik recharge le fichier automatiquement ; le certificat Let's Encrypt est émis à la
+première requête HTTPS (quelques secondes).
 
 ---
 
-## Étape 6 : Test de validation (Self-Test)
+## Étape 6 : Auto-test du contrat
 
-Ouvrez un **troisième terminal** (ou utilisez curl.exe) pour vérifier le bon fonctionnement à travers l'URL publique Cloudflare.
-
-Remplacez `https://VOTRE-URL.trycloudflare.com` et `votre_cle_secrete_aml_2026` par vos valeurs réelles :
-
-### 6.1 Test Sonde de santé (`GET /health`)
+Depuis n'importe quelle machine :
 ```powershell
-curl.exe -s https://VOTRE-URL.trycloudflare.com/health
+.\.venv\Scripts\python.exe scripts\aml_selftest.py --url https://mnemos.dr1ms.fr --key <API_KEY>
 ```
-**Réponse attendue (sans authentification) :**
-```json
-{"status":"healthy","version":"0.1.0"}
-```
+Le script vérifie `/health` sans auth, l'écho exact des identifiants sur `/add`, la forme
+de `/search` (`data`, ≤ `top_k`, `id` et `content` non vides), l'isolation par `user_id`
+et le refus d'une clé invalide. Ses écritures vont dans un `user_id` jetable et unique.
+Options : `--auth bearer|token|x-api-key`.
 
-### 6.2 Test Écriture mémoire (`POST /add`)
+### Test de charge (capacité à déclarer)
 ```powershell
-curl.exe -s -X POST https://VOTRE-URL.trycloudflare.com/add `
-  -H "Content-Type: application/json" `
-  -H "Authorization: Bearer votre_cle_secrete_aml_2026" `
-  -d '{
-    "request_id": "test_win_01",
-    "user_id": "user_win_test",
-    "session_id": "sess_win_test",
-    "messages": [{
-      "role": "user",
-      "content": "J aime la programmation et j utilise une RTX 4070 Ti.",
-      "timestamp": 1704067200000
-    }]
-  }'
+.\.venv\Scripts\python.exe scripts\aml_loadtest.py --url https://mnemos.dr1ms.fr --key <API_KEY>
 ```
-**Réponse attendue :**
-```json
-{"success":true,"request_id":"test_win_01","user_id":"user_win_test","session_id":"sess_win_test"}
-```
-
-### 6.3 Test Recherche hybride (`POST /search`)
-```powershell
-curl.exe -s -X POST https://VOTRE-URL.trycloudflare.com/search `
-  -H "Content-Type: application/json" `
-  -H "Authorization: Bearer votre_cle_secrete_aml_2026" `
-  -d '{
-    "query": "Quelle carte graphique est utilisee ?",
-    "user_id": "user_win_test",
-    "top_k": 5
-  }'
-```
-**Réponse attendue :**
-```json
-{
-  "data": [
-    {
-      "id": "ep_...",
-      "content": "J aime la programmation et j utilise une RTX 4070 Ti.",
-      "score": 0.65,
-      "created_at": "2024-01-01T00:00:00Z"
-    }
-  ]
-}
-```
+Mesure débit, latences p50/p95 et erreurs pour des concurrences croissantes (Add : 1, 2, 4,
+8 ; Search : 1, 4, 8, 16), avec des historiques PersonaMem découpés comme la plateforme
+et des requêtes toutes distinctes (pas de cache). Il écrit ~2 000 messages dans des
+`user_id` `loadtest:*`, que la consolidation traitera ensuite : repartir d'une base vide
+avant l'inscription (arrêter le serveur, supprimer `data\aml\*.db`,
+`alembic upgrade head`, relancer).
 
 ---
 
-## Étape 7 : Soumission à l'Arena AML
+## Étape 7 : Tenir 30 jours
 
-Dans l'interface de soumission du concours **Agent Memory Leaderboard (Cycle 2)** :
-* **Track** : `Textual Memory`
-* **Division** : `Open-source Methods`
-* **API Endpoint URL** : `https://VOTRE-URL.trycloudflare.com` *(l'URL Cloudflare)*
-* **API Key / Token** : `votre_cle_secrete_aml_2026` *(la valeur définie dans votre `.env`)*
-* **Architecture / Framework** : `Mnemos (Hybrid Episodic-Semantic Memory)`
+La checklist du run Full engage l'endpoint à rester **joignable et stable 30 jours après
+la soumission**. Sur un PC de bureau, les coupures viennent surtout de la veille et des
+redémarrages :
+
+* **Désactiver la veille** (secteur) :
+  ```powershell
+  powercfg /change standby-timeout-ac 0
+  powercfg /change hibernate-timeout-ac 0
+  ```
+* **Suspendre Windows Update** (Paramètres → Windows Update → *Suspendre les mises à
+  jour*, jusqu'à 5 semaines) pendant la fenêtre d'évaluation.
+* **Rester connecté** : la tâche « Mnemos Serve » et Ollama démarrent à l'ouverture de
+  session. Verrouiller l'écran (`Win + L`) ne coupe rien ; se déconnecter, si.
+* **Surveillance** : une sonde externe sur `https://mnemos.dr1ms.fr/health` (UptimeRobot).
+  `/health` vérifie réellement Ollama, l'embedding et les deux bases (résultat mis en
+  cache 30 s) :
+  * `200 {"status":"healthy"}` : tout répond ;
+  * `200 {"status":"degraded"}` : l'embedding répond lentement (charge, chargement du
+    modèle), ce n'est pas une panne ;
+  * `503 {"status":"unhealthy","failures":[...]}` : composant en panne (`ollama`,
+    `embedding`, `episodic_db`, `semantic_db`), détails dans `data\aml\serve.log`.
 
 ---
 
-## Dépannage & FAQ
+## Étape 8 : Demande d'accès AML
 
-| Problème | Cause | Solution |
+* **Track** : `Textual Memory` — **Division** : `Open-source Methods`
+* **Endpoints** : `https://mnemos.dr1ms.fr/add` et `https://mnemos.dr1ms.fr/search`
+  (health : `https://mnemos.dr1ms.fr/health`)
+* **Authentification** : `Bearer` + la valeur d'`API_KEY` (Token et X-Api-Key sont aussi acceptés)
+* **Dépôt public + commit figé** : le commit exact déployé sur le PC
+
+---
+
+## Dépannage
+
+| Problème | Cause probable | Solution |
 |---|---|---|
-| `curl: (7) Failed to connect` en local | Le serveur Mnemos n'est pas démarré | Vérifiez le terminal 1 (`mnemos serve`). |
-| `cloudflared` affiche une erreur de port | Mauvais port renseigné | Vérifiez que vous avez bien mis `http://127.0.0.1:8765`. |
-| Erreur 401 Unauthorized | Mauvaise clé d'API | Vérifiez le header `Authorization: Bearer <votre_clé>` et le fichier `.env`. |
-| Latence élevée au début | Modèle froid / rechargement VRAM | Vérifiez que `OLLAMA_KEEP_ALIVE=-1` est bien configuré. |
-| Crash GPU / OOM | Mémoire GPU saturée par d'autres logiciels | Fermez les jeux ou applications consommatrices de VRAM sur la RTX 4070 Ti. |
+| `mnemos serve` : « error while attempting to bind » | Tailscale pas encore connecté, ou `API_HOST` ≠ IP Tailscale | `tailscale ip -4`, corriger `.env`, relancer |
+| `curl` depuis le VPS échoue, `tailscale ping <PC>` OK | Pare-feu Windows | Règle de l'étape 4.1 ; vérifier aucune règle *Bloquer* sur `python.exe` |
+| `docker exec coolify-proxy wget …` échoue alors que `curl` sur l'hôte marche | Routage conteneur → Tailscale | Vérifier que Tailscale tourne sur l'hôte (`tailscale status`) |
+| `https://mnemos.dr1ms.fr` → 404 | Route Traefik absente ou mal nommée | Vérifier le fichier dynamique et les noms d'entrypoints (étape 5.2) |
+| `https://mnemos.dr1ms.fr` → 502 / 504 | PC éteint, en veille ou serveur arrêté | `Get-ScheduledTask "Mnemos Serve"`, étape 7 |
+| 401 Unauthorized | Clé ou schéma d'auth différent de celui déclaré à AML | Vérifier `API_KEY` et le header |
+| Latence élevée au premier appel | Modèle déchargé de la VRAM | `OLLAMA_KEEP_ALIVE=-1` (étape 1) |
