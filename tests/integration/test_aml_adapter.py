@@ -366,6 +366,33 @@ async def test_aml_add_multi_message_batch(client: httpx.AsyncClient) -> None:
     assert any("numéro 7" in c for c in contents)
 
 
+async def test_aml_search_never_returns_blank_content(client: httpx.AsyncClient) -> None:
+    """Un item Search sans contenu fait échouer toute l'étape côté plateforme (pas de
+    troncature silencieuse) : un message vide ingéré ne doit jamais ressortir."""
+    payload = {
+        "request_id": "eval:run_blank:chunk_00",
+        "user_id": "eval:run_blank:user_01",
+        "session_id": "eval:run_blank:session_01",
+        "messages": [
+            {"role": "user", "content": "   "},
+            {"role": "assistant", "content": ""},
+            {"role": "user", "content": "Je joue du violoncelle depuis dix ans."},
+        ],
+    }
+    resp = await client.post("/add", json=payload)
+    assert resp.status_code == 200
+    assert resp.json()["success"] is True
+
+    search_resp = await client.post(
+        "/search",
+        json={"query": "violoncelle", "user_id": "eval:run_blank:user_01", "top_k": 10},
+    )
+    assert search_resp.status_code == 200
+    items = search_resp.json()["data"]
+    assert all(str(item["content"]).strip() for item in items)
+    assert any("violoncelle" in item["content"] for item in items)
+
+
 async def test_aml_multimodal_content_parts_support(client: httpx.AsyncClient) -> None:
     """Vérifie la robustesse face aux tableaux de ContentPart (multimodal) pour Add et Search."""
     user_id = "user_mm_support"

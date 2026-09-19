@@ -173,7 +173,8 @@ async def aml_search(
     # Intégration des épisodes bruts
     for e in episodes:
         content = e.episode.content
-        if content.lower() in seen_contents:
+        # Contrat : un item sans content non vide fait échouer toute l'étape Search.
+        if not content.strip() or content.lower() in seen_contents:
             continue
         seen_contents.add(content.lower())
         items.append(
