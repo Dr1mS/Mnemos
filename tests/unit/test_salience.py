@@ -138,6 +138,18 @@ async def test_queue_pleine_drop_sans_bloquer() -> None:
     assert queue.depth == 2
 
 
+async def test_queue_sans_worker_desactive_la_saillance() -> None:
+    """SALIENCE_QUEUE_WORKERS=0 (mode épisodique) : rien n'est mis en file. Un job
+    jamais consommé saturerait la file (un avertissement par message) et bloquerait
+    join()."""
+    tagger, _ = make_tagger("{}")
+    queue = ScoringQueue(tagger, RecordingStore(), maxsize=2, workers=0)
+    for i in range(5):
+        assert not queue.enqueue(ScoringJob(f"ep{i}", "x", []))
+    assert queue.depth == 0
+    await asyncio.wait_for(queue.join(), timeout=1)  # ne bloque pas
+
+
 async def test_queue_job_rate_ne_tue_pas_le_worker() -> None:
     class FlakyStore:
         def __init__(self) -> None:

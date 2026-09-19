@@ -159,6 +159,10 @@ class ScoringQueue:
         self._tasks: list[asyncio.Task[None]] = []
 
     def enqueue(self, job: ScoringJob) -> bool:
+        if self._n_workers == 0:
+            # Saillance désactivée (SALIENCE_QUEUE_WORKERS=0, mode épisodique) : aucun
+            # worker ne consommerait le job, la file saturerait et join() bloquerait.
+            return False
         try:
             self._queue.put_nowait(job)
             return True
