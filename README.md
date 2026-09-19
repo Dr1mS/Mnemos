@@ -279,6 +279,11 @@ Identiques à la section anglaise ci-dessus — `mnemos --help` pour le détail 
 
 Spécification complète : **[MNEMOS_SPEC.md](MNEMOS_SPEC.md)** (rev 1.2) · benchs des modèles : **[poc/RESULTS.md](poc/RESULTS.md)**
 
+
+## License / Licence
+
+Apache License 2.0 — see [LICENSE](LICENSE). Copyright 2026 Adrien.M (Dr1mS).
+
 ---
 
 *Mnemos — the Titaness of memory, mother of the Muses. A memory worth keeping is a memory worth versioning.*
