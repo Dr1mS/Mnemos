@@ -65,6 +65,61 @@ async def test_aml_health_endpoints_unauthenticated(client: httpx.AsyncClient) -
         assert "version" in body
 
 
+async def test_aml_health_reports_real_failures(
+    client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Ollama mort ou modèle d'embedding absent → 503, sans détails internes exposés."""
+    manager = client.app_state.manager  # type: ignore[attr-defined]
+
+    async def ollama_down() -> bool:
+        return False
+
+    async def embed_missing_model() -> str:
+        return "/api/embed HTTP 404 (modèle bge-m3 ?) : model not found"
+
+    monkeypatch.setattr(manager, "health_check", ollama_down)
+    monkeypatch.setattr(manager, "embed_probe", embed_missing_model)
+    resp = await client.get("/health")
+    assert resp.status_code == 503
+    body = resp.json()
+    assert body["status"] == "unhealthy"
+    assert body["failures"] == ["ollama", "embedding"]
+    assert "404" not in resp.text  # détails réservés aux logs
+
+
+async def test_aml_health_slow_embedding_is_degraded_not_down(
+    client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Un timeout de la sonde d'embedding (charge, cold start) reste 2xx."""
+    manager = client.app_state.manager  # type: ignore[attr-defined]
+
+    async def embed_timeout() -> str:
+        return "timeout > 2s sur /api/embed (http://localhost:11434) — modèle en chargement"
+
+    monkeypatch.setattr(manager, "embed_probe", embed_timeout)
+    resp = await client.get("/health")
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "degraded"
+    assert "failures" not in resp.json()
+
+
+async def test_aml_health_result_is_cached(
+    client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """La sonde d'embedding sollicite le GPU : un seul appel par fenêtre de cache."""
+    manager = client.app_state.manager  # type: ignore[attr-defined]
+    calls = 0
+
+    async def counting_probe() -> None:
+        nonlocal calls
+        calls += 1
+
+    monkeypatch.setattr(manager, "embed_probe", counting_probe)
+    for path in ("/health", "/aml/health", "/health"):
+        assert (await client.get(path)).status_code == 200
+    assert calls == 1
+
+
 async def test_aml_add_and_search_synchronous(client: httpx.AsyncClient) -> None:
     """POST /add garantit la persistance synchrone et l'immédiateté de POST /search."""
     add_payload = {

@@ -8,10 +8,13 @@ Fournit les endpoints conformes au contrat de la compétition :
 
 from __future__ import annotations
 
+import asyncio
+import time
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request, Response
 
 from mnemos import __version__
 from mnemos.api.aml_schemas import (
@@ -28,12 +31,20 @@ from mnemos.api.deps import (
     get_wm,
     require_api_key,
 )
+from mnemos.llm.ollama_client import is_probe_timeout
+from mnemos.logging import get_logger
 from mnemos.stores.episodic import BatchEpisodeItem, EpisodicStore
 from mnemos.stores.semantic import SemanticStore
 from mnemos.stores.working import WorkingMemoryRegistry
 from mnemos.tagger.salience import ScoringJob, ScoringQueue
 
+logger = get_logger(__name__)
+
 aml_router = APIRouter(tags=["aml"])
+
+# La sonde d'embedding sollicite le GPU : un résultat sert 30 s, quel que soit
+# le rythme d'appel de la plateforme ou des moniteurs externes.
+HEALTH_CACHE_TTL_S = 30.0
 
 StoreDep = Annotated[EpisodicStore, Depends(get_store)]
 SemanticDep = Annotated[SemanticStore, Depends(get_semantic)]
@@ -192,8 +203,65 @@ async def aml_search(
     return AMLSearchResponse(data=items[:top_k])
 
 
+@dataclass
+class _HealthSnapshot:
+    status: str  # healthy | degraded | unhealthy
+    failures: list[str] = field(default_factory=list)
+    at: float = field(default_factory=time.monotonic)
+
+
+async def _probe_health(request: Request) -> _HealthSnapshot:
+    """Mêmes sondes que /v1/health : Ollama, embedding réel et les deux bases.
+
+    Un embedding trop lent (timeout de la sonde) signale de la charge ou un cold
+    start, pas une panne : l'état reste 2xx (« degraded ») pour ne pas faire
+    croire à la plateforme que le service est tombé pendant un run chargé."""
+    state = request.app.state
+    failures: list[str] = []
+    details: dict[str, str] = {}
+    if not await state.manager.health_check():
+        failures.append("ollama")
+    embed_error = await state.manager.embed_probe()
+    busy = embed_error is not None and is_probe_timeout(embed_error)
+    if embed_error is not None:
+        details["embedding"] = embed_error
+        if not busy:
+            failures.append("embedding")
+    for name, store in (("episodic_db", state.store), ("semantic_db", state.semantic)):
+        db_error = await store.ping()
+        if db_error is not None:
+            failures.append(name)
+            details[name] = db_error
+    if failures or busy:
+        # Détails dans les logs uniquement : l'endpoint est public.
+        logger.warning("aml_health_degraded", failures=failures, **details)
+    status = "unhealthy" if failures else "degraded" if busy else "healthy"
+    return _HealthSnapshot(status=status, failures=failures)
+
+
+async def _health_snapshot(request: Request) -> _HealthSnapshot:
+    state = request.app.state
+    if not hasattr(state, "aml_health_lock"):
+        state.aml_health_lock = asyncio.Lock()
+    async with state.aml_health_lock:
+        cached: _HealthSnapshot | None = getattr(state, "aml_health_cache", None)
+        if cached is None or time.monotonic() - cached.at > HEALTH_CACHE_TTL_S:
+            cached = await _probe_health(request)
+            state.aml_health_cache = cached
+        return cached
+
+
 @aml_router.get("/health")
 @aml_router.get("/aml/health")
-async def aml_health() -> dict[str, str]:
-    """Sonde de santé non-authentifiée conforme au contrat AML (tout 2xx valide)."""
-    return {"status": "healthy", "version": __version__}
+async def aml_health(request: Request, response: Response) -> dict[str, Any]:
+    """Sonde de santé non authentifiée (contrat AML : tout 2xx = sain).
+
+    503 si Ollama, l'embedding ou une base est en panne : un moniteur externe
+    sans clé voit alors aussi les pannes d'Ollama. Résultat mis en cache 30 s."""
+    snapshot = await _health_snapshot(request)
+    if snapshot.status == "unhealthy":
+        response.status_code = 503
+    body: dict[str, Any] = {"status": snapshot.status, "version": __version__}
+    if snapshot.failures:
+        body["failures"] = snapshot.failures
+    return body

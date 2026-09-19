@@ -25,6 +25,13 @@ GENERATE_TIMEOUT_S = 300.0
 RETRY_ATTEMPTS = 3
 RETRY_BASE_DELAY_S = 0.5
 HEALTH_TIMEOUT_S = 2.0  # sonde /health : court, appelé à chaque tick Atelios
+_PROBE_TIMEOUT_PREFIX = "timeout > "
+
+
+def is_probe_timeout(probe_error: str) -> bool:
+    """Vrai si embed_probe a échoué par dépassement de délai (charge ou cold
+    start) plutôt que par une panne franche (process mort, modèle absent)."""
+    return probe_error.startswith(_PROBE_TIMEOUT_PREFIX)
 
 
 class OllamaError(Exception):
@@ -127,7 +134,7 @@ class OllamaClient:
             # restart Ollama ou l'expiration du keep_alive). Dans les deux cas
             # l'embedding n'est pas prêt à servir CE tick — on le signale.
             return (
-                f"timeout > {HEALTH_TIMEOUT_S:g}s sur /api/embed ({self._host}) "
+                f"{_PROBE_TIMEOUT_PREFIX}{HEALTH_TIMEOUT_S:g}s sur /api/embed ({self._host}) "
                 f"— modèle {model} en chargement (cold start) ou endpoint en peine"
             )
         except httpx.HTTPError as exc:
