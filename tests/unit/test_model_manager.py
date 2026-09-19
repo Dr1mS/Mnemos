@@ -110,15 +110,16 @@ async def test_medium_finit_par_passer() -> None:
 
 def test_tier_for_profil_dev() -> None:
     """EXTRACTION_MODEL == SALIENCE_MODEL → tout en SMALL, exclusion inerte."""
-    m = make_manager()  # défauts : qwen3:4b partout
+    m = make_manager()  # défauts : même modèle partout
+    default_small = Settings(_env_file=None).SALIENCE_MODEL
     assert m.tier_for("bge-m3") is Tier.SMALL
-    assert m.tier_for("qwen3:4b") is Tier.SMALL
+    assert m.tier_for(default_small) is Tier.SMALL
 
 
 def test_tier_for_profil_gpu() -> None:
     """EXTRACTION_MODEL distinct (qwen3:8b) → MEDIUM, exclusion active."""
     m = make_manager(EXTRACTION_MODEL="qwen3:8b")
-    assert m.tier_for("qwen3:4b") is Tier.SMALL
+    assert m.tier_for(Settings(_env_file=None).SALIENCE_MODEL) is Tier.SMALL
     assert m.tier_for("qwen3:8b") is Tier.MEDIUM
 
 

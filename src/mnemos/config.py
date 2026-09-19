@@ -29,9 +29,9 @@ class Settings(BaseSettings):
     # Ollama
     OLLAMA_HOST: str = "http://localhost:11434"
     EMBED_MODEL: str = "bge-m3"
-    SALIENCE_MODEL: str = "qwen3:4b"
-    EXTRACTION_MODEL: str = "qwen3:4b"
-    # Famille qwen3 : jamais de mode thinking (JSON cassé sous Ollama + latence ×5-10, cf. §2)
+    SALIENCE_MODEL: str = "qwen2.5:3b"
+    EXTRACTION_MODEL: str = "qwen2.5:3b"
+    # Jamais de mode thinking (JSON cassé sous Ollama + latence ×5-10, cf. §2)
     LLM_THINK: bool = False
 
     # Storage

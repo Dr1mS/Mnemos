@@ -7,10 +7,11 @@ from mnemos.config import Settings
 
 def test_defaults_match_spec() -> None:
     s = Settings(_env_file=None)  # ignore le .env local
-    assert s.SALIENCE_MODEL == "qwen3:4b"
-    assert s.EXTRACTION_MODEL == "qwen3:4b"
+    # Modèles AML (cf. AML_DEPLOYMENT_WINDOWS.md)
+    assert s.SALIENCE_MODEL == "qwen2.5:3b"
+    assert s.EXTRACTION_MODEL == "qwen2.5:3b"
     assert s.EMBED_MODEL == "bge-m3"
-    assert s.LLM_THINK is False  # qwen3 : jamais de thinking (§2)
+    assert s.LLM_THINK is False  # jamais de thinking (§2)
     assert s.SALIENCE_THRESHOLD_CONSOLIDATE == 0.6
     assert s.LLM_TIER_MEDIUM_CONCURRENCY == 1
 
