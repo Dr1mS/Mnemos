@@ -1,0 +1,1361 @@
+{
+  "metadata": {
+    "date": "2026-09-19T16:33:44",
+    "commit": "4b83840-dirty",
+    "gpu": "NVIDIA GeForce RTX 4070 Ti",
+    "ollama_loaded_models": [
+      {
+        "name": "bge-m3:latest",
+        "size": 664000265,
+        "size_vram": 664000265
+      }
+    ],
+    "mode": "épisodique seul (sans LLM)",
+    "embed_model": "bge-m3",
+    "llm_model": null,
+    "top_k": 100,
+    "chunking": {
+      "max_messages": 20,
+      "max_words": 2000
+    },
+    "personas": 50
+  },
+  "ingestion": {
+    "messages": 11470,
+    "add_requests": 724,
+    "add_errors": 0,
+    "total_s": 225.52853440000035,
+    "throughput_msg_s": 50.858309484052505,
+    "add_latency_ms": {
+      "mean": 310.58036505524376,
+      "p50": 320.50630000003366,
+      "p95": 371.67649999992136,
+      "max": 537.3248999999305
+    }
+  },
+  "consolidation": null,
+  "search": {
+    "queries": 148,
+    "skipped_no_evidence": 16,
+    "contract_errors": 0,
+    "latency_ms": {
+      "mean": 203.08155067567208,
+      "p50": 205.50139999977546,
+      "p95": 218.77549999999246,
+      "max": 246.9719000000623
+    }
+  },
+  "metrics": {
+    "count": 148,
+    "mrr": 0.2829444983236373,
+    "recall@1": 0.22972972972972974,
+    "recall@3": 0.2635135135135135,
+    "recall@5": 0.2972972972972973,
+    "recall@10": 0.38513513513513514,
+    "recall@20": 0.5337837837837838,
+    "recall@50": 0.7364864864864865,
+    "recall@100": 0.9256756756756757
+  },
+  "by_pref_type": {
+    "anti_stereotypical_pref": {
+      "count": 30,
+      "mrr": 0.06474589850503928,
+      "recall@1": 0.0,
+      "recall@3": 0.03333333333333333,
+      "recall@5": 0.06666666666666667,
+      "recall@10": 0.2,
+      "recall@20": 0.43333333333333335,
+      "recall@50": 0.6666666666666666,
+      "recall@100": 0.9333333333333333
+    },
+    "ask_to_forget": {
+      "count": 32,
+      "mrr": 0.96875,
+      "recall@1": 0.9375,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "recall@10": 1.0,
+      "recall@20": 1.0,
+      "recall@50": 1.0,
+      "recall@100": 1.0
+    },
+    "health_and_medical_conditions": {
+      "count": 19,
+      "mrr": 0.1565765990256387,
+      "recall@1": 0.10526315789473684,
+      "recall@3": 0.10526315789473684,
+      "recall@5": 0.15789473684210525,
+      "recall@10": 0.2631578947368421,
+      "recall@20": 0.5263157894736842,
+      "recall@50": 0.6842105263157895,
+      "recall@100": 0.8947368421052632
+    },
+    "neutral_preferences": {
+      "count": 28,
+      "mrr": 0.08882718659769259,
+      "recall@1": 0.03571428571428571,
+      "recall@3": 0.03571428571428571,
+      "recall@5": 0.10714285714285714,
+      "recall@10": 0.21428571428571427,
+      "recall@20": 0.35714285714285715,
+      "recall@50": 0.6785714285714286,
+      "recall@100": 0.8928571428571429
+    },
+    "stereotypical_pref": {
+      "count": 19,
+      "mrr": 0.07631767772730712,
+      "recall@1": 0.0,
+      "recall@3": 0.05263157894736842,
+      "recall@5": 0.05263157894736842,
+      "recall@10": 0.21052631578947367,
+      "recall@20": 0.47368421052631576,
+      "recall@50": 0.6842105263157895,
+      "recall@100": 0.9473684210526315
+    },
+    "therapy_background": {
+      "count": 20,
+      "mrr": 0.10106281568528877,
+      "recall@1": 0.05,
+      "recall@3": 0.1,
+      "recall@5": 0.15,
+      "recall@10": 0.2,
+      "recall@20": 0.25,
+      "recall@50": 0.6,
+      "recall@100": 0.85
+    }
+  },
+  "by_who": {
+    "others": {
+      "count": 11,
+      "mrr": 0.10491260699972133,
+      "recall@1": 0.0,
+      "recall@3": 0.09090909090909091,
+      "recall@5": 0.2727272727272727,
+      "recall@10": 0.36363636363636365,
+      "recall@20": 0.5454545454545454,
+      "recall@50": 0.7272727272727273,
+      "recall@100": 1.0
+    },
+    "self": {
+      "count": 137,
+      "mrr": 0.29723902974380567,
+      "recall@1": 0.24817518248175183,
+      "recall@3": 0.2773722627737226,
+      "recall@5": 0.29927007299270075,
+      "recall@10": 0.38686131386861317,
+      "recall@20": 0.5328467153284672,
+      "recall@50": 0.7372262773722628,
+      "recall@100": 0.9197080291970803
+    }
+  },
+  "by_updated": {
+    "False": {
+      "count": 116,
+      "mrr": 0.09375677372326136,
+      "recall@1": 0.034482758620689655,
+      "recall@3": 0.0603448275862069,
+      "recall@5": 0.10344827586206896,
+      "recall@10": 0.21551724137931033,
+      "recall@20": 0.4051724137931034,
+      "recall@50": 0.6637931034482759,
+      "recall@100": 0.9051724137931034
+    },
+    "True": {
+      "count": 32,
+      "mrr": 0.96875,
+      "recall@1": 0.9375,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "recall@10": 1.0,
+      "recall@20": 1.0,
+      "recall@50": 1.0,
+      "recall@100": 1.0
+    }
+  },
+  "questions": [
+    {
+      "persona_id": "988",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "others",
+      "updated": "False",
+      "rank": 14,
+      "latency_ms": 180.56990000013684
+    },
+    {
+      "persona_id": "988",
+      "pref_type": "therapy_background",
+      "who": "others",
+      "updated": "False",
+      "rank": 76,
+      "latency_ms": 171.50320000018837
+    },
+    {
+      "persona_id": "988",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 68,
+      "latency_ms": 175.89019999968514
+    },
+    {
+      "persona_id": "988",
+      "pref_type": "therapy_background",
+      "who": "self",
+      "updated": "False",
+      "rank": 55,
+      "latency_ms": 186.1644000000524
+    },
+    {
+      "persona_id": "782",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 46,
+      "latency_ms": 176.6085999997813
+    },
+    {
+      "persona_id": "782",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 200.78530000000683
+    },
+    {
+      "persona_id": "730",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 179.23900000005233
+    },
+    {
+      "persona_id": "730",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 2,
+      "latency_ms": 177.00339999964854
+    },
+    {
+      "persona_id": "243",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 9,
+      "latency_ms": 178.38449999999284
+    },
+    {
+      "persona_id": "243",
+      "pref_type": "therapy_background",
+      "who": "others",
+      "updated": "False",
+      "rank": 3,
+      "latency_ms": 185.52960000033636
+    },
+    {
+      "persona_id": "243",
+      "pref_type": "therapy_background",
+      "who": "others",
+      "updated": "False",
+      "rank": 9,
+      "latency_ms": 183.02260000018578
+    },
+    {
+      "persona_id": "400",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 176.15999999998166
+    },
+    {
+      "persona_id": "400",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": null,
+      "latency_ms": 174.16400000001886
+    },
+    {
+      "persona_id": "400",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 79,
+      "latency_ms": 177.0382999998219
+    },
+    {
+      "persona_id": "400",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 184.31199999986347
+    },
+    {
+      "persona_id": "400",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": null,
+      "latency_ms": 177.7117999999973
+    },
+    {
+      "persona_id": "535",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 176.51139999998122
+    },
+    {
+      "persona_id": "535",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 182.27750000005472
+    },
+    {
+      "persona_id": "535",
+      "pref_type": "therapy_background",
+      "who": "self",
+      "updated": "False",
+      "rank": null,
+      "latency_ms": 178.24819999987085
+    },
+    {
+      "persona_id": "392",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 177.50650000016321
+    },
+    {
+      "persona_id": "392",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 177.9738999998699
+    },
+    {
+      "persona_id": "392",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 28,
+      "latency_ms": 175.80499999985477
+    },
+    {
+      "persona_id": "207",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 19,
+      "latency_ms": 181.1201999998957
+    },
+    {
+      "persona_id": "207",
+      "pref_type": "therapy_background",
+      "who": "self",
+      "updated": "False",
+      "rank": 78,
+      "latency_ms": 197.14220000014393
+    },
+    {
+      "persona_id": "207",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 33,
+      "latency_ms": 197.45339999963107
+    },
+    {
+      "persona_id": "326",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 2,
+      "latency_ms": 205.38770000030127
+    },
+    {
+      "persona_id": "326",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 199.7014999997191
+    },
+    {
+      "persona_id": "326",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 204.5004000001427
+    },
+    {
+      "persona_id": "326",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 14,
+      "latency_ms": 200.4345000000285
+    },
+    {
+      "persona_id": "193",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 6,
+      "latency_ms": 201.55190000014045
+    },
+    {
+      "persona_id": "193",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 75,
+      "latency_ms": 204.706299999998
+    },
+    {
+      "persona_id": "163",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 19,
+      "latency_ms": 203.19470000004003
+    },
+    {
+      "persona_id": "163",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 211.74040000005334
+    },
+    {
+      "persona_id": "163",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 17,
+      "latency_ms": 207.67810000006648
+    },
+    {
+      "persona_id": "163",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 59,
+      "latency_ms": 205.08199999994758
+    },
+    {
+      "persona_id": "163",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 99,
+      "latency_ms": 203.76969999961148
+    },
+    {
+      "persona_id": "532",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 30,
+      "latency_ms": 202.5181999997585
+    },
+    {
+      "persona_id": "532",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": null,
+      "latency_ms": 203.71399999976347
+    },
+    {
+      "persona_id": "287",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 65,
+      "latency_ms": 215.90699999978824
+    },
+    {
+      "persona_id": "287",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 16,
+      "latency_ms": 202.36340000019482
+    },
+    {
+      "persona_id": "488",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 8,
+      "latency_ms": 199.7430000001259
+    },
+    {
+      "persona_id": "71",
+      "pref_type": "therapy_background",
+      "who": "self",
+      "updated": "False",
+      "rank": 17,
+      "latency_ms": 207.55240000016784
+    },
+    {
+      "persona_id": "71",
+      "pref_type": "therapy_background",
+      "who": "self",
+      "updated": "False",
+      "rank": 87,
+      "latency_ms": 206.9165000002613
+    },
+    {
+      "persona_id": "71",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 2,
+      "latency_ms": 210.15680000027714
+    },
+    {
+      "persona_id": "729",
+      "pref_type": "therapy_background",
+      "who": "self",
+      "updated": "False",
+      "rank": 32,
+      "latency_ms": 210.01780000005965
+    },
+    {
+      "persona_id": "729",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 205.32720000028348
+    },
+    {
+      "persona_id": "891",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 9,
+      "latency_ms": 211.0689999999522
+    },
+    {
+      "persona_id": "891",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 19,
+      "latency_ms": 199.69240000000354
+    },
+    {
+      "persona_id": "891",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 6,
+      "latency_ms": 206.49290000028486
+    },
+    {
+      "persona_id": "891",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 7,
+      "latency_ms": 199.56920000004175
+    },
+    {
+      "persona_id": "891",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 4,
+      "latency_ms": 204.80039999984
+    },
+    {
+      "persona_id": "891",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 25,
+      "latency_ms": 199.95800000015151
+    },
+    {
+      "persona_id": "29",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": null,
+      "latency_ms": 205.68139999977575
+    },
+    {
+      "persona_id": "29",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 14,
+      "latency_ms": 196.00109999964843
+    },
+    {
+      "persona_id": "29",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 55,
+      "latency_ms": 210.09279999998398
+    },
+    {
+      "persona_id": "477",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 14,
+      "latency_ms": 204.71459999998842
+    },
+    {
+      "persona_id": "195",
+      "pref_type": "therapy_background",
+      "who": "self",
+      "updated": "False",
+      "rank": 38,
+      "latency_ms": 201.08589999972537
+    },
+    {
+      "persona_id": "195",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 32,
+      "latency_ms": 199.07949999969787
+    },
+    {
+      "persona_id": "195",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 1,
+      "latency_ms": 204.64320000019143
+    },
+    {
+      "persona_id": "610",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 14,
+      "latency_ms": 203.2112000001689
+    },
+    {
+      "persona_id": "610",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 46,
+      "latency_ms": 205.05910000019867
+    },
+    {
+      "persona_id": "954",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 209.2515999997886
+    },
+    {
+      "persona_id": "954",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 71,
+      "latency_ms": 198.80349999993996
+    },
+    {
+      "persona_id": "898",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 23,
+      "latency_ms": 207.59670000006736
+    },
+    {
+      "persona_id": "898",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 202.14199999963967
+    },
+    {
+      "persona_id": "898",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 200.24860000012268
+    },
+    {
+      "persona_id": "146",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 246.9719000000623
+    },
+    {
+      "persona_id": "146",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 57,
+      "latency_ms": 222.44020000016462
+    },
+    {
+      "persona_id": "446",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 99,
+      "latency_ms": 218.77549999999246
+    },
+    {
+      "persona_id": "446",
+      "pref_type": "therapy_background",
+      "who": "self",
+      "updated": "False",
+      "rank": 49,
+      "latency_ms": 200.95189999983631
+    },
+    {
+      "persona_id": "446",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 54,
+      "latency_ms": 207.7950000002602
+    },
+    {
+      "persona_id": "446",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 20,
+      "latency_ms": 205.2745999999388
+    },
+    {
+      "persona_id": "61",
+      "pref_type": "therapy_background",
+      "who": "self",
+      "updated": "False",
+      "rank": 29,
+      "latency_ms": 208.8077000003068
+    },
+    {
+      "persona_id": "61",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 9,
+      "latency_ms": 224.24770000043281
+    },
+    {
+      "persona_id": "58",
+      "pref_type": "therapy_background",
+      "who": "self",
+      "updated": "False",
+      "rank": 33,
+      "latency_ms": 220.0543000003563
+    },
+    {
+      "persona_id": "58",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 10,
+      "latency_ms": 219.80660000008356
+    },
+    {
+      "persona_id": "506",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 45,
+      "latency_ms": 220.56309999970836
+    },
+    {
+      "persona_id": "506",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 63,
+      "latency_ms": 235.9311999998681
+    },
+    {
+      "persona_id": "506",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 94,
+      "latency_ms": 205.15079999995578
+    },
+    {
+      "persona_id": "75",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 27,
+      "latency_ms": 208.84990000013204
+    },
+    {
+      "persona_id": "75",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 16,
+      "latency_ms": 215.18250000008265
+    },
+    {
+      "persona_id": "75",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 41,
+      "latency_ms": 210.4143000001386
+    },
+    {
+      "persona_id": "696",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": null,
+      "latency_ms": 211.67490000016187
+    },
+    {
+      "persona_id": "696",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 203.88950000005934
+    },
+    {
+      "persona_id": "696",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 94,
+      "latency_ms": 208.38119999962146
+    },
+    {
+      "persona_id": "437",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 32,
+      "latency_ms": 207.7180999999655
+    },
+    {
+      "persona_id": "437",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 13,
+      "latency_ms": 210.29189999990194
+    },
+    {
+      "persona_id": "437",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 80,
+      "latency_ms": 206.07820000032007
+    },
+    {
+      "persona_id": "437",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "others",
+      "updated": "False",
+      "rank": 30,
+      "latency_ms": 207.58759999989707
+    },
+    {
+      "persona_id": "437",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 202.1532999997362
+    },
+    {
+      "persona_id": "437",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 39,
+      "latency_ms": 210.06859999988592
+    },
+    {
+      "persona_id": "437",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 206.97669999981372
+    },
+    {
+      "persona_id": "313",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 79,
+      "latency_ms": 206.62680000032196
+    },
+    {
+      "persona_id": "313",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 9,
+      "latency_ms": 207.79609999999593
+    },
+    {
+      "persona_id": "449",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 12,
+      "latency_ms": 204.7389000003932
+    },
+    {
+      "persona_id": "449",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "others",
+      "updated": "False",
+      "rank": 87,
+      "latency_ms": 202.2236000002522
+    },
+    {
+      "persona_id": "449",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 27,
+      "latency_ms": 208.16030000014507
+    },
+    {
+      "persona_id": "449",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 81,
+      "latency_ms": 200.31749999998283
+    },
+    {
+      "persona_id": "449",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 92,
+      "latency_ms": 210.25190000000293
+    },
+    {
+      "persona_id": "853",
+      "pref_type": "therapy_background",
+      "who": "self",
+      "updated": "False",
+      "rank": null,
+      "latency_ms": 198.80160000002434
+    },
+    {
+      "persona_id": "853",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 1,
+      "latency_ms": 207.82520000011573
+    },
+    {
+      "persona_id": "853",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 7,
+      "latency_ms": 203.8801999997304
+    },
+    {
+      "persona_id": "853",
+      "pref_type": "therapy_background",
+      "who": "self",
+      "updated": "False",
+      "rank": null,
+      "latency_ms": 214.85810000012862
+    },
+    {
+      "persona_id": "240",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 8,
+      "latency_ms": 214.13429999984146
+    },
+    {
+      "persona_id": "240",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": null,
+      "latency_ms": 207.33630000040648
+    },
+    {
+      "persona_id": "597",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 10,
+      "latency_ms": 209.01900000035312
+    },
+    {
+      "persona_id": "597",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 37,
+      "latency_ms": 207.4376000000484
+    },
+    {
+      "persona_id": "597",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 14,
+      "latency_ms": 213.80870000029972
+    },
+    {
+      "persona_id": "597",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 205.90210000000297
+    },
+    {
+      "persona_id": "223",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 205.80969999991794
+    },
+    {
+      "persona_id": "223",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 41,
+      "latency_ms": 213.27350000001388
+    },
+    {
+      "persona_id": "223",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 4,
+      "latency_ms": 204.22569999982443
+    },
+    {
+      "persona_id": "669",
+      "pref_type": "therapy_background",
+      "who": "self",
+      "updated": "False",
+      "rank": 1,
+      "latency_ms": 210.76899999980014
+    },
+    {
+      "persona_id": "669",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 204.8317000003408
+    },
+    {
+      "persona_id": "669",
+      "pref_type": "stereotypical_pref",
+      "who": "others",
+      "updated": "False",
+      "rank": 12,
+      "latency_ms": 205.78819999991538
+    },
+    {
+      "persona_id": "669",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 14,
+      "latency_ms": 205.82930000000488
+    },
+    {
+      "persona_id": "833",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 53,
+      "latency_ms": 208.38800000001356
+    },
+    {
+      "persona_id": "833",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 5,
+      "latency_ms": 210.16629999985526
+    },
+    {
+      "persona_id": "833",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 29,
+      "latency_ms": 201.63360000015018
+    },
+    {
+      "persona_id": "833",
+      "pref_type": "therapy_background",
+      "who": "others",
+      "updated": "False",
+      "rank": 30,
+      "latency_ms": 206.2708999997085
+    },
+    {
+      "persona_id": "833",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 2,
+      "latency_ms": 211.7619000000559
+    },
+    {
+      "persona_id": "167",
+      "pref_type": "neutral_preferences",
+      "who": "others",
+      "updated": "False",
+      "rank": 5,
+      "latency_ms": 201.3371999996707
+    },
+    {
+      "persona_id": "322",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 26,
+      "latency_ms": 214.52499999986685
+    },
+    {
+      "persona_id": "322",
+      "pref_type": "therapy_background",
+      "who": "self",
+      "updated": "False",
+      "rank": 44,
+      "latency_ms": 210.88369999961287
+    },
+    {
+      "persona_id": "497",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 29,
+      "latency_ms": 207.4470000002293
+    },
+    {
+      "persona_id": "497",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 39,
+      "latency_ms": 210.16839999992953
+    },
+    {
+      "persona_id": "497",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 205.47519999990982
+    },
+    {
+      "persona_id": "497",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 17,
+      "latency_ms": 205.6830000001355
+    },
+    {
+      "persona_id": "497",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 27,
+      "latency_ms": 213.9354999999341
+    },
+    {
+      "persona_id": "683",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 57,
+      "latency_ms": 204.4317999998384
+    },
+    {
+      "persona_id": "683",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": null,
+      "latency_ms": 211.76580000019385
+    },
+    {
+      "persona_id": "364",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 98,
+      "latency_ms": 208.01570000003267
+    },
+    {
+      "persona_id": "364",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 207.7543999998852
+    },
+    {
+      "persona_id": "364",
+      "pref_type": "neutral_preferences",
+      "who": "self",
+      "updated": "False",
+      "rank": 1,
+      "latency_ms": 200.28369999999995
+    },
+    {
+      "persona_id": "364",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 33,
+      "latency_ms": 203.61729999967793
+    },
+    {
+      "persona_id": "364",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 205.50139999977546
+    },
+    {
+      "persona_id": "918",
+      "pref_type": "therapy_background",
+      "who": "others",
+      "updated": "False",
+      "rank": 74,
+      "latency_ms": 212.9985999999917
+    },
+    {
+      "persona_id": "918",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": null,
+      "latency_ms": 205.80410000002303
+    },
+    {
+      "persona_id": "918",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 11,
+      "latency_ms": 205.6244999998853
+    },
+    {
+      "persona_id": "333",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 202.59329999998954
+    },
+    {
+      "persona_id": "227",
+      "pref_type": "anti_stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 18,
+      "latency_ms": 205.68989999992482
+    },
+    {
+      "persona_id": "227",
+      "pref_type": "stereotypical_pref",
+      "who": "self",
+      "updated": "False",
+      "rank": 17,
+      "latency_ms": 202.50990000022284
+    },
+    {
+      "persona_id": "227",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 206.7388000000392
+    },
+    {
+      "persona_id": "227",
+      "pref_type": "therapy_background",
+      "who": "others",
+      "updated": "False",
+      "rank": 4,
+      "latency_ms": 206.56499999995503
+    },
+    {
+      "persona_id": "606",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 207.10579999968104
+    },
+    {
+      "persona_id": "606",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 209.18639999990774
+    },
+    {
+      "persona_id": "606",
+      "pref_type": "health_and_medical_conditions",
+      "who": "self",
+      "updated": "False",
+      "rank": 62,
+      "latency_ms": 208.6960999999974
+    },
+    {
+      "persona_id": "606",
+      "pref_type": "ask_to_forget",
+      "who": "self",
+      "updated": "True",
+      "rank": 1,
+      "latency_ms": 204.54709999967235
+    }
+  ]
+}

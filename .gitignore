@@ -23,3 +23,6 @@ Thumbs.db
 Adrien_memory_dump/
 backups/
 .worktrees/
+
+# Historiques PersonaMem téléchargés à la demande par bench/bench_personamem.py
+bench/data/personamem/chats/

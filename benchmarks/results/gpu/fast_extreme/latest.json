@@ -1,0 +1,261 @@
+{
+  "scenario": "all",
+  "mode": "fast",
+  "scale": "extreme",
+  "total_duration_sec": 86.37196300000005,
+  "volume": {
+    "mode": "fast",
+    "steps": [
+      {
+        "target_count": 2500,
+        "write_stats": {
+          "count": 2500,
+          "total_time": 5.37905289998298,
+          "throughput_ops_sec": 464.64467552978164,
+          "mean_ms": 2.151621159993192,
+          "min_ms": 1.1110000000371656,
+          "p50_ms": 1.5648000003238849,
+          "p90_ms": 3.039100000023609,
+          "p95_ms": 3.269400000135647,
+          "p99_ms": 8.663399999932153,
+          "max_ms": 29.504200000246783
+        },
+        "search_stats": {
+          "count": 40,
+          "total_time": 0.3689866999993683,
+          "throughput_ops_sec": 108.39435709806233,
+          "mean_ms": 9.224667499984207,
+          "min_ms": 8.695299999999406,
+          "p50_ms": 9.13189999982933,
+          "p90_ms": 9.502900000370573,
+          "p95_ms": 9.791499999664666,
+          "p99_ms": 11.918799999875773,
+          "max_ms": 11.918799999875773
+        },
+        "db_size_kb": 13688.0,
+        "wal_size_kb": 7829.640625,
+        "bytes_per_episode": 8813.6256
+      },
+      {
+        "target_count": 5000,
+        "write_stats": {
+          "count": 2500,
+          "total_time": 5.850043800009644,
+          "throughput_ops_sec": 427.24850119515617,
+          "mean_ms": 2.3400175200038573,
+          "min_ms": 1.0738999999375665,
+          "p50_ms": 2.374600000166538,
+          "p90_ms": 3.0843999998069194,
+          "p95_ms": 3.275000000030559,
+          "p99_ms": 9.20209999958388,
+          "max_ms": 26.128800000151386
+        },
+        "search_stats": {
+          "count": 40,
+          "total_time": 0.5768734000002951,
+          "throughput_ops_sec": 69.33464052240443,
+          "mean_ms": 14.421835000007377,
+          "min_ms": 13.893800000005285,
+          "p50_ms": 14.29680000001099,
+          "p90_ms": 14.751699999578705,
+          "p95_ms": 15.272499999809952,
+          "p99_ms": 15.944799999942916,
+          "max_ms": 15.944799999942916
+        },
+        "db_size_kb": 23188.0,
+        "wal_size_kb": 7829.640625,
+        "bytes_per_episode": 6352.4128
+      },
+      {
+        "target_count": 10000,
+        "write_stats": {
+          "count": 5000,
+          "total_time": 11.216145200001847,
+          "throughput_ops_sec": 445.678045620479,
+          "mean_ms": 2.2432290400003696,
+          "min_ms": 1.0833999999704247,
+          "p50_ms": 2.2611000003962545,
+          "p90_ms": 3.036400000382855,
+          "p95_ms": 3.2825000002958404,
+          "p99_ms": 9.062200000244047,
+          "max_ms": 24.52210000001287
+        },
+        "search_stats": {
+          "count": 40,
+          "total_time": 1.0989171000010174,
+          "throughput_ops_sec": 36.39806231275658,
+          "mean_ms": 27.472927500025435,
+          "min_ms": 26.585199999772158,
+          "p50_ms": 27.390799999921,
+          "p90_ms": 27.8957000000446,
+          "p95_ms": 28.218099999776314,
+          "p99_ms": 28.796499999771186,
+          "max_ms": 28.796499999771186
+        },
+        "db_size_kb": 46356.0,
+        "wal_size_kb": 7829.640625,
+        "bytes_per_episode": 5548.6096
+      },
+      {
+        "target_count": 25000,
+        "write_stats": {
+          "count": 15000,
+          "total_time": 33.55789690003394,
+          "throughput_ops_sec": 446.88202900743494,
+          "mean_ms": 2.2371931266689296,
+          "min_ms": 1.068099999883998,
+          "p50_ms": 2.250500000172906,
+          "p90_ms": 3.040999999939231,
+          "p95_ms": 3.2334000002265384,
+          "p99_ms": 9.223600000041188,
+          "max_ms": 25.625199999922188
+        },
+        "search_stats": {
+          "count": 40,
+          "total_time": 2.640562100000352,
+          "throughput_ops_sec": 15.148050608728154,
+          "mean_ms": 66.0140525000088,
+          "min_ms": 65.01539999999295,
+          "p50_ms": 65.95319999996718,
+          "p90_ms": 66.7316000003666,
+          "p95_ms": 67.25539999979446,
+          "p99_ms": 67.76829999989786,
+          "max_ms": 67.76829999989786
+        },
+        "db_size_kb": 115892.0,
+        "wal_size_kb": 8143.46875,
+        "bytes_per_episode": 5080.4928
+      }
+    ],
+    "tenant_skew_recall": 100.0,
+    "tenant_skew_search_ms": 50.65309999963574
+  },
+  "concurrency": {
+    "workers_results": [
+      {
+        "concurrency_level": 1,
+        "throughput_ops_sec": 372.53105046358974,
+        "p50_ms": 1.3414000000011583,
+        "p95_ms": 4.279100000076141,
+        "p99_ms": 24.878700000044773,
+        "errors_count": 0
+      },
+      {
+        "concurrency_level": 2,
+        "throughput_ops_sec": 498.0240894251271,
+        "p50_ms": 2.086299999973562,
+        "p95_ms": 10.30769999988479,
+        "p99_ms": 31.3373999997566,
+        "errors_count": 0
+      },
+      {
+        "concurrency_level": 4,
+        "throughput_ops_sec": 491.4670568097094,
+        "p50_ms": 2.1925999999439227,
+        "p95_ms": 25.578500000392523,
+        "p99_ms": 72.51410000026226,
+        "errors_count": 0
+      },
+      {
+        "concurrency_level": 8,
+        "throughput_ops_sec": 362.375420709293,
+        "p50_ms": 2.734200000304554,
+        "p95_ms": 43.98690000016359,
+        "p99_ms": 259.9600999997165,
+        "errors_count": 0
+      },
+      {
+        "concurrency_level": 16,
+        "throughput_ops_sec": 302.53397255610247,
+        "p50_ms": 4.052600000250095,
+        "p95_ms": 64.74179999986518,
+        "p99_ms": 873.3361999998124,
+        "errors_count": 0
+      }
+    ],
+    "tier_deadlock_free": true,
+    "salience_burst": {
+      "burst_size": 150,
+      "accepted_memory": 50,
+      "deferred_db": 100,
+      "drain_time_sec": 20.527466399999867,
+      "unscored_remaining": 0
+    }
+  },
+  "conflict": {
+    "temporal_chain": {
+      "predicate": "lives_in",
+      "total_facts": 4,
+      "current_facts_count": 1,
+      "chain_continuous": true,
+      "final_value": "Annecy"
+    },
+    "cardinality_respected": true,
+    "cross_tenant_conflict_isolated": true,
+    "alias_deduplication_clean": true,
+    "duplicate_current_count": 0
+  },
+  "decay": {
+    "snapshots": [
+      {
+        "day": 0,
+        "low_salience_avg_decay": 1.0,
+        "med_salience_avg_decay": 1.0,
+        "high_salience_avg_decay": 1.0,
+        "active_episodes": 75,
+        "archived_episodes": 0
+      },
+      {
+        "day": 15,
+        "low_salience_avg_decay": 0.0,
+        "med_salience_avg_decay": 0.0,
+        "high_salience_avg_decay": 0.17499999999999993,
+        "active_episodes": 75,
+        "archived_episodes": 0
+      },
+      {
+        "day": 30,
+        "low_salience_avg_decay": 0.0,
+        "med_salience_avg_decay": 0.0,
+        "high_salience_avg_decay": 0.0,
+        "active_episodes": 75,
+        "archived_episodes": 0
+      },
+      {
+        "day": 60,
+        "low_salience_avg_decay": 0.0,
+        "med_salience_avg_decay": 0.0,
+        "high_salience_avg_decay": 0.0,
+        "active_episodes": 75,
+        "archived_episodes": 0
+      },
+      {
+        "day": 90,
+        "low_salience_avg_decay": 0.0,
+        "med_salience_avg_decay": 0.0,
+        "high_salience_avg_decay": 0.0,
+        "active_episodes": 75,
+        "archived_episodes": 0
+      },
+      {
+        "day": 180,
+        "low_salience_avg_decay": 0.0,
+        "med_salience_avg_decay": 0.0,
+        "high_salience_avg_decay": 0.0,
+        "active_episodes": 25,
+        "archived_episodes": 50
+      },
+      {
+        "day": 365,
+        "low_salience_avg_decay": 0.0,
+        "med_salience_avg_decay": 0.0,
+        "high_salience_avg_decay": 0.0,
+        "active_episodes": 25,
+        "archived_episodes": 50
+      }
+    ],
+    "dumped_jsonl_count": 50,
+    "high_salience_survival_rate": 100.0,
+    "low_salience_survival_rate": 0.0
+  }
+}
