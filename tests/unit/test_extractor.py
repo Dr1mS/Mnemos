@@ -314,6 +314,23 @@ def test_extraction_prompt_covers_all_ten_predicates() -> None:
         )
 
 
+def test_extraction_prompt_types_health_constraints_as_attributes() -> None:
+    """Une allergie typée « dislikes » passe pour un simple goût, et sa similarité
+    avec une question médicale tombe (0,42 contre 0,55-0,57 en has_attribute
+    nommant la contrainte, mesuré avec bge-m3).
+
+    La règle reste sans exemple few-shot : face à « je suis allergique aux
+    arachides », qwen2.5:3b recopiait un exemple concret (« allergie aux
+    fraises ») comme fait sur l'utilisateur, et un exemple à trou lui faisait
+    inventer « allergie à la ventoline » pour un asthmatique."""
+    from mnemos.consolidation.extractor import EXTRACTION_PROMPT
+
+    assert "NEVER dislikes" in EXTRACTION_PROMPT
+    examples = [line for line in EXTRACTION_PROMPT.splitlines() if line.startswith('- "')]
+    assert examples, "le few-shot doit exister"
+    assert not [e for e in examples if "allerg" in e.lower() or "intol" in e.lower()]
+
+
 async def test_extraction_aberrant_facts_non_regression() -> None:
     """Vérifie que les traits physiques et données financières sont bien en has_attribute."""
     extractor = make_extractor(

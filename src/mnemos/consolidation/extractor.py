@@ -66,6 +66,9 @@ Rules:
   * works_at (employer/organization) vs lives_in (city/region/country)
   * has_skill (active proficiency) vs has_goal (future aspiration/desire to learn)
   * prefers/dislikes (tastes/preferences) vs has_attribute (measurements, stats, revenue, physical traits)
+  * health constraints (allergies, intolerances, medical conditions, required treatments)
+    are has_attribute, NEVER dislikes; the object names the constraint itself
+    ("allergie aux X", "intolérance au Y"), not just the substance
   * is_a (role/profession) vs owns (possessions/pets)
 - if nothing extractable, return {{"facts": [], "entities": []}}
 
