@@ -15,6 +15,14 @@ Les baselines CPU (i7-6700) restent dans `bench/results/` ; les tests de stress 
 | `report.md` / `metrics.json` | Comparatif des 10 architectures, **avant** le correctif du routeur (rétention Mnemos 39 %) |
 | `memoryagentbench_report.md` | Jeu inspiré de MemoryAgentBench, 8 épreuves |
 | `loadtest_public.json` | Test de charge via l'URL publique (`scripts/aml_loadtest.py`) |
+| `loadtest_llm_on.json` / `loadtest_llm_off.json` | Même test, base vide, avec et sans LLM de fond (saillance + consolidation) |
+| `locomo_full_consolidation_noarchive.md` | LoCoMo complet avec consolidation, oubli temporel neutralisé (config de prod) |
+| `locomo_qa_50_user.json` | `bench/bench_locomo_qa.py` : 50 questions répondues et jugées par `qwen3.5:9b`, avec et sans faits (user_id `user`) |
+| `locomo_qa_50.json` | Idem avec un user_id opaque (`locomo_qa`) : aucun fait n'atteint le contexte |
+
+**Avec ou sans LLM de fond** : le LLM divise le débit par ~2 (Add c=4 : 39 contre 91 msg/s)
+sans gain en récupération (LoCoMo R@1 19,6 % sans, 14,6 % avec) ni en réponse (QA : 28/50
+dans les deux cas, désaccords 3/3). Le déploiement AML tourne donc en mode épisodique.
 
 Le comparatif Mnemos **après** correctif du routeur et du typage est dans
 `../gpu_mnemos_final/` (rétention 96 %, vérité active 100 %).
