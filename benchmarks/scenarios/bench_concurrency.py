@@ -68,7 +68,7 @@ async def run_concurrency_benchmark(config: BenchConfig) -> ConcurrencyReport:
             for i in range(ops_per_worker):
                 op_idx = (worker_id * ops_per_worker + i) % len(episodes)
                 ep = episodes[op_idx]
-                t0 = time.monotonic()
+                t0 = time.perf_counter()
                 try:
                     # 70% écritures, 30% recherches
                     if i % 10 < 7:
@@ -82,14 +82,14 @@ async def run_concurrency_benchmark(config: BenchConfig) -> ConcurrencyReport:
                         await harness.episodic_store.search(
                             ep["content"][:30], k=5, tenant="user"
                         )
-                    trk.record(time.monotonic() - t0)
+                    trk.record(time.perf_counter() - t0)
                 except Exception:
                     errors += 1
 
-        t_start = time.monotonic()
+        t_start = time.perf_counter()
         tasks = [asyncio.create_task(worker_task(w)) for w in range(c_level)]
         await asyncio.gather(*tasks)
-        total_wall = time.monotonic() - t_start
+        total_wall = time.perf_counter() - t_start
 
         stats = tracker.compute(total_wall_time=total_wall)
         report.workers_results.append(
@@ -179,14 +179,14 @@ async def run_concurrency_benchmark(config: BenchConfig) -> ConcurrencyReport:
         else:
             deferred += 1
 
-    t0_drain = time.monotonic()
+    t0_drain = time.perf_counter()
     for _ in range(200):
         unscored = await harness.episodic_store.list_unscored(limit=10)
         if len(unscored) == 0 and queue.depth == 0:
             break
         await asyncio.sleep(0.1)
 
-    drain_duration = time.monotonic() - t0_drain
+    drain_duration = time.perf_counter() - t0_drain
     await queue.stop()
 
     unscored_final = await harness.episodic_store.list_unscored(limit=100)

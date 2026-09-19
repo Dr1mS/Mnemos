@@ -113,6 +113,10 @@ async def setup_bench_app(
         SALIENCE_QUEUE_WORKERS=salience_workers,
         CONSOLIDATION_DELAY_HOURS=0.0,
         CONSOLIDATION_BATCH_SIZE=50,
+        # Le bench pilote la consolidation lui-même (drain_consolidation). La boucle
+        # autonome rescorerait en tâche de fond les épisodes non scorés via le LLM,
+        # y compris dans les configurations « sans LLM » (salience_workers=0).
+        CONSOLIDATION_AUTO=False,
     )
     clock = Clock()
     epi_engine = make_async_engine(settings.EPISODIC_DB)
@@ -145,6 +149,33 @@ async def setup_bench_app(
         await epi_engine.dispose()
         await sem_engine.dispose()
         return app, [], settings
+
+
+async def drain_consolidation(app: Any, max_passes: int = 10_000) -> dict[str, int]:
+    """Enchaîne worker.run_once() jusqu'à épuisement des candidats.
+
+    Une passe ne traite que CONSOLIDATION_BATCH_SIZE candidats (et 50 épisodes non
+    scorés) : une seule passe laisse le reste d'un gros historique non consolidé.
+    Chaque candidat est marqué tenté, la boucle termine donc toujours."""
+    totals = {
+        "passes": 0,
+        "candidates": 0,
+        "rescored": 0,
+        "facts_inserted": 0,
+        "entities_upserted": 0,
+        "extraction_failures": 0,
+    }
+    for _ in range(max_passes):
+        report = await app.state.worker.run_once()
+        totals["passes"] += 1
+        totals["candidates"] += report.candidates
+        totals["rescored"] += report.rescored
+        totals["facts_inserted"] += report.facts_inserted
+        totals["entities_upserted"] += report.entities_upserted
+        totals["extraction_failures"] += report.extraction_failures
+        if report.candidates == 0 and report.rescored == 0:
+            break
+    return totals
 
 
 CATEGORY_NAMES = {
@@ -264,12 +295,12 @@ async def run_locomo_bench(
 
                     print("🧠 Lancement de la consolidation sémantique (extraction des faits)...")
                     t_cons = time.perf_counter()
-                    cons_report = await app.state.worker.run_once()
-                    print(f"✅ Consolidation terminée en {time.perf_counter() - t_cons:.1f} s :")
-                    print(f"   • Candidats analysés : {cons_report.candidates}")
-                    print(f"   • Faits sémantiques insérés : {cons_report.facts_inserted}")
-                    print(f"   • Entités créées : {cons_report.entities_upserted}")
-                    print(f"   • Échecs d'extraction : {cons_report.extraction_failures}\n")
+                    cons_report = await drain_consolidation(app)
+                    print(f"✅ Consolidation terminée en {time.perf_counter() - t_cons:.1f} s ({cons_report['passes']} passes) :")
+                    print(f"   • Candidats analysés : {cons_report['candidates']}")
+                    print(f"   • Faits sémantiques insérés : {cons_report['facts_inserted']}")
+                    print(f"   • Entités créées : {cons_report['entities_upserted']}")
+                    print(f"   • Échecs d'extraction : {cons_report['extraction_failures']}\n")
 
                 # 2. PHASE D'ÉVALUATION DE RECHERCHE
                 if grounded_only and limit_sessions:
@@ -449,6 +480,8 @@ def main() -> None:
     parser.add_argument("--limit-queries", type=int, default=None)
     parser.add_argument("--output", type=Path, default=Path("bench/results/locomo_report.md"))
     args = parser.parse_args()
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")  # console Windows cp1252 vs emojis
 
     asyncio.run(
         run_locomo_bench(

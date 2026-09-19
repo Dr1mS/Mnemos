@@ -17,7 +17,7 @@ class BenchConfig:
     # Mode d'exécution :
     # - "fast" : embeddings déterministes synthétiques (1024-dim normalisés) + LLM mock.
     #   Permet de tester 5 000 à 50 000 entrées, la concurrence et la dégradation en quelques secondes.
-    # - "real" : véritable inférence locale via Ollama (bge-m3 + qwen3:4b).
+    # - "real" : véritable inférence locale via Ollama (bge-m3 + qwen2.5:3b).
     mode: str = "fast"
 
     # Échelle de test : "small", "medium", "heavy"
@@ -26,7 +26,7 @@ class BenchConfig:
     # Ollama host
     ollama_host: str = "http://localhost:11434"
     embed_model: str = "bge-m3"
-    llm_model: str = "qwen3:4b"
+    llm_model: str = "qwen2.5:3b"
 
     # Paramètres de volume selon l'échelle (mode fast)
     volume_steps: list[int] = field(

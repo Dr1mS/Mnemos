@@ -78,37 +78,37 @@ async def main_async() -> int:
     conflict_res = None
     decay_res = None
 
-    t0_global = time.monotonic()
+    t0_global = time.perf_counter()
 
     # 1. Volume & KNN
     if args.scenario in ("all", "volume"):
         print("\n[*] [1/4] Execution du benchmark Volume & KNN Scalability...")
-        t0 = time.monotonic()
+        t0 = time.perf_counter()
         volume_res = await run_volume_knn_benchmark(config)
-        print(f"  [OK] Volume & KNN termine en {time.monotonic() - t0:.2f} s")
+        print(f"  [OK] Volume & KNN termine en {time.perf_counter() - t0:.2f} s")
 
     # 2. Concurrence & Deadlock
     if args.scenario in ("all", "concurrency"):
         print("\n[*] [2/4] Execution du benchmark Concurrence & Deadlock Stress...")
-        t0 = time.monotonic()
+        t0 = time.perf_counter()
         concurrency_res = await run_concurrency_benchmark(config)
-        print(f"  [OK] Concurrence terminee en {time.monotonic() - t0:.2f} s")
+        print(f"  [OK] Concurrence terminee en {time.perf_counter() - t0:.2f} s")
 
     # 3. Conflit & Vérité Cognitive
     if args.scenario in ("all", "conflict"):
         print("\n[*] [3/4] Execution du benchmark Verite Cognitive & Resolution de Conflits...")
-        t0 = time.monotonic()
+        t0 = time.perf_counter()
         conflict_res = await run_conflict_benchmark(config)
-        print(f"  [OK] Conflits termines en {time.monotonic() - t0:.2f} s")
+        print(f"  [OK] Conflits termines en {time.perf_counter() - t0:.2f} s")
 
     # 4. Simulation Decay 365 Jours
     if args.scenario in ("all", "decay"):
         print("\n[*] [4/4] Execution de la simulation Longue Duree (365j Decay Biologique)...")
-        t0 = time.monotonic()
+        t0 = time.perf_counter()
         decay_res = await run_decay_benchmark(config)
-        print(f"  [OK] Decay 365j termine en {time.monotonic() - t0:.2f} s")
+        print(f"  [OK] Decay 365j termine en {time.perf_counter() - t0:.2f} s")
 
-    total_duration = time.monotonic() - t0_global
+    total_duration = time.perf_counter() - t0_global
 
     # Génération et sauvegarde des rapports
     md_content = format_markdown_report(

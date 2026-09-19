@@ -141,7 +141,9 @@ async def test_dry_run_llm_is_strictly_neutral() -> None:
 @pytest.mark.asyncio
 async def test_empty_memory_control_returns_empty_context(tmp_path: Path) -> None:
     """Contrôle négatif : mémoire vide retourne 0 élément de contexte."""
-    config = BenchConfig(bench_dir=tmp_path / "empty_bench", dry_run=True)
+    config = BenchConfig(
+        bench_dir=tmp_path / "empty_bench", results_dir=tmp_path / "results", dry_run=True
+    )
     backend = EmptyControlMemory(config)
     await backend.setup()
 
@@ -171,7 +173,9 @@ async def test_empty_memory_control_returns_empty_context(tmp_path: Path) -> Non
 @pytest.mark.asyncio
 async def test_oracle_memory_control_recalls_expected_context(tmp_path: Path) -> None:
     """Contrôle positif : mémoire oracle restitue le contexte exact nécessaire."""
-    config = BenchConfig(bench_dir=tmp_path / "oracle_bench", dry_run=True)
+    config = BenchConfig(
+        bench_dir=tmp_path / "oracle_bench", results_dir=tmp_path / "results", dry_run=True
+    )
     backend = OracleControlMemory(config)
     await backend.setup()
 

@@ -53,21 +53,21 @@ async def run_volume_knn_benchmark(config: BenchConfig) -> VolumeKnnReport:
                 continue
 
             write_tracker = LatencyTracker("write_episode")
-            t_start_step = time.monotonic()
+            t_start_step = time.perf_counter()
 
             for _ in range(to_insert):
                 ep = episodes_pool[pool_idx]
                 pool_idx += 1
-                t0 = time.monotonic()
+                t0 = time.perf_counter()
                 await harness.episodic_store.write(
                     content=ep["content"],
                     role=ep["role"],
                     session_id=ep["session_id"],
                     tenant=ep["tenant"],
                 )
-                write_tracker.record(time.monotonic() - t0)
+                write_tracker.record(time.perf_counter() - t0)
 
-            total_step_wall = time.monotonic() - t_start_step
+            total_step_wall = time.perf_counter() - t_start_step
             current_count = step_target
             write_stats = write_tracker.compute(total_wall_time=total_step_wall)
 
@@ -83,16 +83,16 @@ async def run_volume_knn_benchmark(config: BenchConfig) -> VolumeKnnReport:
                 "reverse proxy Caddy",
             ]
 
-            t_start_search = time.monotonic()
+            t_start_search = time.perf_counter()
             num_searches = 20 if config.mode == "real" else 40
             for i in range(num_searches):
                 q = test_queries[i % len(test_queries)]
-                t0 = time.monotonic()
+                t0 = time.perf_counter()
                 results = await harness.episodic_store.search(q, k=10, tenant="user")
-                search_tracker.record(time.monotonic() - t0)
+                search_tracker.record(time.perf_counter() - t0)
                 assert len(results) > 0
 
-            search_wall = time.monotonic() - t_start_search
+            search_wall = time.perf_counter() - t_start_search
             search_stats = search_tracker.compute(total_wall_time=search_wall)
 
             db_stats = await harness.get_db_stats()
@@ -121,11 +121,11 @@ async def run_volume_knn_benchmark(config: BenchConfig) -> VolumeKnnReport:
         for c in tenant_b_pool:
             await harness.episodic_store.write(c, role="user", tenant="tenant_b")
 
-        t0 = time.monotonic()
+        t0 = time.perf_counter()
         b_results = await harness.episodic_store.search(
             "Projet confidentiel Alpha", k=10, tenant="tenant_b"
         )
-        report.tenant_skew_search_ms = (time.monotonic() - t0) * 1000.0
+        report.tenant_skew_search_ms = (time.perf_counter() - t0) * 1000.0
         b_count = sum(1 for r in b_results if r.episode.tenant == "tenant_b")
         total_ret = min(len(b_results), 10)
         report.tenant_skew_recall = (b_count / total_ret) * 100.0 if total_ret > 0 else 0.0
