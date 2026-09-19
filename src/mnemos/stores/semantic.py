@@ -349,6 +349,24 @@ class SemanticStore:
         scored.sort(key=lambda s: s.score, reverse=True)
         return scored[:k]
 
+    async def stale_source_episode_ids(self, tenant: str = DEFAULT_TENANT) -> set[str]:
+        """Épisodes qui n'ont produit que des faits périmés (supersédés ou rétractés).
+
+        Un épisode source d'au moins un fait encore valide n'est pas périmé :
+        « j'habite à Lyon et je bosse chez Nexora » reste pertinent pour works_at
+        après un déménagement."""
+        async with self._sessions() as session:
+            rows = (
+                await session.execute(
+                    select(Fact.source_episodes, Fact.valid_until).where(Fact.tenant == tenant)
+                )
+            ).all()
+        stale: set[str] = set()
+        current: set[str] = set()
+        for sources, valid_until in rows:
+            (current if valid_until is None else stale).update(json.loads(sources or "[]"))
+        return stale - current
+
     async def ping(self) -> str | None:
         """Sonde DB pour /health (§Santé) : exécute une vraie requête. None si
         OK, sinon le message d'erreur."""

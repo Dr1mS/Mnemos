@@ -709,8 +709,8 @@ class RouterOrchestrator:
         qtype = classify(q)
         # Fan-out parallèle aux stores pertinents
         tasks = []
-        if qtype in (EPISODIC_TEMPORAL, EPISODIC_FUZZY, UNKNOWN):
-            tasks.append(self.episodic.search(q, k=k))
+        if qtype in (EPISODIC_TEMPORAL, EPISODIC_FUZZY, SEMANTIC_FACT, UNKNOWN):
+            tasks.append(self.episodic.search(q, k=k))  # SEMANTIC_FACT : hors épisodes périmés
         if qtype in (SEMANTIC_FACT, SEMANTIC_HISTORY, UNKNOWN):
             tasks.append(self.semantic.search_facts(q, k=k))
         if qtype == WORKING:
@@ -722,6 +722,15 @@ class RouterOrchestrator:
 ```
 
 UNKNOWN consulte tout (épisodique + sémantique). C'est le fallback safe.
+
+SEMANTIC_FACT consulte aussi l'épisodique (révision du 19/09/2026). Le KNN des faits
+n'a pas de seuil : il renvoie toujours le fait le plus proche, même sans rapport avec
+la question. « Aucun fait trouvé » n'est donc jamais une condition de repli
+atteignable, et une réponse présente seulement dans un épisode (ex. une clé, une
+information hors ontologie) devenait introuvable dès le premier fait extrait. Les
+épisodes qui n'ont produit **que** des faits périmés (supersédés ou rétractés) sont
+écartés : ils contrediraient la vérité active (« j'habite à Lyon » après un
+déménagement).
 
 ---
 

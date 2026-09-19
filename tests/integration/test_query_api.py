@@ -54,9 +54,41 @@ async def test_query_semantic_fact(client: httpx.AsyncClient) -> None:
     resp = await client.post("/v1/query", json={"q": "où je bosse en ce moment ?"})
     body = resp.json()
     assert body["type"] == "semantic_fact"
-    assert body["episodes"] == []  # pas de fan-out épisodique sur un fact pur
+    # Fan-out épisodique aussi : le KNN des faits renvoie toujours un fait, même
+    # hors sujet, donc une réponse présente seulement dans un épisode serait perdue.
+    assert body["episodes"]
     objets = {f["fact"]["object"] for f in body["facts"]}
     assert "Datalyse" not in objets  # supersédé → jamais retourné
+
+
+async def test_query_semantic_fact_ecarte_les_episodes_perimes(
+    client: httpx.AsyncClient,
+) -> None:
+    """Un épisode qui n'a produit que des faits supersédés contredirait la vérité
+    active ; un épisode sans fait extrait reste consultable."""
+    ids: dict[str, str] = {}
+    for content in (
+        "je bosse chez Datalyse",
+        "je bosse maintenant chez Nexora",
+        "la clé du serveur de staging est SEC-9482",
+    ):
+        resp = await client.post(
+            "/v1/episodes", json={"content": content, "role": "user", "session_id": "s1"}
+        )
+        ids[content] = resp.json()["id"]
+    semantic = client.app_state.semantic  # type: ignore[attr-defined]
+    await semantic.add_fact("user", "works_at", "Datalyse", [ids["je bosse chez Datalyse"]])
+    await semantic.add_fact(
+        "user", "works_at", "Nexora", [ids["je bosse maintenant chez Nexora"]]
+    )
+
+    resp = await client.post("/v1/query", json={"q": "où je bosse en ce moment ?"})
+    body = resp.json()
+    assert body["type"] == "semantic_fact"
+    contents = {e["episode"]["content"] for e in body["episodes"]}
+    assert "je bosse chez Datalyse" not in contents  # source d'un fait supersédé
+    assert "je bosse maintenant chez Nexora" in contents  # source du fait actif
+    assert "la clé du serveur de staging est SEC-9482" in contents  # aucun fait
 
 
 async def test_query_history_expose_la_chaine(client: httpx.AsyncClient) -> None:

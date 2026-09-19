@@ -1,6 +1,10 @@
 """Orchestration des lectures (§14.2) — fan-out parallèle vers les stores.
 
 UNKNOWN consulte épisodique + sémantique : c'est le fallback safe.
+SEMANTIC_FACT consulte aussi l'épisodique : le KNN des faits n'a pas de seuil et
+renvoie toujours le fait le plus proche, même hors sujet, donc « aucun fait »
+n'est jamais une condition de repli atteignable. Les épisodes qui n'ont produit
+que des faits périmés sont écartés pour ne pas contredire la vérité active.
 SEMANTIC_HISTORY inclut l'historique complet des faits matchés (chaîne de
 versioning) en plus des faits courants.
 Procedural : best-effort, vide tant que le ProceduralStore n'existe pas
@@ -21,7 +25,12 @@ from mnemos.stores.working import WMItem, WorkingMemoryRegistry
 from mnemos.tenancy import DEFAULT_TENANT
 
 _EPISODIC_TYPES = frozenset(
-    {QueryType.EPISODIC_TEMPORAL, QueryType.EPISODIC_FUZZY, QueryType.UNKNOWN}
+    {
+        QueryType.EPISODIC_TEMPORAL,
+        QueryType.EPISODIC_FUZZY,
+        QueryType.SEMANTIC_FACT,
+        QueryType.UNKNOWN,
+    }
 )
 _SEMANTIC_TYPES = frozenset(
     {QueryType.SEMANTIC_FACT, QueryType.SEMANTIC_HISTORY, QueryType.UNKNOWN}
@@ -59,10 +68,13 @@ class RouterOrchestrator:
         tenant: str = DEFAULT_TENANT,
     ) -> QueryResult:
         qtype = classify(q)
+        drop_stale = qtype is QueryType.SEMANTIC_FACT
+        # Marge pour compenser les épisodes périmés écartés après la recherche.
+        episodes_k = k * 2 if drop_stale else k
 
         episodes_task = (
             asyncio.create_task(
-                self._episodic.search(q, k=k, session_id=session_id, tenant=tenant)
+                self._episodic.search(q, k=episodes_k, session_id=session_id, tenant=tenant)
             )
             if qtype in _EPISODIC_TYPES
             else None
@@ -75,6 +87,9 @@ class RouterOrchestrator:
 
         episodes: list[ScoredEpisode] = await episodes_task if episodes_task else []
         facts: list[ScoredFact] = await facts_task if facts_task else []
+        if drop_stale:
+            stale = await self._semantic.stale_source_episode_ids(tenant)
+            episodes = [e for e in episodes if e.episode.id not in stale][:k]
 
         history: list[Fact] = []
         if qtype is QueryType.SEMANTIC_HISTORY:
