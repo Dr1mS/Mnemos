@@ -20,6 +20,18 @@ Les baselines CPU (i7-6700) restent dans `bench/results/` ; les tests de stress 
 | `locomo_qa_50_user.json` | `bench/bench_locomo_qa.py` : 50 questions répondues et jugées par `qwen3.5:9b`, avec et sans faits (user_id `user`) |
 | `locomo_qa_50.json` | Idem avec un user_id opaque (`locomo_qa`) : aucun fait n'atteint le contexte |
 
+## Couverture des catégories d'évaluation AML (20/09)
+
+| Fichier | Catégorie | Résultat |
+|---|---|---|
+| `knowledge_update.json` / `_9b.json` | D — mises à jour | épisodes seuls **14/14** ; avec faits 6/14 (qwen2.5:3b) et 11/14 (qwen3.5:9b). 28 instances, 11 discordances toutes en faveur de l'épisodique, McNemar p = 0,001 |
+| `personamem_qa_episodic.json` | D + E | QCM au format plateforme (options), 63 questions : **34,9 %** (hasard 25 %). `ask_to_forget` 7,7 %, mais la demande d'oubli est retrouvée **13/13** → échec du modèle de réponse, pas de la mémoire |
+| `rules_g.json` | G — règles | **conformité 11/14 avec mémoire contre 0/14 sans** ; règle au rang médian 1, y compris dans 1 205 messages |
+| `abstention_h.json` | H — abstention | 14/20 abstentions correctes sur des questions sans réponse ; 0 fuite de passage sensible ; un seuil de pertinence ne sépare pas (chevauchement 19/20) |
+
+Scripts correspondants : `bench/bench_knowledge_update.py`, `bench_personamem_qa.py`,
+`bench_rules.py`, `bench_abstention.py`.
+
 **Avec ou sans LLM de fond** : le LLM divise le débit par ~2 (Add c=4 : 39 contre 91 msg/s)
 sans gain en récupération (LoCoMo R@1 19,6 % sans, 14,6 % avec) ni en réponse (QA : 28/50
 dans les deux cas, désaccords 3/3). Le déploiement AML tourne donc en mode épisodique.

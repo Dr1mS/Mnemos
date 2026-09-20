@@ -1,0 +1,297 @@
+{
+  "config": {
+    "instances": 14,
+    "top_k": 100,
+    "user_id": "user",
+    "answer_model": "qwen3.5:9b",
+    "probe": "Dans quelle ville est-ce que je vis ?"
+  },
+  "A_episodes_only": 14,
+  "B_with_facts": 6,
+  "only_A_correct": 8,
+  "only_B_correct": 0,
+  "instances_with_active_fact": 4,
+  "instances_with_stale_fact": 10,
+  "records": [
+    {
+      "instance": "ghost_dev_01",
+      "cities": [
+        "Lyon",
+        "Paris",
+        "Annecy"
+      ],
+      "facts_inserted": 1,
+      "facts_in_context": [
+        "user lives_in Paris"
+      ],
+      "active_city_in_facts": false,
+      "stale_city_in_facts": true,
+      "answer_A": "Annecy",
+      "correct_A": true,
+      "reason_A": "Ville active 'Annecy' validée sans contradiction",
+      "answer_B": "Annecy",
+      "correct_B": true,
+      "reason_B": "Ville active 'Annecy' validée sans contradiction"
+    },
+    {
+      "instance": "ghost_dev_02",
+      "cities": [
+        "Marseille",
+        "Bordeaux",
+        "Nantes"
+      ],
+      "facts_inserted": 1,
+      "facts_in_context": [
+        "user lives_in Bordeaux"
+      ],
+      "active_city_in_facts": false,
+      "stale_city_in_facts": true,
+      "answer_A": "Nantes",
+      "correct_A": true,
+      "reason_A": "Ville active 'Nantes' validée sans contradiction",
+      "answer_B": "Bordeaux",
+      "correct_B": false,
+      "reason_B": "Ville active 'Nantes' absente de la réponse"
+    },
+    {
+      "instance": "ghost_dev_03",
+      "cities": [
+        "Lille",
+        "Strasbourg",
+        "Toulouse"
+      ],
+      "facts_inserted": 1,
+      "facts_in_context": [
+        "user lives_in Strasbourg"
+      ],
+      "active_city_in_facts": false,
+      "stale_city_in_facts": true,
+      "answer_A": "Toulouse",
+      "correct_A": true,
+      "reason_A": "Ville active 'Toulouse' validée sans contradiction",
+      "answer_B": "Strasbourg",
+      "correct_B": false,
+      "reason_B": "Ville active 'Toulouse' absente de la réponse"
+    },
+    {
+      "instance": "ghost_dev_04",
+      "cities": [
+        "Rennes",
+        "Montpellier",
+        "Nice"
+      ],
+      "facts_inserted": 1,
+      "facts_in_context": [
+        "user lives_in Montpellier"
+      ],
+      "active_city_in_facts": false,
+      "stale_city_in_facts": true,
+      "answer_A": "Nice",
+      "correct_A": true,
+      "reason_A": "Ville active 'Nice' validée sans contradiction",
+      "answer_B": "Montpellier",
+      "correct_B": false,
+      "reason_B": "Ville active 'Nice' absente de la réponse"
+    },
+    {
+      "instance": "ghost_dev_05",
+      "cities": [
+        "Grenoble",
+        "Rouen",
+        "Dijon"
+      ],
+      "facts_inserted": 1,
+      "facts_in_context": [
+        "user lives_in Rouen"
+      ],
+      "active_city_in_facts": false,
+      "stale_city_in_facts": true,
+      "answer_A": "Dijon",
+      "correct_A": true,
+      "reason_A": "Ville active 'Dijon' validée sans contradiction",
+      "answer_B": "Rouen",
+      "correct_B": false,
+      "reason_B": "Ville active 'Dijon' absente de la réponse"
+    },
+    {
+      "instance": "ghost_dev_06",
+      "cities": [
+        "Brest",
+        "Tours",
+        "Biarritz"
+      ],
+      "facts_inserted": 1,
+      "facts_in_context": [
+        "user lives_in Tours"
+      ],
+      "active_city_in_facts": false,
+      "stale_city_in_facts": true,
+      "answer_A": "Biarritz",
+      "correct_A": true,
+      "reason_A": "Ville active 'Biarritz' validée sans contradiction",
+      "answer_B": "Tours",
+      "correct_B": false,
+      "reason_B": "Ville active 'Biarritz' absente de la réponse"
+    },
+    {
+      "instance": "ghost_dev_07",
+      "cities": [
+        "Reims",
+        "Le Havre",
+        "Saint-Étienne"
+      ],
+      "facts_inserted": 1,
+      "facts_in_context": [
+        "user lives_in Le Havre"
+      ],
+      "active_city_in_facts": false,
+      "stale_city_in_facts": true,
+      "answer_A": "Saint-Étienne",
+      "correct_A": true,
+      "reason_A": "Ville active 'Saint-Étienne' validée sans contradiction",
+      "answer_B": "Le Havre",
+      "correct_B": false,
+      "reason_B": "Ville active 'Saint-Étienne' absente de la réponse"
+    },
+    {
+      "instance": "ghost_dev_08",
+      "cities": [
+        "Toulon",
+        "Angers",
+        "Nîmes"
+      ],
+      "facts_inserted": 1,
+      "facts_in_context": [
+        "user lives_in Angers"
+      ],
+      "active_city_in_facts": false,
+      "stale_city_in_facts": true,
+      "answer_A": "Nîmes",
+      "correct_A": true,
+      "reason_A": "Ville active 'Nîmes' validée sans contradiction",
+      "answer_B": "Angers",
+      "correct_B": false,
+      "reason_B": "Ville active 'Nîmes' absente de la réponse"
+    },
+    {
+      "instance": "ghost_dev_09",
+      "cities": [
+        "Villeurbanne",
+        "Le Mans",
+        "Aix-en-Provence"
+      ],
+      "facts_inserted": 1,
+      "facts_in_context": [
+        "user lives_in Le Mans"
+      ],
+      "active_city_in_facts": false,
+      "stale_city_in_facts": true,
+      "answer_A": "Aix-en-Provence",
+      "correct_A": true,
+      "reason_A": "Ville active 'Aix-en-Provence' validée sans contradiction",
+      "answer_B": "Le Mans",
+      "correct_B": false,
+      "reason_B": "Ville active 'Aix-en-Provence' absente de la réponse"
+    },
+    {
+      "instance": "ghost_dev_10",
+      "cities": [
+        "Amiens",
+        "Limoges",
+        "Metz"
+      ],
+      "facts_inserted": 1,
+      "facts_in_context": [
+        "user lives_in Metz"
+      ],
+      "active_city_in_facts": true,
+      "stale_city_in_facts": false,
+      "answer_A": "Metz",
+      "correct_A": true,
+      "reason_A": "Ville active 'Metz' validée sans contradiction",
+      "answer_B": "Metz",
+      "correct_B": true,
+      "reason_B": "Ville active 'Metz' validée sans contradiction"
+    },
+    {
+      "instance": "ghost_dev_11",
+      "cities": [
+        "Besançon",
+        "Perpignan",
+        "Orléans"
+      ],
+      "facts_inserted": 1,
+      "facts_in_context": [
+        "user lives_in Orléans"
+      ],
+      "active_city_in_facts": true,
+      "stale_city_in_facts": false,
+      "answer_A": "Orléans",
+      "correct_A": true,
+      "reason_A": "Ville active 'Orléans' validée sans contradiction",
+      "answer_B": "Orléans",
+      "correct_B": true,
+      "reason_B": "Ville active 'Orléans' validée sans contradiction"
+    },
+    {
+      "instance": "ghost_dev_12",
+      "cities": [
+        "Caen",
+        "Mulhouse",
+        "Nancy"
+      ],
+      "facts_inserted": 1,
+      "facts_in_context": [
+        "user lives_in Nancy"
+      ],
+      "active_city_in_facts": true,
+      "stale_city_in_facts": false,
+      "answer_A": "Nancy",
+      "correct_A": true,
+      "reason_A": "Ville active 'Nancy' validée sans contradiction",
+      "answer_B": "Nancy",
+      "correct_B": true,
+      "reason_B": "Ville active 'Nancy' validée sans contradiction"
+    },
+    {
+      "instance": "ghost_dev_13",
+      "cities": [
+        "Roubaix",
+        "Tourcoing",
+        "Avignon"
+      ],
+      "facts_inserted": 1,
+      "facts_in_context": [
+        "user lives_in Avignon"
+      ],
+      "active_city_in_facts": true,
+      "stale_city_in_facts": false,
+      "answer_A": "Avignon",
+      "correct_A": true,
+      "reason_A": "Ville active 'Avignon' validée sans contradiction",
+      "answer_B": "Avignon",
+      "correct_B": true,
+      "reason_B": "Ville active 'Avignon' validée sans contradiction"
+    },
+    {
+      "instance": "ghost_dev_14",
+      "cities": [
+        "Dunkerque",
+        "Poitiers",
+        "Pau"
+      ],
+      "facts_inserted": 1,
+      "facts_in_context": [
+        "user lives_in Poitiers"
+      ],
+      "active_city_in_facts": false,
+      "stale_city_in_facts": true,
+      "answer_A": "Pau",
+      "correct_A": true,
+      "reason_A": "Ville active 'Pau' validée sans contradiction",
+      "answer_B": "Pau",
+      "correct_B": true,
+      "reason_B": "Ville active 'Pau' validée sans contradiction"
+    }
+  ]
+}

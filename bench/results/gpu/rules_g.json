@@ -1,0 +1,142 @@
+{
+  "config": {
+    "tasks": 14,
+    "top_k": 100,
+    "history_messages": 210,
+    "answer_model": "qwen3.5:9b",
+    "mode": "épisodique seul"
+  },
+  "rule_retrieved": 12,
+  "rule_in_top_10": 11,
+  "rule_rank_median": 1,
+  "compliant_with_memory": 11,
+  "compliant_without_memory": 0,
+  "records": [
+    {
+      "id": "conv_http_01",
+      "marker": "[RULE-HTTP]",
+      "rule_rank": 19,
+      "rules_in_context": 1,
+      "compliant_with_memory": true,
+      "compliant_without_memory": false,
+      "reason_with_memory": "Convention respectée"
+    },
+    {
+      "id": "conv_http_02",
+      "marker": "[RULE-HTTP]",
+      "rule_rank": null,
+      "rules_in_context": 0,
+      "compliant_with_memory": true,
+      "compliant_without_memory": false,
+      "reason_with_memory": "Convention respectée"
+    },
+    {
+      "id": "conv_http_03",
+      "marker": "[RULE-HTTP]",
+      "rule_rank": null,
+      "rules_in_context": 0,
+      "compliant_with_memory": false,
+      "compliant_without_memory": false,
+      "reason_with_memory": "Tokens obligatoires manquants: ['httpx']"
+    },
+    {
+      "id": "conv_log_01",
+      "marker": "[RULE-LOG]",
+      "rule_rank": 2,
+      "rules_in_context": 1,
+      "compliant_with_memory": true,
+      "compliant_without_memory": false,
+      "reason_with_memory": "Convention respectée"
+    },
+    {
+      "id": "conv_log_02",
+      "marker": "[RULE-LOG]",
+      "rule_rank": 1,
+      "rules_in_context": 5,
+      "compliant_with_memory": true,
+      "compliant_without_memory": false,
+      "reason_with_memory": "Convention respectée"
+    },
+    {
+      "id": "conv_log_03",
+      "marker": "[RULE-LOG]",
+      "rule_rank": 1,
+      "rules_in_context": 4,
+      "compliant_with_memory": true,
+      "compliant_without_memory": false,
+      "reason_with_memory": "Convention respectée"
+    },
+    {
+      "id": "conv_date_01",
+      "marker": "[RULE-DATE]",
+      "rule_rank": 1,
+      "rules_in_context": 4,
+      "compliant_with_memory": false,
+      "compliant_without_memory": false,
+      "reason_with_memory": "Tokens obligatoires manquants: ['%Y/%d/%m']"
+    },
+    {
+      "id": "conv_date_02",
+      "marker": "[RULE-DATE]",
+      "rule_rank": 2,
+      "rules_in_context": 2,
+      "compliant_with_memory": true,
+      "compliant_without_memory": false,
+      "reason_with_memory": "Convention respectée"
+    },
+    {
+      "id": "conv_date_03",
+      "marker": "[RULE-DATE]",
+      "rule_rank": 1,
+      "rules_in_context": 4,
+      "compliant_with_memory": true,
+      "compliant_without_memory": false,
+      "reason_with_memory": "Convention respectée"
+    },
+    {
+      "id": "conv_auth_01",
+      "marker": "[RULE-AUTH]",
+      "rule_rank": 1,
+      "rules_in_context": 1,
+      "compliant_with_memory": false,
+      "compliant_without_memory": false,
+      "reason_with_memory": "Tokens interdits présents: ['Authorization']"
+    },
+    {
+      "id": "conv_auth_02",
+      "marker": "[RULE-AUTH]",
+      "rule_rank": 6,
+      "rules_in_context": 4,
+      "compliant_with_memory": true,
+      "compliant_without_memory": false,
+      "reason_with_memory": "Convention respectée"
+    },
+    {
+      "id": "conv_auth_03",
+      "marker": "[RULE-AUTH]",
+      "rule_rank": 1,
+      "rules_in_context": 3,
+      "compliant_with_memory": true,
+      "compliant_without_memory": false,
+      "reason_with_memory": "Convention respectée"
+    },
+    {
+      "id": "conv_storage_01",
+      "marker": "[RULE-STORAGE]",
+      "rule_rank": 1,
+      "rules_in_context": 2,
+      "compliant_with_memory": true,
+      "compliant_without_memory": false,
+      "reason_with_memory": "Convention respectée"
+    },
+    {
+      "id": "conv_storage_02",
+      "marker": "[RULE-STORAGE]",
+      "rule_rank": 1,
+      "rules_in_context": 1,
+      "compliant_with_memory": true,
+      "compliant_without_memory": false,
+      "reason_with_memory": "Convention respectée"
+    }
+  ]
+}

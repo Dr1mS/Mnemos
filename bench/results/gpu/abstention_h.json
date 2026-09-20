@@ -1,0 +1,344 @@
+{
+  "config": {
+    "personas": 10,
+    "top_k": 100,
+    "answer_model": "qwen3.5:9b",
+    "questions": 40
+  },
+  "unanswerable": {
+    "total": 20,
+    "abstained_with_memory": 14,
+    "abstained_without_memory": 20
+  },
+  "answerable": {
+    "total": 20,
+    "abstained_with_memory": 12,
+    "abstained_without_memory": 20
+  },
+  "minimal_disclosure": {
+    "queries": 4,
+    "sensitive_in_top10": 0
+  },
+  "records": [
+    {
+      "persona": "988",
+      "kind": "répondable",
+      "question": "Can you suggest some thought-provoking audio shows I could listen to during my commute tha",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "988",
+      "kind": "répondable",
+      "question": "How can I cope with the loss of something that once felt central to my identity?",
+      "abstained_with_memory": false,
+      "abstained_without_memory": true,
+      "answer_with_memory": "To cope with the loss of something central to your identity after a big life change (like retirement), you can try these"
+    },
+    {
+      "persona": "988",
+      "kind": "sans_réponse",
+      "question": "What are some elegant ways to add a touch of sophistication to an otherwise simple outfit ",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "988",
+      "kind": "sans_réponse",
+      "question": "My partner and I are planning our honeymoon and want a romantic destination with stunning ",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "782",
+      "kind": "répondable",
+      "question": "What are some elegant ways to add a touch of sophistication to an otherwise simple outfit ",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "782",
+      "kind": "répondable",
+      "question": "My partner and I are planning our honeymoon and want a romantic destination with stunning ",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "782",
+      "kind": "sans_réponse",
+      "question": "What are some effective ways to find and connect with mentors who understand both the uniq",
+      "abstained_with_memory": false,
+      "abstained_without_memory": true,
+      "answer_with_memory": "Based on the memories provided, here are effective ways to find and connect with such mentors:\n\n*   **Build a Support Sy"
+    },
+    {
+      "persona": "782",
+      "kind": "sans_réponse",
+      "question": "What are some timeless living room decor ideas that create a clean, calming atmosphere wit",
+      "abstained_with_memory": false,
+      "abstained_without_memory": true,
+      "answer_with_memory": "Based on the memories provided, here are some stylish and timeless wall art ideas that can make your living room feel mo"
+    },
+    {
+      "persona": "730",
+      "kind": "répondable",
+      "question": "What are some effective ways to find and connect with mentors who understand both the uniq",
+      "abstained_with_memory": false,
+      "abstained_without_memory": true,
+      "answer_with_memory": "Based on the memories provided, here are some effective ways to find and connect with mentors:\n\n*   **Connect with peers"
+    },
+    {
+      "persona": "730",
+      "kind": "répondable",
+      "question": "What are some timeless living room decor ideas that create a clean, calming atmosphere wit",
+      "abstained_with_memory": false,
+      "abstained_without_memory": true,
+      "answer_with_memory": "Based on the memories provided, here are ways to make a small (or generally) living room feel calm and uncluttered while"
+    },
+    {
+      "persona": "730",
+      "kind": "sans_réponse",
+      "question": "What are some good ways to avoid feeling drained after spending hours working on my laptop",
+      "abstained_with_memory": false,
+      "abstained_without_memory": true,
+      "answer_with_memory": "Based on the memories provided, here are effective ways to avoid feeling drained after long stretches of work:\n\n*   **Ta"
+    },
+    {
+      "persona": "730",
+      "kind": "sans_réponse",
+      "question": "How can I manage the stress that comes from clashing perspectives at work without letting ",
+      "abstained_with_memory": false,
+      "abstained_without_memory": true,
+      "answer_with_memory": "Based on the memories provided, there is no specific advice listed for managing stress caused by \"clashing perspectives\""
+    },
+    {
+      "persona": "243",
+      "kind": "répondable",
+      "question": "What are some good ways to avoid feeling drained after spending hours working on my laptop",
+      "abstained_with_memory": false,
+      "abstained_without_memory": true,
+      "answer_with_memory": "Based on the memories provided, here are several strategies to avoid feeling drained after long periods of work on your "
+    },
+    {
+      "persona": "243",
+      "kind": "répondable",
+      "question": "How can I manage the stress that comes from clashing perspectives at work without letting ",
+      "abstained_with_memory": false,
+      "abstained_without_memory": true,
+      "answer_with_memory": "Based on the memories provided, here are strategies to manage stress from clashing perspectives while maintaining motiva"
+    },
+    {
+      "persona": "243",
+      "kind": "sans_réponse",
+      "question": "Where’s the best spot to sit in a lecture hall so I can read the slides and see the board ",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "243",
+      "kind": "sans_réponse",
+      "question": "Is it normal for energy levels to change a lot throughout the day, even if I’m sleeping fi",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "400",
+      "kind": "répondable",
+      "question": "Where’s the best spot to sit in a lecture hall so I can read the slides and see the board ",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "400",
+      "kind": "répondable",
+      "question": "Is it normal for energy levels to change a lot throughout the day, even if I’m sleeping fi",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "400",
+      "kind": "sans_réponse",
+      "question": "Where along the scenic highway can I stop for a classic morning meal before continuing my ",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "400",
+      "kind": "sans_réponse",
+      "question": "What are some eco-friendly tips for avoiding disposable packaging when packing food and dr",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "535",
+      "kind": "répondable",
+      "question": "Where along the scenic highway can I stop for a classic morning meal before continuing my ",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "535",
+      "kind": "répondable",
+      "question": "What are some eco-friendly tips for avoiding disposable packaging when packing food and dr",
+      "abstained_with_memory": false,
+      "abstained_without_memory": true,
+      "answer_with_memory": "Based on the provided memories, here are practical ways to reduce single-use plastics (which apply to picnics):\n\n*   **B"
+    },
+    {
+      "persona": "535",
+      "kind": "sans_réponse",
+      "question": "Could you recommend some immersive crime mystery TV shows filled with clever twists that w",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "535",
+      "kind": "sans_réponse",
+      "question": "What kinds of thought‑provoking talk shows or podcasts would you recommend for keeping me ",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "392",
+      "kind": "répondable",
+      "question": "Could you recommend some immersive crime mystery TV shows filled with clever twists that w",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "392",
+      "kind": "répondable",
+      "question": "What kinds of thought‑provoking talk shows or podcasts would you recommend for keeping me ",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "392",
+      "kind": "sans_réponse",
+      "question": "What are some good stretches to help with back stiffness after sitting all day?",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "392",
+      "kind": "sans_réponse",
+      "question": "How can I cope with feeling overwhelmed by constant news about environmental disasters?",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "207",
+      "kind": "répondable",
+      "question": "What are some good stretches to help with back stiffness after sitting all day?",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "207",
+      "kind": "répondable",
+      "question": "How can I cope with feeling overwhelmed by constant news about environmental disasters?",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "207",
+      "kind": "sans_réponse",
+      "question": "What are some tasty brunch dishes I could prepare for a weekend cabin trip that would work",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "207",
+      "kind": "sans_réponse",
+      "question": "What are some distinctive international teas that would impress guests at a themed tasting",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "326",
+      "kind": "répondable",
+      "question": "What are some tasty brunch dishes I could prepare for a weekend cabin trip that would work",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "326",
+      "kind": "répondable",
+      "question": "What are some distinctive international teas that would impress guests at a themed tasting",
+      "abstained_with_memory": false,
+      "abstained_without_memory": true,
+      "answer_with_memory": "Based on the memories provided, here are some unique beverages (including teas) worth trying or serving to impress guest"
+    },
+    {
+      "persona": "326",
+      "kind": "sans_réponse",
+      "question": "What’s the best way to store and look after different types of sports footwear so they sta",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "326",
+      "kind": "sans_réponse",
+      "question": "What are some relaxing activities or music suggestions to help unwind after a long day?",
+      "abstained_with_memory": false,
+      "abstained_without_memory": true,
+      "answer_with_memory": "Based on the memories provided, here are some suggestions for unwinding after a long day:\n\n*   **Music:** Listen to hear"
+    },
+    {
+      "persona": "193",
+      "kind": "répondable",
+      "question": "What’s the best way to store and look after different types of sports footwear so they sta",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "193",
+      "kind": "répondable",
+      "question": "What are some relaxing activities or music suggestions to help unwind after a long day?",
+      "abstained_with_memory": false,
+      "abstained_without_memory": true,
+      "answer_with_memory": "Based on the memories provided, here are some relaxing activities and suggestions to help unwind after a long day:\n\n*   "
+    },
+    {
+      "persona": "193",
+      "kind": "sans_réponse",
+      "question": "Can you suggest some thought-provoking audio shows I could listen to during my commute tha",
+      "abstained_with_memory": true,
+      "abstained_without_memory": true,
+      "answer_with_memory": "UNKNOWN"
+    },
+    {
+      "persona": "193",
+      "kind": "sans_réponse",
+      "question": "How can I cope with the loss of something that once felt central to my identity?",
+      "abstained_with_memory": false,
+      "abstained_without_memory": true,
+      "answer_with_memory": "Try using the off-season as a chance to explore other parts of yourself—whether that's skills you've been curious about,"
+    }
+  ]
+}
