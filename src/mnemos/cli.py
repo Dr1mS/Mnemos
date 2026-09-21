@@ -65,7 +65,8 @@ class _Components:
         self.settings = get_settings()
         self.clock = Clock()
         self.client = OllamaClient(self.settings)
-        manager = ModelManager(self.settings, self.client)
+        self.manager = ModelManager(self.settings, self.client)
+        manager = self.manager
         embedder = DenseEmbedder(manager, self.settings)
         self.episodic_engine = make_async_engine(self.settings.EPISODIC_DB)
         self.semantic_engine = make_async_engine(self.settings.SEMANTIC_DB)
@@ -83,6 +84,7 @@ class _Components:
     async def aclose(self) -> None:
         await self.episodic_engine.dispose()
         await self.semantic_engine.dispose()
+        await self.manager.aclose()  # client llama.cpp, s'il en possède un
         await self.client.aclose()
 
 

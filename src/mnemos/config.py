@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -29,6 +30,11 @@ class Settings(BaseSettings):
     # Ollama
     OLLAMA_HOST: str = "http://localhost:11434"
     EMBED_MODEL: str = "bge-m3"
+    # Backend d'embeddings. "llamacpp" parle à llama-server en direct : ~10x
+    # plus rapide et sans le 400 passager d'Ollama sous concurrence (§11 des
+    # notes de compétition). La génération reste sur Ollama dans les deux cas.
+    EMBED_BACKEND: Literal["ollama", "llamacpp"] = "ollama"
+    LLAMACPP_HOST: str = "http://127.0.0.1:8899"
     SALIENCE_MODEL: str = "qwen2.5:3b"
     EXTRACTION_MODEL: str = "qwen2.5:3b"
     # Jamais de mode thinking (JSON cassé sous Ollama + latence ×5-10, cf. §2)

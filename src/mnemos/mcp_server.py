@@ -101,6 +101,7 @@ async def app_lifespan(_server: FastMCP) -> AsyncIterator[AppContext]:
         await queue.stop(drain_timeout_s=5)
         for engine in [epi_engine, sem_engine]:
             await engine.dispose()
+        await manager.aclose()  # client llama.cpp, s'il en possède un
         await client.aclose()
         logger.info("mcp_server_stopped")
 

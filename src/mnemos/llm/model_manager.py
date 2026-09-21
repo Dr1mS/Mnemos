@@ -29,10 +29,21 @@ import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from enum import StrEnum
-from typing import Any, Literal
+from typing import Any, Literal, Protocol
 
 from mnemos.config import Settings
+from mnemos.llm.llamacpp_client import LlamaCppClient
 from mnemos.llm.ollama_client import OllamaClient
+
+
+class EmbedBackend(Protocol):
+    """Ce que le manager attend d'un fournisseur d'embeddings, quel qu'il soit."""
+
+    async def embed(self, text: str, model: str) -> list[float]: ...
+    async def embed_batch(self, texts: list[str], model: str) -> list[list[float]]: ...
+    async def embed_probe(self, model: str) -> str | None: ...
+    async def version_probe(self) -> str | None: ...
+    async def aclose(self) -> None: ...
 
 
 class Tier(StrEnum):
@@ -42,7 +53,12 @@ class Tier(StrEnum):
 
 
 class ModelManager:
-    def __init__(self, settings: Settings, client: OllamaClient) -> None:
+    def __init__(
+        self,
+        settings: Settings,
+        client: OllamaClient,
+        embed_client: EmbedBackend | None = None,
+    ) -> None:
         self._client = client
         self._think = settings.LLM_THINK
         self._embed_model = settings.EMBED_MODEL  # sonde /health (§Santé)
@@ -58,6 +74,16 @@ class ModelManager:
         self._active_tier: Tier | None = None
         self._active_count = 0
         self._last_embed_ok: float | None = None  # preuve de vie par le trafic (§Santé)
+        # Embeddings : Ollama, ou llama-server en direct (§11 des notes AML).
+        # La génération reste sur Ollama dans les deux cas.
+        self._embed_client: EmbedBackend = client
+        self._owned_embed_client: EmbedBackend | None = None
+        if settings.EMBED_BACKEND == "llamacpp":
+            self._embed_client = embed_client or LlamaCppClient(settings)
+            if embed_client is None:
+                self._owned_embed_client = self._embed_client
+        elif embed_client is not None:
+            self._embed_client = embed_client
 
     def tier_for(self, model: str) -> Tier:
         return Tier.SMALL if model in self._small_models else Tier.MEDIUM
@@ -90,13 +116,13 @@ class ModelManager:
 
     async def embed(self, text: str, model: str) -> list[float]:
         async with self.use(self.tier_for(model)):
-            vector = await self._client.embed(text, model)
+            vector = await self._embed_client.embed(text, model)
         self._last_embed_ok = time.monotonic()
         return vector
 
     async def embed_batch(self, texts: list[str], model: str) -> list[list[float]]:
         async with self.use(self.tier_for(model)):
-            vectors = await self._client.embed_batch(texts, model)
+            vectors = await self._embed_client.embed_batch(texts, model)
         self._last_embed_ok = time.monotonic()
         return vectors
 
@@ -117,9 +143,17 @@ class ModelManager:
         return await self._client.health_check()
 
     async def version_probe(self) -> str | None:
-        """Comme health_check, mais distingue un Ollama saturé (délai dépassé,
-        passager) d'un Ollama absent (connexion refusée). Retourne None si OK."""
-        return await self._client.version_probe()
+        """Sonde le backend d'**embeddings** — la dépendance dont /add et
+        /search ont réellement besoin. Distingue un serveur saturé (délai
+        dépassé, passager) d'un serveur absent. Retourne None si OK."""
+        return await self._embed_client.version_probe()
+
+    async def aclose(self) -> None:
+        """Ferme ce que le manager possède en propre (le client llama.cpp quand
+        il l'a créé lui-même). Le client Ollama reste fermé par l'appelant."""
+        if self._owned_embed_client is not None:
+            await self._owned_embed_client.aclose()
+            self._owned_embed_client = None
 
     @property
     def last_embed_ok_age_s(self) -> float:
@@ -138,4 +172,4 @@ class ModelManager:
         HORS tier volontairement : la sonde doit rester rapide et ne jamais
         attendre qu'une tier se libère. Retourne None si OK, sinon le message
         de panne."""
-        return await self._client.embed_probe(self._embed_model)
+        return await self._embed_client.embed_probe(self._embed_model)

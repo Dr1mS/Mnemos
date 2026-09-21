@@ -117,6 +117,7 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     if owns_engine:
         await state.engine.dispose()
         await state.semantic_engine.dispose()
+        await state.manager.aclose()  # client llama.cpp, s'il en possède un
         await state.client.aclose()
     logger.info("server_stopped")
 
