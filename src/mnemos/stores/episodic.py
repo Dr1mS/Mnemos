@@ -26,6 +26,7 @@ from typing import Any, cast
 
 import sqlite_vec  # type: ignore[import-untyped]
 from sqlalchemy import CursorResult, select, text, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
 from ulid import ULID
 
@@ -34,9 +35,20 @@ from mnemos.config import Settings
 from mnemos.embeddings.dense import DenseEmbedder
 from mnemos.embeddings.sparse import sparse_encode, sparse_similarity
 from mnemos.logging import get_logger
-from mnemos.models.episodic import Episode, EpisodeSparse
+from mnemos.models.episodic import Episode, EpisodeSparse, ProcessedRequest
 from mnemos.tagger.salience import SalienceScores
 from mnemos.tenancy import DEFAULT_TENANT
+
+
+class DuplicateRequest(Exception):
+    """Ce `request_id` a déjà été écrit pour ce tenant (rejeu de la plateforme).
+
+    L'appelant doit répondre un succès sans réécrire : le contrat AML exige que
+    les rejeux ne créent pas de doublon."""
+
+    def __init__(self, request_id: str) -> None:
+        super().__init__(f"request_id déjà traité : {request_id}")
+        self.request_id = request_id
 
 logger = get_logger(__name__)
 
@@ -131,12 +143,16 @@ class EpisodicStore:
     async def write_batch(
         self,
         items: list[BatchEpisodeItem],
+        request_id: str | None = None,
     ) -> list[Episode]:
         """Écrit un lot d'épisodes de manière synchrone et atomique (§13.3).
 
         Effectue un batch embedding unique via le DenseEmbedder (un seul appel
-        HTTP groupé à Ollama /api/embed) et insère tous les épisodes, bits
-        épars et vecteurs au sein d'une seule transaction SQLite (session.begin()).
+        HTTP groupé) et insère tous les épisodes, bits épars et vecteurs au sein
+        d'une seule transaction SQLite (session.begin()).
+
+        `request_id` rend l'écriture idempotente : il est inscrit dans la même
+        transaction, et un rejeu lève `DuplicateRequest` au lieu de dupliquer.
         """
         if not items:
             return []
@@ -177,17 +193,40 @@ class EpisodicStore:
             }
             records.append((ep, sp, vec_param))
 
-        async with self._sessions() as session, session.begin():
-            session.add_all([r[0] for r in records])
-            session.add_all([r[1] for r in records])
-            for _, _, vec_param in records:
-                await session.execute(
-                    text(
-                        "INSERT INTO episodes_vec(episode_id, tenant, embedding) "
-                        "VALUES (:id, :tenant, :emb)"
-                    ),
-                    vec_param,
-                )
+        try:
+            async with self._sessions() as session, session.begin():
+                session.add_all([r[0] for r in records])
+                session.add_all([r[1] for r in records])
+                for _, _, vec_param in records:
+                    await session.execute(
+                        text(
+                            "INSERT INTO episodes_vec(episode_id, tenant, embedding) "
+                            "VALUES (:id, :tenant, :emb)"
+                        ),
+                        vec_param,
+                    )
+                if request_id is not None:
+                    # Dans la MÊME transaction que les épisodes : soit les deux
+                    # atterrissent, soit aucun. Un registre écrit après coup
+                    # laisserait une fenêtre où un rejeu dupliquerait.
+                    session.add(
+                        ProcessedRequest(
+                            tenant=items[0].tenant,
+                            request_id=request_id,
+                            created_at=now_default,
+                            episode_count=len(records),
+                        )
+                    )
+        except IntegrityError as exc:
+            # Course entre deux rejeux du même request_id : le perdant voit la
+            # violation de clé primaire. L'écriture gagnante a eu lieu, donc
+            # c'est un succès du point de vue de l'appelant.
+            if request_id is None:
+                raise
+            logger.info(
+                "write_batch_rejeu_ignore", tenant=items[0].tenant, request_id=request_id
+            )
+            raise DuplicateRequest(request_id) from exc
 
         episodes = [r[0] for r in records]
         logger.info(
@@ -290,6 +329,21 @@ class EpisodicStore:
     async def get_by_id(self, episode_id: str) -> Episode | None:
         async with self._sessions() as session:
             return await session.get(Episode, episode_id)
+
+    async def has_request(self, tenant: str, request_id: str) -> bool:
+        """Ce `request_id` a-t-il déjà été écrit pour ce tenant ?
+
+        Vérifié *avant* le travail coûteux : sans ce raccourci, un rejeu
+        recalculerait tous les embeddings du lot avant de buter sur la clé
+        primaire. La contrainte reste le garde-fou en cas de course."""
+        async with self._sessions() as session:
+            found = await session.execute(
+                select(ProcessedRequest.request_id).where(
+                    ProcessedRequest.tenant == tenant,
+                    ProcessedRequest.request_id == request_id,
+                )
+            )
+            return found.first() is not None
 
     async def ping(self) -> str | None:
         """Sonde DB pour /health (§Santé) : exécute une vraie requête (pas un

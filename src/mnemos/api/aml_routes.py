@@ -33,7 +33,7 @@ from mnemos.api.deps import (
 )
 from mnemos.llm.ollama_client import is_probe_transient
 from mnemos.logging import get_logger
-from mnemos.stores.episodic import BatchEpisodeItem, EpisodicStore
+from mnemos.stores.episodic import BatchEpisodeItem, DuplicateRequest, EpisodicStore
 from mnemos.stores.semantic import SemanticStore
 from mnemos.stores.working import WorkingMemoryRegistry
 from mnemos.tagger.salience import ScoringJob, ScoringQueue
@@ -94,6 +94,18 @@ async def aml_add(
     tenant = payload.user_id
     session_id = payload.session_id
 
+    # Idempotence (contrat AML) : la plateforme rejoue la même écriture logique,
+    # même request_id et même charge, jusqu'à 32 fois sur erreur réseau ou 5xx.
+    # Un rejeu doit répondre succès sans réécrire, sinon la mémoire se duplique.
+    if await store.has_request(tenant, payload.request_id):
+        logger.info("aml_add_rejeu", tenant=tenant, request_id=payload.request_id)
+        return AMLAddResponse(
+            success=True,
+            request_id=payload.request_id,
+            user_id=payload.user_id,
+            session_id=payload.session_id,
+        )
+
     # Récupération initiale de l'historique récent avant ce lot
     recent_episodes = await store.list_recent(session_id, n=5, tenant=tenant)
     history: list[str] = [e.content for e in recent_episodes]
@@ -110,8 +122,18 @@ async def aml_add(
         for msg in payload.messages
     ]
 
-    # Écriture synchrone groupée (batch embedding Ollama + transaction atomique SQLite)
-    episodes = await store.write_batch(items)
+    # Écriture synchrone groupée (batch embedding + transaction atomique SQLite,
+    # registre d'idempotence inclus dans la même transaction)
+    try:
+        episodes = await store.write_batch(items, request_id=payload.request_id)
+    except DuplicateRequest:
+        # Course entre deux rejeux simultanés : l'écriture gagnante a eu lieu.
+        return AMLAddResponse(
+            success=True,
+            request_id=payload.request_id,
+            user_id=payload.user_id,
+            session_id=payload.session_id,
+        )
 
     # Post-traitement : mémoire de travail et file de saillance asynchrone
     wm_session = wm.get_or_create(session_id, tenant=tenant)

@@ -103,6 +103,79 @@ async def test_aml_health_slow_embedding_is_degraded_not_down(
     assert "failures" not in resp.json()
 
 
+async def test_aml_add_rejeu_ne_duplique_pas(client: httpx.AsyncClient) -> None:
+    """La plateforme rejoue la même écriture logique jusqu'à 32 fois.
+
+    Même request_id, même charge → un seul exemplaire en mémoire, et un succès
+    à chaque fois. Sans cela, un Add réussi mais mal acquitté se dupliquerait.
+    """
+    body = {
+        "request_id": "req-rejeu-1",
+        "user_id": "u-idem",
+        "session_id": "s-idem",
+        "messages": [{"role": "user", "content": "Je pars à Kyoto en avril."}],
+    }
+    for _ in range(3):
+        resp = await client.post("/add", json=body)
+        assert resp.status_code == 200
+        assert resp.json()["success"] is True
+        assert resp.json()["request_id"] == "req-rejeu-1"
+
+    found = (
+        await client.post(
+            "/search", json={"query": "Kyoto", "user_id": "u-idem", "top_k": 100}
+        )
+    ).json()["data"]
+    kyoto = [it for it in found if "Kyoto" in it["content"]]
+    assert len(kyoto) == 1, f"{len(kyoto)} exemplaires au lieu d'un seul"
+
+
+async def test_aml_add_request_id_distinct_ecrit_bien(client: httpx.AsyncClient) -> None:
+    """Garde-fou : l'idempotence ne doit pas avaler des écritures légitimes."""
+    for n in (1, 2):
+        resp = await client.post(
+            "/add",
+            json={
+                "request_id": f"req-distinct-{n}",
+                "user_id": "u-distinct",
+                "session_id": "s-distinct",
+                "messages": [{"role": "user", "content": f"Note numéro {n} sur le jardinage."}],
+            },
+        )
+        assert resp.status_code == 200
+
+    found = (
+        await client.post(
+            "/search",
+            json={"query": "jardinage", "user_id": "u-distinct", "top_k": 100},
+        )
+    ).json()["data"]
+    assert len([it for it in found if "jardinage" in it["content"]]) == 2
+
+
+async def test_aml_idempotence_isolee_par_user(client: httpx.AsyncClient) -> None:
+    """Deux tenants peuvent légitimement réutiliser le même request_id."""
+    for user in ("u-alpha", "u-beta"):
+        resp = await client.post(
+            "/add",
+            json={
+                "request_id": "req-partage",
+                "user_id": user,
+                "session_id": "s1",
+                "messages": [{"role": "user", "content": f"Mémoire de {user} sur le vélo."}],
+            },
+        )
+        assert resp.status_code == 200
+
+    for user in ("u-alpha", "u-beta"):
+        found = (
+            await client.post(
+                "/search", json={"query": "vélo", "user_id": user, "top_k": 100}
+            )
+        ).json()["data"]
+        assert any(user in it["content"] for it in found), f"{user} a perdu son écriture"
+
+
 async def test_aml_health_runner_qui_demarre_est_degraded_not_down(
     client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:

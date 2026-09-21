@@ -66,9 +66,24 @@ EPISODIC_SCHEMA_SQL: list[str] = [
       FOREIGN KEY (episode_id) REFERENCES episodes(id) ON DELETE CASCADE
     ) STRICT
     """,
+    # Idempotence des écritures (contrat AML) : la plateforme rejoue la même
+    # écriture logique — même request_id, même charge — jusqu'à 32 fois sur
+    # erreur réseau ou 5xx. Sans registre, un rejeu après une écriture réussie
+    # mais mal acquittée dupliquerait les souvenirs. La clé est (tenant,
+    # request_id) : deux tenants peuvent légitimement réutiliser un identifiant.
+    """
+    CREATE TABLE processed_requests (
+      tenant          TEXT NOT NULL,
+      request_id      TEXT NOT NULL,
+      created_at      INTEGER NOT NULL,             -- epoch ms UTC
+      episode_count   INTEGER NOT NULL,
+      PRIMARY KEY (tenant, request_id)
+    ) STRICT
+    """,
 ]
 
 EPISODIC_SCHEMA_DROP_SQL: list[str] = [
+    "DROP TABLE IF EXISTS processed_requests",
     "DROP TABLE IF EXISTS episodes_sparse",
     "DROP TABLE IF EXISTS episodes_vec",
     "DROP TABLE IF EXISTS episodes",
@@ -105,3 +120,14 @@ class EpisodeSparse(Base):
 
     episode_id: Mapped[str] = mapped_column(primary_key=True)
     sparse_bits: Mapped[bytes]
+
+
+class ProcessedRequest(Base):
+    """Registre d'idempotence des écritures (cf. EPISODIC_SCHEMA_SQL)."""
+
+    __tablename__ = "processed_requests"
+
+    tenant: Mapped[str] = mapped_column(primary_key=True)
+    request_id: Mapped[str] = mapped_column(primary_key=True)
+    created_at: Mapped[int]
+    episode_count: Mapped[int]
