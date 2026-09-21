@@ -43,6 +43,13 @@ if (-not $digest) { throw "Aucune couche de modèle dans le manifeste bge-m3." }
 $blob = Join-Path $env:USERPROFILE ".ollama\models\blobs\$($digest -replace ':','-')"
 if (-not (Test-Path $blob)) { throw "Blob du modèle introuvable : $blob" }
 
+# Appel direct de l'exe, sans cmd.exe : `cmd /c` ampute la première et la
+# dernière paire de guillemets quand la ligne commence par un guillemet, ce qui
+# casse le chemin du modèle. llama-server sait écrire son log lui-même
+# (--log-file), donc aucune redirection n'est nécessaire.
+$logPath = Join-Path $repoRoot $LogFile
+New-Item -ItemType Directory -Force -Path (Split-Path -Parent $logPath) | Out-Null
+
 $serverArgs = @(
     "--model `"$blob`"",
     "--host 127.0.0.1", "--port $Port",
@@ -50,13 +57,11 @@ $serverArgs = @(
     "--embedding",              # sert /v1/embeddings, pas de génération
     "-b 2048", "-ub 2048",
     "--no-webui", "--offline",
+    "--log-file `"$logPath`"",
     "--no-log-prefix", "--no-log-timestamps"
 ) -join " "
 
-# cmd.exe pour la redirection du log, comme register_task.ps1.
-$action = New-ScheduledTaskAction -Execute "cmd.exe" `
-    -Argument "/c `"$exe`" $serverArgs >> `"$LogFile`" 2>&1" `
-    -WorkingDirectory $repoRoot
+$action = New-ScheduledTaskAction -Execute $exe -Argument $serverArgs -WorkingDirectory $repoRoot
 
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
 

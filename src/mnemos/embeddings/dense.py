@@ -44,20 +44,35 @@ class DenseEmbedder:
         return vector
 
     async def embed_batch(self, texts: list[str]) -> list[list[float]]:
-        """Batch avec cache : seuls les textes non cachés partent vers Ollama."""
+        """Batch avec cache : seuls les textes non cachés partent au modèle.
+
+        Les valeurs présentes sont **copiées avant l'await**, jamais relues
+        après. Sous concurrence, d'autres coroutines écrivent dans le cache
+        pendant l'appel réseau et peuvent évincer une entrée qu'on croyait
+        acquise : relire ensuite levait `KeyError` et faisait échouer tout le
+        lot (constaté en production à la concurrence 16, §Santé). Le résultat
+        ne dépend donc plus de l'état du cache après l'attente.
+        """
         keys = [_content_key(t) for t in texts]
-        missing = [(i, t) for i, (k, t) in enumerate(zip(keys, texts, strict=True))
-                   if k not in self._cache]
+        known: dict[bytes, list[float]] = {}
+        missing: list[tuple[int, str]] = []
+        for i, (key, text) in enumerate(zip(keys, texts, strict=True)):
+            hit = self._cache.get(key)
+            if hit is None:
+                missing.append((i, text))
+            else:
+                known[key] = hit
+                self._cache.move_to_end(key)
         if missing:
             vectors = await self._manager.embed_batch([t for _, t in missing], self._model)
             for (i, _), vec in zip(missing, vectors, strict=True):
-                self._cache[keys[i]] = vec
-                if len(self._cache) > self._cache_size:
-                    self._cache.popitem(last=False)
-        result = []
-        for k in keys:
-            self._cache.move_to_end(k)
-            result.append(self._cache[k])
+                known[keys[i]] = vec
+        result = [known[k] for k in keys]
+        for key, vec in zip(keys, result, strict=True):
+            self._cache[key] = vec
+            self._cache.move_to_end(key)
+            if len(self._cache) > self._cache_size:
+                self._cache.popitem(last=False)
         return result
 
     @property

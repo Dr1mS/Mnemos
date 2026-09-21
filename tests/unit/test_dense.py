@@ -70,3 +70,38 @@ async def test_batch_tout_en_cache_zero_appel(monkeypatch: Any) -> None:
     calls_before = stub.batch_calls
     await embedder.embed_batch(["a", "b"])
     assert stub.batch_calls == calls_before
+
+
+async def test_embed_batch_sous_concurrence_ne_perd_pas_le_cache() -> None:
+    """Reproduit la panne de production du 21/09 (concurrence 16).
+
+    `embed_batch` testait la présence des clés AVANT l'await puis relisait le
+    cache APRÈS. Entre les deux, d'autres coroutines remplissent le cache et
+    évincent l'entrée qu'on croyait acquise : `move_to_end` levait alors
+    KeyError et tout le lot d'Add échouait en HTTP 500.
+
+    Cache minuscule + lots concurrents = éviction garantie pendant l'attente.
+    """
+    import asyncio
+
+    class SlowManager(StubManager):
+        async def embed_batch(self, texts: list[str], model: str) -> list[list[float]]:
+            await asyncio.sleep(0)  # rend la main : les autres coroutines s'intercalent
+            return await super().embed_batch(texts, model)
+
+    stub = SlowManager()
+    settings = Settings(_env_file=None)
+    embedder = DenseEmbedder(stub, settings, cache_size=4)  # type: ignore[arg-type]
+
+    await embedder.embed_batch(["commun-a", "commun-b"])  # amorce le cache
+
+    async def lot(n: int) -> list[list[float]]:
+        return await embedder.embed_batch([f"texte-{n}-{j}" for j in range(3)] + ["commun-a"])
+
+    results = await asyncio.gather(*(lot(n) for n in range(16)))
+
+    for n, vectors in enumerate(results):
+        assert len(vectors) == 4
+        for j in range(3):
+            assert vectors[j] == [float(len(f"texte-{n}-{j}")), 0.0]
+        assert vectors[3] == [float(len("commun-a")), 0.0]
