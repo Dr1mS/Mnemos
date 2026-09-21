@@ -22,16 +22,48 @@ logger = get_logger(__name__)
 
 EMBED_TIMEOUT_S = 60.0
 GENERATE_TIMEOUT_S = 300.0
-RETRY_ATTEMPTS = 3
-RETRY_BASE_DELAY_S = 0.5
+RETRY_ATTEMPTS = 4
+RETRY_BASE_DELAY_S = 0.5  # transport : 0,5 + 1 + 2 = 3,5 s
+# Démarrage d'un runner Ollama supplémentaire : ~7 s mesurées le 21/09. Le
+# backoff amont doit couvrir cette fenêtre, sinon les réessais échouent aussi.
+UPSTREAM_RETRY_BASE_DELAY_S = 1.5  # 1,5 + 3 + 6 = 10,5 s
 HEALTH_TIMEOUT_S = 2.0  # sonde /health : court, appelé à chaque tick Atelios
 _PROBE_TIMEOUT_PREFIX = "timeout > "
+
+# Ollama force `-np 1` pour les modèles d'embedding : un seul /api/embed à la
+# fois par runner. Sous concurrence il démarre des runners supplémentaires, et
+# pendant leur montée (~7 s) il répond **HTTP 400** dont le corps porte l'erreur
+# réseau interne vers le runner pas encore joignable. C'est transitoire, pas une
+# requête invalide. Mesuré le 21/09 : 30 échecs sur 120 embeddings au palier de
+# montée en charge, puis 0 erreur à 49 et 72 req/s une fois les runners chauds.
+# Un vrai 4xx (modèle absent, corps malformé) ne porte aucun de ces marqueurs et
+# doit continuer d'échouer immédiatement.
+_TRANSIENT_UPSTREAM_MARKERS = (
+    "dial tcp",
+    "connection refused",
+    "health resp",
+    "connectex",  # message Winsock localisé, côté Windows
+)
 
 
 def is_probe_timeout(probe_error: str) -> bool:
     """Vrai si embed_probe a échoué par dépassement de délai (charge ou cold
     start) plutôt que par une panne franche (process mort, modèle absent)."""
     return probe_error.startswith(_PROBE_TIMEOUT_PREFIX)
+
+
+def is_transient_upstream_error(body: str) -> bool:
+    """Vrai si un 4xx d'Ollama décrit un runner interne pas encore joignable
+    (voir _TRANSIENT_UPSTREAM_MARKERS) plutôt qu'une requête invalide."""
+    lowered = body.lower()
+    return any(marker in lowered for marker in _TRANSIENT_UPSTREAM_MARKERS)
+
+
+def is_probe_transient(probe_error: str) -> bool:
+    """Vrai si l'échec de sonde est passager — délai dépassé ou runner amont en
+    cours de démarrage. /health doit alors répondre « degraded » (2xx) et non
+    « unhealthy » : la plateforme AML lit tout non-2xx comme un service tombé."""
+    return is_probe_timeout(probe_error) or is_transient_upstream_error(probe_error)
 
 
 class OllamaError(Exception):
@@ -49,25 +81,38 @@ class OllamaClient:
     async def _post(self, path: str, payload: dict[str, Any], timeout_s: float) -> dict[str, Any]:
         """POST avec retry exponentiel sur erreurs transitoires uniquement."""
         last_exc: Exception | None = None
+        last_error: str | None = None
         for attempt in range(RETRY_ATTEMPTS):
+            base_delay = RETRY_BASE_DELAY_S
             try:
                 resp = await self._client.post(
                     f"{self._host}{path}", json=payload, timeout=timeout_s
                 )
                 if 400 <= resp.status_code < 500:
-                    # 4xx : erreur de requête, retry inutile (§7.1)
-                    raise OllamaError(f"HTTP {resp.status_code} sur {path} : {resp.text[:200]}")
-                resp.raise_for_status()
-                data: dict[str, Any] = resp.json()
-                return data
+                    body = resp.text[:200]
+                    if not is_transient_upstream_error(body):
+                        # 4xx : erreur de requête, retry inutile (§7.1)
+                        raise OllamaError(f"HTTP {resp.status_code} sur {path} : {body}")
+                    # Runner amont en cours de démarrage : réessai à cadence lente.
+                    last_error = f"HTTP {resp.status_code} sur {path} : {body}"
+                    base_delay = UPSTREAM_RETRY_BASE_DELAY_S
+                else:
+                    resp.raise_for_status()
+                    data: dict[str, Any] = resp.json()
+                    return data
             except (httpx.TransportError, httpx.HTTPStatusError) as exc:
                 last_exc = exc
-                delay = RETRY_BASE_DELAY_S * (2**attempt)
-                logger.warning(
-                    "ollama_retry", path=path, attempt=attempt + 1, delay_s=delay, error=str(exc)
-                )
-                await asyncio.sleep(delay)
-        raise OllamaError(f"échec après {RETRY_ATTEMPTS} tentatives sur {path}") from last_exc
+                last_error = str(exc)
+            if attempt == RETRY_ATTEMPTS - 1:
+                break
+            delay = base_delay * (2**attempt)
+            logger.warning(
+                "ollama_retry", path=path, attempt=attempt + 1, delay_s=delay, error=last_error
+            )
+            await asyncio.sleep(delay)
+        raise OllamaError(
+            f"échec après {RETRY_ATTEMPTS} tentatives sur {path} : {last_error}"
+        ) from last_exc
 
     async def embed(self, text: str, model: str) -> list[float]:
         vectors = await self.embed_batch([text], model)
@@ -114,6 +159,24 @@ class OllamaClient:
             return resp.status_code == 200
         except httpx.HTTPError:
             return False
+
+    async def version_probe(self) -> str | None:
+        """Comme health_check, mais dit *pourquoi* c'est tombé.
+
+        Un délai dépassé signifie un Ollama saturé qui répond encore au reste :
+        c'est passager. Une connexion refusée signifie un Ollama absent. Les
+        confondre faisait répondre 503 à /health pendant une simple pointe de
+        charge (mesuré le 21/09), ce que la plateforme AML lit comme un service
+        tombé. Retourne None si OK, sinon le message."""
+        try:
+            resp = await self._client.get(f"{self._host}/api/version", timeout=5)
+        except httpx.TimeoutException:
+            return f"{_PROBE_TIMEOUT_PREFIX}5s sur /api/version ({self._host}) — endpoint saturé"
+        except httpx.HTTPError as exc:
+            return f"/api/version injoignable ({self._host}) : {exc}"
+        if resp.status_code != 200:
+            return f"/api/version HTTP {resp.status_code} ({self._host})"
+        return None
 
     async def embed_probe(self, model: str) -> str | None:
         """Sonde réelle de /api/embed (§Santé) : la panne qui a rendu query ET

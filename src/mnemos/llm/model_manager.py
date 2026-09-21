@@ -25,6 +25,7 @@ Tous les appels Ollama passent par ce manager (anti-pattern 1, §20).
 from __future__ import annotations
 
 import asyncio
+import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from enum import StrEnum
@@ -56,6 +57,7 @@ class ModelManager:
         self._state = asyncio.Condition()
         self._active_tier: Tier | None = None
         self._active_count = 0
+        self._last_embed_ok: float | None = None  # preuve de vie par le trafic (§Santé)
 
     def tier_for(self, model: str) -> Tier:
         return Tier.SMALL if model in self._small_models else Tier.MEDIUM
@@ -88,11 +90,15 @@ class ModelManager:
 
     async def embed(self, text: str, model: str) -> list[float]:
         async with self.use(self.tier_for(model)):
-            return await self._client.embed(text, model)
+            vector = await self._client.embed(text, model)
+        self._last_embed_ok = time.monotonic()
+        return vector
 
     async def embed_batch(self, texts: list[str], model: str) -> list[list[float]]:
         async with self.use(self.tier_for(model)):
-            return await self._client.embed_batch(texts, model)
+            vectors = await self._client.embed_batch(texts, model)
+        self._last_embed_ok = time.monotonic()
+        return vectors
 
     async def generate(
         self,
@@ -109,6 +115,23 @@ class ModelManager:
     async def health_check(self) -> bool:
         # Pas de tier : simple GET /api/version, aucune inférence.
         return await self._client.health_check()
+
+    async def version_probe(self) -> str | None:
+        """Comme health_check, mais distingue un Ollama saturé (délai dépassé,
+        passager) d'un Ollama absent (connexion refusée). Retourne None si OK."""
+        return await self._client.version_probe()
+
+    @property
+    def last_embed_ok_age_s(self) -> float:
+        """Âge du dernier embedding réussi, en secondes (inf si aucun).
+
+        Le trafic réel prouve mieux la vie d'Ollama qu'une sonde : sous charge,
+        une sonde serait un appel /api/embed concurrent de plus — précisément ce
+        qui pousse l'ordonnanceur à démarrer un runner et à répondre 400 (§Santé,
+        mesures du 21/09)."""
+        if self._last_embed_ok is None:
+            return float("inf")
+        return time.monotonic() - self._last_embed_ok
 
     async def embed_probe(self) -> str | None:
         """Sonde /api/embed avec le modèle d'embedding configuré (§Santé).

@@ -31,7 +31,7 @@ from mnemos.api.deps import (
     get_wm,
     require_api_key,
 )
-from mnemos.llm.ollama_client import is_probe_timeout
+from mnemos.llm.ollama_client import is_probe_transient
 from mnemos.logging import get_logger
 from mnemos.stores.episodic import BatchEpisodeItem, EpisodicStore
 from mnemos.stores.semantic import SemanticStore
@@ -45,6 +45,8 @@ aml_router = APIRouter(tags=["aml"])
 # La sonde d'embedding sollicite le GPU : un résultat sert 30 s, quel que soit
 # le rythme d'appel de la plateforme ou des moniteurs externes.
 HEALTH_CACHE_TTL_S = 30.0
+# En deçà de cet âge, le dernier embedding réussi tient lieu de sonde (§Santé).
+HEALTH_TRAFFIC_WINDOW_S = 15.0
 
 StoreDep = Annotated[EpisodicStore, Depends(get_store)]
 SemanticDep = Annotated[SemanticStore, Depends(get_semantic)]
@@ -213,19 +215,37 @@ class _HealthSnapshot:
 async def _probe_health(request: Request) -> _HealthSnapshot:
     """Mêmes sondes que /v1/health : Ollama, embedding réel et les deux bases.
 
-    Un embedding trop lent (timeout de la sonde) signale de la charge ou un cold
-    start, pas une panne : l'état reste 2xx (« degraded ») pour ne pas faire
-    croire à la plateforme que le service est tombé pendant un run chargé."""
+    Un embedding trop lent (timeout de la sonde) ou un runner Ollama en cours de
+    démarrage signale de la charge ou un cold start, pas une panne : l'état reste
+    2xx (« degraded ») pour ne pas faire croire à la plateforme que le service est
+    tombé pendant un run chargé. La sonde est hors sémaphore (§7.2) : sous charge
+    elle est donc précisément l'appel qui tombe sur un runner pas encore prêt."""
     state = request.app.state
     failures: list[str] = []
     details: dict[str, str] = {}
-    if not await state.manager.health_check():
-        failures.append("ollama")
-    embed_error = await state.manager.embed_probe()
-    busy = embed_error is not None and is_probe_timeout(embed_error)
+    busy = False
+
+    version_error = await state.manager.version_probe()
+    if version_error is not None:
+        details["ollama"] = version_error
+        if is_probe_transient(version_error):
+            busy = True
+        else:
+            failures.append("ollama")
+
+    # Preuve de vie par le trafic : un embedding réel réussi il y a moins de
+    # HEALTH_TRAFFIC_WINDOW_S prouve qu'Ollama sert. Sonder en plus ajouterait
+    # un /api/embed concurrent — et c'est cette concurrence-là qui fait démarrer
+    # un runner à Ollama, donc qui provoque les 400 qu'on cherche à éviter.
+    if state.manager.last_embed_ok_age_s <= HEALTH_TRAFFIC_WINDOW_S:
+        embed_error = None
+    else:
+        embed_error = await state.manager.embed_probe()
     if embed_error is not None:
         details["embedding"] = embed_error
-        if not busy:
+        if is_probe_transient(embed_error):
+            busy = True
+        else:
             failures.append("embedding")
     for name, store in (("episodic_db", state.store), ("semantic_db", state.semantic)):
         db_error = await store.ping()

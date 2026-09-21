@@ -43,6 +43,14 @@ class StubLLMManager:
     async def health_check(self) -> bool:
         return True
 
+    async def version_probe(self) -> str | None:
+        return None  # /api/version OK (§Santé)
+
+    @property
+    def last_embed_ok_age_s(self) -> float:
+        # Aucun trafic d'embedding : /health sonde réellement (§Santé).
+        return float("inf")
+
     async def embed_probe(self) -> str | None:
         return None  # sonde /api/embed OK (§Santé)
 

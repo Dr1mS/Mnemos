@@ -71,13 +71,13 @@ async def test_aml_health_reports_real_failures(
     """Ollama mort ou modèle d'embedding absent → 503, sans détails internes exposés."""
     manager = client.app_state.manager  # type: ignore[attr-defined]
 
-    async def ollama_down() -> bool:
-        return False
+    async def ollama_down() -> str:
+        return "/api/version injoignable (http://localhost:11434) : connexion refusée"
 
     async def embed_missing_model() -> str:
         return "/api/embed HTTP 404 (modèle bge-m3 ?) : model not found"
 
-    monkeypatch.setattr(manager, "health_check", ollama_down)
+    monkeypatch.setattr(manager, "version_probe", ollama_down)
     monkeypatch.setattr(manager, "embed_probe", embed_missing_model)
     resp = await client.get("/health")
     assert resp.status_code == 503
@@ -101,6 +101,54 @@ async def test_aml_health_slow_embedding_is_degraded_not_down(
     assert resp.status_code == 200
     assert resp.json()["status"] == "degraded"
     assert "failures" not in resp.json()
+
+
+async def test_aml_health_runner_qui_demarre_est_degraded_not_down(
+    client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Ollama démarre un runner supplémentaire → HTTP 400 passager, pas une panne.
+
+    Mesuré le 21/09 : sous concurrence, /api/embed répond 400 « dial tcp … »
+    pendant les ~7 s de montée d'un runner. Répondre 503 ferait lire à la
+    plateforme AML un service tombé au beau milieu d'un run.
+    """
+    manager = client.app_state.manager  # type: ignore[attr-defined]
+
+    async def runner_starting() -> str:
+        return (
+            '/api/embed HTTP 400 (modèle bge-m3 ?) : {"error":"Post '
+            '\\"http://127.0.0.1:13776/tokenize\\": dial tcp 127.0.0.1:13776: connection refused"}'
+        )
+
+    monkeypatch.setattr(manager, "embed_probe", runner_starting)
+    resp = await client.get("/health")
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "degraded"
+    assert "failures" not in resp.json()
+
+
+async def test_aml_health_sous_trafic_ne_sonde_pas(
+    client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Un embedding réel récent tient lieu de sonde.
+
+    Sonder en plus ajouterait un /api/embed concurrent, et c'est précisément
+    cette concurrence qui fait démarrer un runner à Ollama — donc qui provoque
+    les 400. Sous trafic, /health doit donc s'abstenir de sonder.
+    """
+    manager = client.app_state.manager  # type: ignore[attr-defined]
+    calls = {"n": 0}
+
+    async def compte() -> str | None:
+        calls["n"] += 1
+        return None
+
+    monkeypatch.setattr(manager, "embed_probe", compte)
+    monkeypatch.setattr(type(manager), "last_embed_ok_age_s", property(lambda _: 1.0))
+    resp = await client.get("/health")
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "healthy"
+    assert calls["n"] == 0, "aucune sonde ne doit partir pendant le trafic"
 
 
 async def test_aml_health_result_is_cached(
