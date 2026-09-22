@@ -2,6 +2,77 @@
 
 **[English](#english) · [Français](#français)**
 
+---
+
+## 📋 For Agent Memory Leaderboard reviewers
+
+> You are on branch `feat/aml-adapter`, which carries the code evaluated in the
+> **Agent Memory Challenge, Cycle 2**. Everything below in this section is written for
+> you; the rest of the README is the general project documentation.
+
+**Declared commit:** `2f6539cd478c3d42afc952765b89353bb7b81016` — the evaluated code.
+Any later commit on this branch touches documentation only; you can verify that the
+evaluated code has not moved with `git diff 2f6539c..HEAD -- src/`, which is empty.
+**Track:** Industry · **Endpoints:** `POST /add`, `POST /search`, `GET /health` (unauthenticated)
+**Auth:** Bearer, Token or X-Api-Key, same key · **Declared concurrency:** Add 16, Search 16, top_k 100
+
+### What the evaluated configuration actually runs
+
+| | |
+|---|---|
+| **Models** | `bge-m3` embeddings only. **No LLM is called during Add or Search**, and no external API. |
+| **Embedding server** | `llama-server` (llama.cpp) in direct mode, 16 parallel slots, 8192 context and physical batch per slot. |
+| **Storage** | SQLite + `sqlite-vec`, one transaction per Add; HTTP 200 is returned only after commit, so a memory is searchable immediately. |
+| **Isolation** | `user_id` is the only boundary. `session_id` groups episodes but never filters Search. |
+| **Retrieval** | Hybrid: `0.7·dense + 0.3·sparse + 0.1·recency`, deduplicated, ranked, at most `top_k`. Search **never generates answers**; `options` are accepted and ignored. |
+| **Disabled for this evaluation** | The LLM consolidation layer (salience scoring, fact extraction). Measured as no gain in retrieval or answer accuracy while halving throughput. See `AML_DEPLOYMENT_WINDOWS.md`. |
+
+### Verify the contract yourself
+
+```bash
+python scripts/aml_selftest.py --url <deployment-url> --key <api-key>
+```
+
+Checks, in order: `/health` answers 2xx **without** authentication; `/add` is synchronous
+and echoes `request_id`, `user_id` and `session_id` unchanged with `success: true`;
+`/search` returns a `data` array of at most `top_k` items, each with a non-empty `id` and
+`content`; a different `user_id` sees nothing; an invalid key is refused with 401.
+
+### Two properties worth checking explicitly
+
+- **Add is idempotent on `request_id`, per `user_id`.** Your contract replays the same
+  logical write up to 32 times; the identifier is recorded *inside the same transaction*
+  as the memories, so a replay returns success without duplicating anything.
+  Test: `tests/integration/test_aml_adapter.py::test_aml_add_rejeu_ne_duplique_pas`.
+- **Oversized inputs degrade instead of failing.** A message too long for the embedding
+  model is truncated *for embedding only* and logged; the stored content stays whole.
+  Test: `tests/unit/test_llamacpp_client.py`.
+
+### Measured capacity
+
+Through the public endpoint, at the declared concurrency: 400 Add and 800 Search
+requests, **zero errors**. Add 12.0 messages/s, Search 20.3 requests/s (top_k=100).
+Both are bounded by the embedding model on the host GPU, not by our code: with
+embeddings stubbed out the storage path sustains 615 messages/s.
+
+### Reproduce
+
+`AML_DEPLOYMENT_WINDOWS.md` is the full deployment guide (environment, scheduled tasks,
+reverse proxy). `MNEMOS_SPEC.md` is the design spec. Benchmarks and their raw results are
+in `bench/` and `bench/results/gpu/`. Tests: `pytest` — 252 collected, 242 passing with no
+network access at all; the 10 marked `requires_ollama` are skipped unless a local Ollama is
+running, and they cover the consolidation path that this evaluation does not use.
+
+### Third-party work
+
+`bge-m3` (Chen et al., 2024, arXiv:2402.03216, MIT) · `llama.cpp` / `llama-server`
+(ggml-org, MIT, used unmodified — command-line options only) · `sqlite-vec` (Alex Garcia).
+Everything else is original work by a single author. Public datasets used for our own
+benchmarking (LoCoMo, PersonaMem) are cited in `bench/`; **no AML evaluation data was used
+for development or tuning**. Developed with AI coding assistants (Claude Code, Antigravity).
+
+---
+
 <a name="english"></a>
 
 **Long-term memory for LLM agents that works like yours — and runs entirely on your machine.**
