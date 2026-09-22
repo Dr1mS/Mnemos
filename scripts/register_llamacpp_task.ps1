@@ -15,9 +15,15 @@
 param(
     [string]$TaskName = "Mnemos llama.cpp",
     # 16 slots = la concurrence minimale imposée par AML. Chaque slot reçoit
-    # ContextSize / Parallel ; 65536/16 = 4096, soit le contexte plein de bge-m3.
+    # ContextSize / Parallel ; 131072/16 = 8192, le contexte maximal de bge-m3.
     [int]$Parallel = 16,
-    [int]$ContextSize = 65536,
+    [int]$ContextSize = 131072,
+    # Taille du lot PHYSIQUE. Pour un embedding, llama.cpp exige que toute
+    # l'entrée y tienne : a 2048, un message de 2 737 tokens des donnees
+    # d'evaluation faisait echouer /v1/embeddings en 500 (« input is too large
+    # to process, increase the physical batch size »), et le smoke du 22/09 a
+    # bloque a 90 %. A 8192, toute entree jusqu'au maximum de bge-m3 passe.
+    [int]$BatchSize = 8192,
     [int]$Port = 8899,
     [string]$LogFile = "data\aml\llamacpp.log"
 )
@@ -55,7 +61,7 @@ $serverArgs = @(
     "--host 127.0.0.1", "--port $Port",
     "-c $ContextSize", "-np $Parallel",
     "--embedding",              # sert /v1/embeddings, pas de génération
-    "-b 2048", "-ub 2048",
+    "-b $BatchSize", "-ub $BatchSize",
     "--no-webui", "--offline",
     "--log-file `"$logPath`"",
     "--no-log-prefix", "--no-log-timestamps"
