@@ -36,6 +36,25 @@ from mnemos.logging import get_logger
 
 logger = get_logger(__name__)
 
+# Pour un embedding, llama.cpp exige que toute l'entrée tienne dans un seul lot
+# physique. Au-delà, il répond 500 « input (N tokens) is too large to process ».
+# Rejouer la même requête ne peut pas aboutir : le smoke test du 22/09 est resté
+# bloqué un quart d'heure là-dessus, la plateforme rejouant en boucle.
+_TOO_LARGE_MARKERS = ("too large to process", "exceeds the available context", "n_ubatch")
+
+# Budget de repli, en caractères. Volontairement prudent : en CJK un caractère
+# vaut environ un token, donc 8 000 caractères restent sous les 8 192 tokens de
+# bge-m3 quelle que soit la langue. On ne tronque QUE si le serveur a refusé —
+# un texte latin de 30 000 caractères passe donc intact.
+SAFE_INPUT_CHARS = 8000
+MIN_INPUT_CHARS = 1000
+
+
+def is_input_too_large(body: str) -> bool:
+    """Vrai si llama-server refuse l'entrée pour cause de taille."""
+    lowered = body.lower()
+    return any(marker in lowered for marker in _TOO_LARGE_MARKERS)
+
 
 class LlamaCppClient:
     """Embeddings via `llama-server`. `model` est accepté puis ignoré : le
@@ -73,15 +92,41 @@ class LlamaCppClient:
         """POST avec repli exponentiel sur erreurs transitoires (transport, 5xx).
 
         Pas d'équivalent du 400 passager d'Ollama : sans saut parent → runner,
-        un 4xx de llama-server désigne une vraie erreur de requête."""
+        un 4xx de llama-server désigne une vraie erreur de requête.
+
+        Cas particulier, l'entrée trop longue : on réessaie en tronquant au lieu
+        de rejouer la même requête indéfiniment (voir SAFE_INPUT_CHARS)."""
         last_error: str | None = None
         last_exc: Exception | None = None
-        payload = {"input": texts, "model": model}
+        sent = texts
+        budget: int | None = None
         for attempt in range(RETRY_ATTEMPTS):
             try:
                 resp = await self._client.post(
-                    f"{self._host}/v1/embeddings", json=payload, timeout=EMBED_TIMEOUT_S
+                    f"{self._host}/v1/embeddings",
+                    json={"input": sent, "model": model},
+                    timeout=EMBED_TIMEOUT_S,
                 )
+                if resp.status_code >= 400 and is_input_too_large(resp.text[:400]):
+                    budget = SAFE_INPUT_CHARS if budget is None else budget // 2
+                    if budget < MIN_INPUT_CHARS:
+                        raise OllamaError(
+                            f"entrée toujours refusée à {MIN_INPUT_CHARS} caractères : "
+                            f"{resp.text[:200]}"
+                        )
+                    trop_longs = sum(1 for t in sent if len(t) > budget)
+                    sent = [t[:budget] for t in sent]
+                    # Journalisé : une troncature perd de l'information, il faut
+                    # pouvoir le constater après coup plutôt que le découvrir
+                    # dans des scores inexpliqués.
+                    logger.warning(
+                        "llamacpp_entree_tronquee",
+                        budget_caracteres=budget,
+                        textes_tronques=trop_longs,
+                        sur=len(sent),
+                    )
+                    last_error = resp.text[:200]
+                    continue  # réessai immédiat : inutile d'attendre, la cause est connue
                 if 400 <= resp.status_code < 500:
                     raise OllamaError(
                         f"HTTP {resp.status_code} sur /v1/embeddings : {resp.text[:200]}"

@@ -107,3 +107,80 @@ async def test_health_ok() -> None:
     assert await client.version_probe() is None
     assert await client.health_check() is True
     await client.aclose()
+
+
+TROP_LONG = (
+    '{"error":{"code":500,"message":"input (2737 tokens) is too large to process. '
+    'increase the physical batch size (current batch size: 2048)","type":"server_error"}}'
+)
+
+
+async def test_entree_trop_longue_est_tronquee_puis_reussit() -> None:
+    """Le blocage du smoke test du 22/09 : rejouer à l'identique ne peut aboutir.
+
+    llama-server refuse une entrée qui dépasse son lot physique. Nos réessais
+    rejouaient la même charge, la plateforme rejouait la nôtre : Add est resté
+    figé à 90,3 %. Le client doit tronquer plutôt que s'entêter.
+    """
+    from mnemos.llm.llamacpp_client import SAFE_INPUT_CHARS
+
+    envois: list[int] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        import json as _json
+
+        envoye = _json.loads(request.content)["input"]
+        envois.append(max(len(t) for t in envoye))
+        if envois[-1] > SAFE_INPUT_CHARS:
+            return httpx.Response(500, text=TROP_LONG)
+        return embeddings_response([[0.5] * 1024 for _ in envoye])
+
+    client = make_client(handler)
+    vectors = await client.embed_batch(["x" * 40000, "court"], "bge-m3")
+
+    assert len(vectors) == 2
+    assert envois[0] == 40000, "la première tentative doit envoyer le texte intact"
+    assert envois[1] <= SAFE_INPUT_CHARS, "la seconde doit être tronquée"
+    await client.aclose()
+
+
+async def test_texte_long_mais_accepte_nest_pas_tronque() -> None:
+    """On ne tronque que si le serveur refuse : un texte latin de 30 000
+    caractères tient dans 8 192 tokens et doit partir intact."""
+    envois: list[int] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        import json as _json
+
+        envoye = _json.loads(request.content)["input"]
+        envois.append(len(envoye[0]))
+        return embeddings_response([[0.5] * 1024])
+
+    client = make_client(handler)
+    await client.embed_batch(["mot " * 7500], "bge-m3")
+    assert envois == [30000], f"texte modifié sans nécessité : {envois}"
+    await client.aclose()
+
+
+async def test_500_ordinaire_rejoue_la_meme_charge() -> None:
+    """Une panne serveur sans rapport avec la taille garde le réessai normal."""
+    import mnemos.llm.llamacpp_client as mod
+
+    tailles: list[int] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        import json as _json
+
+        tailles.append(len(_json.loads(request.content)["input"][0]))
+        return httpx.Response(500, text='{"error":"internal"}')
+
+    original = mod.RETRY_BASE_DELAY_S
+    mod.RETRY_BASE_DELAY_S = 0.0
+    try:
+        client = make_client(handler)
+        with pytest.raises(OllamaError):
+            await client.embed_batch(["x" * 40000], "bge-m3")
+        assert len(set(tailles)) == 1, "la charge ne doit pas être modifiée"
+        await client.aclose()
+    finally:
+        mod.RETRY_BASE_DELAY_S = original
