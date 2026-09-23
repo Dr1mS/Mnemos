@@ -1,7 +1,11 @@
 #!/bin/bash
 # Surveillance d'un déploiement Mnemos pendant une évaluation AML.
 #
-#   bash scripts/aml_monitor.sh --url https://exemple.tld --key <API_KEY>
+#   bash scripts/aml_monitor.sh --url https://exemple.tld
+#
+# La clé est lue dans .env (API_KEY) ou dans la variable d'environnement
+# API_KEY. Elle n'est volontairement PAS un argument : tout argument de ligne
+# de commande est visible dans la liste des processus de la machine.
 #
 # Options : --log <fichier> --serve-log <fichier> --tours <n> --seuil-mo <Mo>
 #
@@ -23,22 +27,29 @@
 
 set -u
 
-URL=""; KEY=""; LOG="aml_monitor.log"; SERVE_LOG="data/aml/serve.log"
-TOURS=64; SEUIL_MO=2048; LLAMACPP="http://127.0.0.1:8899"
+URL=""; LOG="aml_monitor.log"; SERVE_LOG="data/aml/serve.log"
+TOURS=64; SEUIL_MO=2048; LLAMACPP="http://127.0.0.1:8899"; ENV_FILE=".env"
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --url) URL="$2"; shift 2 ;;
-    --key) KEY="$2"; shift 2 ;;
     --log) LOG="$2"; shift 2 ;;
     --serve-log) SERVE_LOG="$2"; shift 2 ;;
     --tours) TOURS="$2"; shift 2 ;;
     --seuil-mo) SEUIL_MO="$2"; shift 2 ;;
     --llamacpp) LLAMACPP="$2"; shift 2 ;;
+    --env-file) ENV_FILE="$2"; shift 2 ;;
     *) echo "option inconnue : $1" >&2; exit 2 ;;
   esac
 done
-[ -n "$URL" ] && [ -n "$KEY" ] || { echo "usage : --url <url> --key <cle>" >&2; exit 2; }
+[ -n "$URL" ] || { echo "usage : bash scripts/aml_monitor.sh --url <url>" >&2; exit 2; }
+
+# Jamais en argument : la ligne de commande d'un processus est lisible par tous.
+KEY="${API_KEY:-}"
+if [ -z "$KEY" ] && [ -f "$ENV_FILE" ]; then
+  KEY=$(grep '^API_KEY=' "$ENV_FILE" | head -1 | cut -d= -f2- | tr -d '\r')
+fi
+[ -n "$KEY" ] || { echo "cle introuvable : definir API_KEY, ou la placer dans $ENV_FILE" >&2; exit 2; }
 
 # 150 s : à la concurrence 16 imposée par AML, un /add peut légitimement durer
 # plus de 100 s (max mesuré : 106 s). Un délai plus court fabrique de fausses
