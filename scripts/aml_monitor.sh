@@ -34,6 +34,10 @@ TOURS=64; SEUIL_MO=2048; LLAMACPP="http://127.0.0.1:8899"; ENV_FILE=".env"
 # modele charge a cote peut saturer la carte et ralentir ou faire echouer les
 # embeddings. On avertit sans rien arreter — l'arbitrage revient a l'humain.
 VRAM_ALERTE_MO=1024
+# Nombre de relevés bas consécutifs avant de rendre la main. Un pic isolé — un
+# modèle qui se charge, un batch ponctuel — ne doit alerter personne.
+VRAM_TOLERANCE=3
+VRAM_BAS=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -133,14 +137,25 @@ while [ "$tour" -lt "$TOURS" ]; do
     fi
   fi
 
-  # Avertissements de ressources, après le relevé. On ne coupe que sur la RAM
-  # système : à court de VRAM la carte ralentit, à court de RAM Windows tue des
-  # processus — dont la surveillance elle-même, vu le 22/09.
+  # Ressources. Un journal que personne ne lit n'alerte personne : une pression
+  # SOUTENUE rend la main, ce qui déclenche une notification. Un pic isolé, lui,
+  # ne justifie pas de réveiller qui que ce soit.
   if [ -n "$VRAM_LIBRE" ] && [ "$VRAM_LIBRE" -lt "$VRAM_ALERTE_MO" ] 2>/dev/null; then
-    echo "$(date '+%d/%m %H:%M')  VRAM BASSE : ${VRAM_LIBRE} Mo libres — un autre travail partage-t-il la carte ?" >> "$LOG"
+    VRAM_BAS=$((VRAM_BAS + 1))
+    echo "$(date '+%d/%m %H:%M')  VRAM BASSE (${VRAM_BAS}/${VRAM_TOLERANCE}) : ${VRAM_LIBRE} Mo libres" >> "$LOG"
+    if [ "$VRAM_BAS" -ge "$VRAM_TOLERANCE" ]; then
+      echo "$(date '+%d/%m %H:%M')  *** VRAM SOUS PRESSION SOUTENUE : ${VRAM_LIBRE} Mo libres sur $VRAM_TOLERANCE releves ***" >> "$LOG"
+      echo "VRAM sous pression soutenue : ${VRAM_LIBRE} Mo libres."
+      echo "Un autre travail partage la carte. La production Mnemos n'est pas arretee."
+      exit 4
+    fi
+  else
+    VRAM_BAS=0
   fi
+
   if [ -n "$RAM_LIBRE" ] && [ "$RAM_LIBRE" -lt "$SEUIL_MO" ] 2>/dev/null; then
-    echo "$(date '+%d/%m %H:%M')  RAM CRITIQUE : ${RAM_LIBRE} Mo libres — arret de la surveillance, priorite a la machine" >> "$LOG"
+    echo "$(date '+%d/%m %H:%M')  RAM CRITIQUE : ${RAM_LIBRE} Mo libres — arret, priorite a la machine" >> "$LOG"
+    echo "RAM systeme critique : ${RAM_LIBRE} Mo libres. Surveillance arretee."
     exit 3
   fi
 
