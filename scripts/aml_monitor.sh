@@ -29,6 +29,11 @@ set -u
 
 URL=""; LOG="aml_monitor.log"; SERVE_LOG="data/aml/serve.log"
 TOURS=64; SEUIL_MO=2048; LLAMACPP="http://127.0.0.1:8899"; ENV_FILE=".env"
+# VRAM libre en deçà de laquelle on avertit. Utile quand un autre travail
+# partage la carte : le serveur d'embeddings a deja reserve la sienne, mais un
+# modele charge a cote peut saturer la carte et ralentir ou faire echouer les
+# embeddings. On avertit sans rien arreter — l'arbitrage revient a l'humain.
+VRAM_ALERTE_MO=1024
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -74,19 +79,29 @@ memoire_libre_mo() {
     "[int]((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1KB)" 2>/dev/null | tr -d '\r'
 }
 
+VRAM_LIBRE=0; RAM_LIBRE=0
+
 check() { # 0 si les quatre points répondent 200
-  local h s a l gpu req err nerr
+  local h s a l util req err nerr
   h=$(sonde "$URL/health" GET)
   s=$(sonde "$URL/search" POST '{"query":"sonde","user_id":"__monitor__","top_k":10}')
   a=$(sonde "$URL/add" POST \
       "{\"request_id\":\"mon-$(date +%s%N)\",\"user_id\":\"__monitor__\",\"session_id\":\"m\",\"messages\":[{\"role\":\"user\",\"content\":\"sonde $(date +%H:%M)\"}]}")
   l=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "$LLAMACPP/health")
-  gpu=$(nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv,noheader 2>/dev/null | tr -d ' ' | tr '\n' ' ')
+
+  # Ressources relevées à chaque tour, pas seulement comparées à un seuil : la
+  # tendance vaut mieux qu'une alarme, surtout si un autre travail partage la
+  # machine.
+  util=$(nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits 2>/dev/null | head -1 | tr -d ' ')
+  VRAM_LIBRE=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits 2>/dev/null | head -1 | tr -d ' ')
+  RAM_LIBRE=$(memoire_libre_mo)
+
   req=$(grep -c -E '"POST /(add|search)' "$SERVE_LOG" 2>/dev/null || echo 0)
   err=$(grep -c 'OllamaError' "$SERVE_LOG" 2>/dev/null || echo 0)
   NREQ=$((req - prev_req)); nerr=$((err - prev_err))
   prev_req=$req; prev_err=$err
-  DETAIL="health=$h search=$s add=$a llamacpp=$l gpu=$gpu trafic=+$NREQ erreurs=+$nerr"
+
+  DETAIL="health=$h search=$s add=$a llamacpp=$l gpu=${util}% vram_libre=${VRAM_LIBRE}Mo ram_libre=${RAM_LIBRE}Mo trafic=+$NREQ erreurs=+$nerr"
   for code in "${h%% *}" "${s%% *}" "${a%% *}" "$l"; do
     [ "$code" = "200" ] || return 1
   done
@@ -98,14 +113,6 @@ echo "$(date '+%d/%m %H:%M')  === surveillance de $URL ===" >> "$LOG"
 tour=0
 while [ "$tour" -lt "$TOURS" ]; do
   tour=$((tour + 1))
-
-  # Priorité absolue à l'évaluation : sous le seuil, on se retire plutôt que de
-  # concurrencer ce qu'on surveille.
-  libre=$(memoire_libre_mo)
-  if [ -n "$libre" ] && [ "$libre" -lt "$SEUIL_MO" ] 2>/dev/null; then
-    echo "$(date '+%d/%m %H:%M')  MEMOIRE CRITIQUE (${libre} Mo) — arret de la surveillance, priorite au run" >> "$LOG"
-    exit 3
-  fi
 
   if check; then
     echo "$(date '+%d/%m %H:%M')  OK    $DETAIL" >> "$LOG"
@@ -124,6 +131,17 @@ while [ "$tour" -lt "$TOURS" ]; do
       } >> "$LOG"
       exit 1
     fi
+  fi
+
+  # Avertissements de ressources, après le relevé. On ne coupe que sur la RAM
+  # système : à court de VRAM la carte ralentit, à court de RAM Windows tue des
+  # processus — dont la surveillance elle-même, vu le 22/09.
+  if [ -n "$VRAM_LIBRE" ] && [ "$VRAM_LIBRE" -lt "$VRAM_ALERTE_MO" ] 2>/dev/null; then
+    echo "$(date '+%d/%m %H:%M')  VRAM BASSE : ${VRAM_LIBRE} Mo libres — un autre travail partage-t-il la carte ?" >> "$LOG"
+  fi
+  if [ -n "$RAM_LIBRE" ] && [ "$RAM_LIBRE" -lt "$SEUIL_MO" ] 2>/dev/null; then
+    echo "$(date '+%d/%m %H:%M')  RAM CRITIQUE : ${RAM_LIBRE} Mo libres — arret de la surveillance, priorite a la machine" >> "$LOG"
+    exit 3
   fi
 
   # Cadence : rapprochée au début du run, puis horaire. Pas d'attente après le
