@@ -56,6 +56,17 @@ while [ $# -gt 0 ]; do
 done
 [ -n "$URL" ] || { echo "usage : bash scripts/aml_monitor.sh --url <url>" >&2; exit 2; }
 
+# Sonde de secours SANS DNS, sur l'adresse d'écoute directe du service. Elle
+# tranche le cas où le résolveur de la machine de mesure flanche : si le service
+# répond par son IP alors que l'URL publique échoue, la panne est chez nous, pas
+# chez lui. Déduite de .env pour ne pas inscrire d'adresse privée dans le dépôt.
+if [ -z "${LOCAL_URL:-}" ] && [ -f "$ENV_FILE" ]; then
+  _h=$(grep '^API_HOST=' "$ENV_FILE" | head -1 | cut -d= -f2- | tr -d '\r')
+  _p=$(grep '^API_PORT=' "$ENV_FILE" | head -1 | cut -d= -f2- | tr -d '\r')
+  [ -n "$_h" ] && LOCAL_URL="http://${_h}:${_p:-8765}"
+fi
+LOCAL_URL="${LOCAL_URL:-}"
+
 # Jamais en argument : la ligne de commande d'un processus est lisible par tous.
 KEY="${API_KEY:-}"
 if [ -z "$KEY" ] && [ -f "$ENV_FILE" ]; then
@@ -95,6 +106,11 @@ check() { # 0 si les quatre points répondent 200
   a=$(sonde "$URL/add" POST \
       "{\"request_id\":\"mon-$(date +%s%N)\",\"user_id\":\"__monitor__\",\"session_id\":\"m\",\"messages\":[{\"role\":\"user\",\"content\":\"sonde $(date +%H:%M)\"}]}")
   l=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "$LLAMACPP/health")
+  if [ -n "$LOCAL_URL" ]; then
+    DIRECT=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$LOCAL_URL/health")
+  else
+    DIRECT="-"
+  fi
 
   # Ressources relevées à chaque tour, pas seulement comparées à un seuil : la
   # tendance vaut mieux qu'une alarme, surtout si un autre travail partage la
@@ -108,7 +124,7 @@ check() { # 0 si les quatre points répondent 200
   NREQ=$((req - prev_req)); nerr=$((err - prev_err))
   prev_req=$req; prev_err=$err
 
-  DETAIL="health=$h search=$s add=$a llamacpp=$l gpu=${util}% vram_libre=${VRAM_LIBRE}Mo ram_libre=${RAM_LIBRE}Mo trafic=+$NREQ erreurs=+$nerr"
+  DETAIL="health=$h search=$s add=$a direct=$DIRECT llamacpp=$l gpu=${util}% vram_libre=${VRAM_LIBRE}Mo ram_libre=${RAM_LIBRE}Mo trafic=+$NREQ erreurs=+$nerr"
   for code in "${h%% *}" "${s%% *}" "${a%% *}" "$l"; do
     [ "$code" = "200" ] || return 1
   done
@@ -128,6 +144,11 @@ while [ "$tour" -lt "$TOURS" ]; do
     sleep 45                       # un creux isolé ne doit pas alerter
     if check; then
       echo "$(date '+%d/%m %H:%M')  REPRIS | 1er: $premier | 2e: $DETAIL" >> "$LOG"
+    elif [ "$DIRECT" = "200" ]; then
+      # Le service repond par son IP, sans DNS : c'est le resolveur de cette
+      # machine qui flanche. L'arbitrage par le trafic ne suffit pas ici — hors
+      # evaluation, le trafic est legitimement nul.
+      echo "$(date '+%d/%m %H:%M')  SONDE AVEUGLE (resolution DNS cote client) — le service repond par son IP | $DETAIL" >> "$LOG"
     elif [ "$NREQ" -gt 0 ]; then
       echo "$(date '+%d/%m %H:%M')  SONDE AVEUGLE (cote client) — la prod sert toujours, +$NREQ requetes | $DETAIL" >> "$LOG"
     else
