@@ -38,6 +38,9 @@ VRAM_ALERTE_MO=1024
 # modèle qui se charge, un batch ponctuel — ne doit alerter personne.
 VRAM_TOLERANCE=3
 VRAM_BAS=0
+# Idem pour la RAM système : trois creux consécutifs avant de rendre la main.
+RAM_TOLERANCE=3
+RAM_BAS=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -153,10 +156,19 @@ while [ "$tour" -lt "$TOURS" ]; do
     VRAM_BAS=0
   fi
 
+  # Même tolérance que pour la VRAM : sur une machine partagée, un calcul qui
+  # charge un lot fait plonger la RAM quelques instants. S'arrêter au premier
+  # creux reviendrait à ne jamais survivre au travail normal des voisins.
   if [ -n "$RAM_LIBRE" ] && [ "$RAM_LIBRE" -lt "$SEUIL_MO" ] 2>/dev/null; then
-    echo "$(date '+%d/%m %H:%M')  RAM CRITIQUE : ${RAM_LIBRE} Mo libres — arret, priorite a la machine" >> "$LOG"
-    echo "RAM systeme critique : ${RAM_LIBRE} Mo libres. Surveillance arretee."
-    exit 3
+    RAM_BAS=$((RAM_BAS + 1))
+    echo "$(date '+%d/%m %H:%M')  RAM BASSE (${RAM_BAS}/${RAM_TOLERANCE}) : ${RAM_LIBRE} Mo libres" >> "$LOG"
+    if [ "$RAM_BAS" -ge "$RAM_TOLERANCE" ]; then
+      echo "$(date '+%d/%m %H:%M')  *** RAM CRITIQUE SOUTENUE : ${RAM_LIBRE} Mo sur $RAM_TOLERANCE releves — arret ***" >> "$LOG"
+      echo "RAM systeme critique et durable : ${RAM_LIBRE} Mo libres. Surveillance arretee, priorite a la machine."
+      exit 3
+    fi
+  else
+    RAM_BAS=0
   fi
 
   # Cadence : rapprochée au début du run, puis horaire. Pas d'attente après le
