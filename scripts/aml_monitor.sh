@@ -131,7 +131,14 @@ check() { # 0 si les quatre points répondent 200
   return 0
 }
 
-echo "$(date '+%d/%m %H:%M')  === surveillance de $URL ===" >> "$LOG"
+# Fichier de PID : repérer la sonde par sa ligne de commande n'est pas fiable —
+# les enveloppes de lancement la contiennent aussi, et on croit voir tourner une
+# sonde qui s'est arrêtée. Le PID, lui, ne ment pas.
+PID_FILE="${PID_FILE:-${LOG%.log}.pid}"
+echo $$ > "$PID_FILE"
+trap 'rm -f "$PID_FILE"' EXIT
+
+echo "$(date '+%d/%m %H:%M')  === surveillance de $URL (PID $$) ===" >> "$LOG"
 
 tour=0
 while [ "$tour" -lt "$TOURS" ]; do
