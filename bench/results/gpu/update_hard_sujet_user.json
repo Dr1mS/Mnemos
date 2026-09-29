@@ -1,0 +1,660 @@
+{
+  "config": {
+    "instances": 13,
+    "top_k": 100,
+    "user_id": "user",
+    "answer_model": "qwen2.5:3b",
+    "extraction_model": "qwen2.5:3b",
+    "embed_backend": "llamacpp"
+  },
+  "vram": {
+    "dechargés": [],
+    "étrangers": [
+      "hf.co/ggml-org/SmolLM3-3B-GGUF:Q4_K_M (2187 Mio, expire 2026-09-29T12:06:14)"
+    ],
+    "deja_charge": true,
+    "libre_mib": 5111,
+    "requis_mib": 0,
+    "suffisant": true
+  },
+  "accuracy": {
+    "O_plafond_repondeur": 0.5384615384615384,
+    "A_episodique_seul": 0.6153846153846154,
+    "B_search_aml": 0.46153846153846156
+  },
+  "wilson_A": [
+    0.615,
+    0.355,
+    0.823
+  ],
+  "wilson_B": [
+    0.462,
+    0.232,
+    0.709
+  ],
+  "only_A_correct": 3,
+  "only_B_correct": 1,
+  "mcnemar_p": 0.625,
+  "mcnemar_verdict": "non significatif",
+  "causes_B": {
+    "récence": 1,
+    "hors plafond": 5,
+    "ok": 6,
+    "réponse": 1
+  },
+  "facts_inserted_total": 25,
+  "instances_avec_fait_actif": 7,
+  "instances_avec_fait_perime": 4,
+  "par_attribut": {
+    "employeur": {
+      "n": 4,
+      "O": 1,
+      "A": 1,
+      "B": 0
+    },
+    "objectif": {
+      "n": 2,
+      "O": 2,
+      "A": 2,
+      "B": 1
+    },
+    "outil de travail": {
+      "n": 3,
+      "O": 0,
+      "A": 2,
+      "B": 1
+    },
+    "ville de résidence": {
+      "n": 4,
+      "O": 4,
+      "A": 3,
+      "B": 4
+    }
+  },
+  "records": [
+    {
+      "instance": "hard_employeur_01",
+      "attribut": "employeur",
+      "valeurs": [
+        "Datalyse",
+        "Kyndra",
+        "Nexora"
+      ],
+      "leurres": [
+        "Velora",
+        "Mirestone"
+      ],
+      "messages": 24,
+      "facts_inserted": 2,
+      "facts_in_context": [
+        "user works_at Velora",
+        "user lives_in Mirestone"
+      ],
+      "active_in_facts": false,
+      "stale_in_facts": false,
+      "ranks_A": [
+        1,
+        5,
+        4
+      ],
+      "ranks_B": [
+        1,
+        5,
+        4
+      ],
+      "ctx_size_A": 24,
+      "ctx_size_B": 16,
+      "answer_O": "Nexora",
+      "correct_O": true,
+      "reason_O": "Valeur active 'Nexora' validée sans contradiction",
+      "answer_A": "Nexora",
+      "correct_A": true,
+      "reason_A": "Valeur active 'Nexora' validée sans contradiction",
+      "answer_B": "Velora",
+      "correct_B": false,
+      "reason_B": "Valeur active 'Nexora' absente de la réponse",
+      "embed_backend_effectif": "llamacpp",
+      "diagnostic_A": "ok",
+      "diagnostic_B": "récence: un énoncé périmé mieux classé (rang 1 < 4)"
+    },
+    {
+      "instance": "hard_employeur_02",
+      "attribut": "employeur",
+      "valeurs": [
+        "Orvex",
+        "Talmis",
+        "Fyrelane"
+      ],
+      "leurres": [
+        "Halcyon",
+        "Drayton"
+      ],
+      "messages": 24,
+      "facts_inserted": 1,
+      "facts_in_context": [
+        "user works_at Halcyon"
+      ],
+      "active_in_facts": false,
+      "stale_in_facts": false,
+      "ranks_A": [
+        1,
+        4,
+        5
+      ],
+      "ranks_B": [
+        1,
+        4,
+        5
+      ],
+      "ctx_size_A": 24,
+      "ctx_size_B": 15,
+      "answer_O": "Orvex",
+      "correct_O": false,
+      "reason_O": "Valeur active 'Fyrelane' absente de la réponse",
+      "answer_A": "Orvex",
+      "correct_A": false,
+      "reason_A": "Valeur active 'Fyrelane' absente de la réponse",
+      "answer_B": "Orvex",
+      "correct_B": false,
+      "reason_B": "Valeur active 'Fyrelane' absente de la réponse",
+      "embed_backend_effectif": "llamacpp",
+      "diagnostic_A": "hors plafond: le répondeur échoue déjà sur le transcript complet",
+      "diagnostic_B": "hors plafond: le répondeur échoue déjà sur le transcript complet"
+    },
+    {
+      "instance": "hard_employeur_03",
+      "attribut": "employeur",
+      "valeurs": [
+        "Brenmar",
+        "Solvix",
+        "Wardell"
+      ],
+      "leurres": [
+        "Quillon",
+        "Ferrow"
+      ],
+      "messages": 24,
+      "facts_inserted": 2,
+      "facts_in_context": [
+        "user works_at Quillon",
+        "user lives_in Ferrow"
+      ],
+      "active_in_facts": false,
+      "stale_in_facts": false,
+      "ranks_A": [
+        1,
+        4,
+        5
+      ],
+      "ranks_B": [
+        1,
+        4,
+        5
+      ],
+      "ctx_size_A": 24,
+      "ctx_size_B": 16,
+      "answer_O": "Brenmar",
+      "correct_O": false,
+      "reason_O": "Valeur active 'Wardell' absente de la réponse",
+      "answer_A": "Brenmar",
+      "correct_A": false,
+      "reason_A": "Valeur active 'Wardell' absente de la réponse",
+      "answer_B": "Quillon",
+      "correct_B": false,
+      "reason_B": "Valeur active 'Wardell' absente de la réponse",
+      "embed_backend_effectif": "llamacpp",
+      "diagnostic_A": "hors plafond: le répondeur échoue déjà sur le transcript complet",
+      "diagnostic_B": "hors plafond: le répondeur échoue déjà sur le transcript complet"
+    },
+    {
+      "instance": "hard_employeur_04",
+      "attribut": "employeur",
+      "valeurs": [
+        "Pellenor",
+        "Ashgrove",
+        "Kestrel"
+      ],
+      "leurres": [
+        "Velora",
+        "Mirestone"
+      ],
+      "messages": 24,
+      "facts_inserted": 2,
+      "facts_in_context": [
+        "user works_at Velora",
+        "user lives_in Mirestone"
+      ],
+      "active_in_facts": false,
+      "stale_in_facts": false,
+      "ranks_A": [
+        2,
+        4,
+        5
+      ],
+      "ranks_B": [
+        2,
+        4,
+        5
+      ],
+      "ctx_size_A": 24,
+      "ctx_size_B": 16,
+      "answer_O": "Pellenor",
+      "correct_O": false,
+      "reason_O": "Valeur active 'Kestrel' absente de la réponse",
+      "answer_A": "Pellenor",
+      "correct_A": false,
+      "reason_A": "Valeur active 'Kestrel' absente de la réponse",
+      "answer_B": "Velora",
+      "correct_B": false,
+      "reason_B": "Valeur active 'Kestrel' absente de la réponse",
+      "embed_backend_effectif": "llamacpp",
+      "diagnostic_A": "hors plafond: le répondeur échoue déjà sur le transcript complet",
+      "diagnostic_B": "hors plafond: le répondeur échoue déjà sur le transcript complet"
+    },
+    {
+      "instance": "hard_ville_01",
+      "attribut": "ville de résidence",
+      "valeurs": [
+        "Limoges",
+        "Perpignan",
+        "Quimper"
+      ],
+      "leurres": [
+        "Arles",
+        "Sète"
+      ],
+      "messages": 24,
+      "facts_inserted": 2,
+      "facts_in_context": [
+        "user lives_in Quimper",
+        "user has_skill prendre un appartement"
+      ],
+      "active_in_facts": true,
+      "stale_in_facts": false,
+      "ranks_A": [
+        1,
+        17,
+        5
+      ],
+      "ranks_B": [
+        1,
+        10,
+        5
+      ],
+      "ctx_size_A": 24,
+      "ctx_size_B": 16,
+      "answer_O": "Quimper",
+      "correct_O": true,
+      "reason_O": "Valeur active 'Quimper' validée sans contradiction",
+      "answer_A": "Quimper",
+      "correct_A": true,
+      "reason_A": "Valeur active 'Quimper' validée sans contradiction",
+      "answer_B": "Quimper",
+      "correct_B": true,
+      "reason_B": "Valeur active 'Quimper' validée sans contradiction",
+      "embed_backend_effectif": "llamacpp",
+      "diagnostic_A": "ok",
+      "diagnostic_B": "ok"
+    },
+    {
+      "instance": "hard_ville_02",
+      "attribut": "ville de résidence",
+      "valeurs": [
+        "Valence",
+        "Béziers",
+        "Lorient"
+      ],
+      "leurres": [
+        "Auray",
+        "Dinan"
+      ],
+      "messages": 24,
+      "facts_inserted": 2,
+      "facts_in_context": [
+        "user lives_in Lorient",
+        "user has_skill prendre un appartement"
+      ],
+      "active_in_facts": true,
+      "stale_in_facts": false,
+      "ranks_A": [
+        2,
+        22,
+        3
+      ],
+      "ranks_B": [
+        2,
+        13,
+        3
+      ],
+      "ctx_size_A": 24,
+      "ctx_size_B": 16,
+      "answer_O": "Lorient",
+      "correct_O": true,
+      "reason_O": "Valeur active 'Lorient' validée sans contradiction",
+      "answer_A": "Lorient",
+      "correct_A": true,
+      "reason_A": "Valeur active 'Lorient' validée sans contradiction",
+      "answer_B": "Lorient",
+      "correct_B": true,
+      "reason_B": "Valeur active 'Lorient' validée sans contradiction",
+      "embed_backend_effectif": "llamacpp",
+      "diagnostic_A": "ok",
+      "diagnostic_B": "ok"
+    },
+    {
+      "instance": "hard_ville_03",
+      "attribut": "ville de résidence",
+      "valeurs": [
+        "Colmar",
+        "Chambéry",
+        "Vannes"
+      ],
+      "leurres": [
+        "Gap",
+        "Albi"
+      ],
+      "messages": 24,
+      "facts_inserted": 2,
+      "facts_in_context": [
+        "user lives_in Vannes",
+        "user owns appartement"
+      ],
+      "active_in_facts": true,
+      "stale_in_facts": false,
+      "ranks_A": [
+        1,
+        17,
+        3
+      ],
+      "ranks_B": [
+        1,
+        10,
+        3
+      ],
+      "ctx_size_A": 24,
+      "ctx_size_B": 16,
+      "answer_O": "Vannes",
+      "correct_O": true,
+      "reason_O": "Valeur active 'Vannes' validée sans contradiction",
+      "answer_A": "Vannes",
+      "correct_A": true,
+      "reason_A": "Valeur active 'Vannes' validée sans contradiction",
+      "answer_B": "Vannes",
+      "correct_B": true,
+      "reason_B": "Valeur active 'Vannes' validée sans contradiction",
+      "embed_backend_effectif": "llamacpp",
+      "diagnostic_A": "ok",
+      "diagnostic_B": "ok"
+    },
+    {
+      "instance": "hard_ville_04",
+      "attribut": "ville de résidence",
+      "valeurs": [
+        "Troyes",
+        "Niort",
+        "Cholet"
+      ],
+      "leurres": [
+        "Arles",
+        "Sète"
+      ],
+      "messages": 24,
+      "facts_inserted": 1,
+      "facts_in_context": [
+        "user lives_in Cholet"
+      ],
+      "active_in_facts": true,
+      "stale_in_facts": false,
+      "ranks_A": [
+        1,
+        22,
+        4
+      ],
+      "ranks_B": [
+        1,
+        12,
+        4
+      ],
+      "ctx_size_A": 24,
+      "ctx_size_B": 15,
+      "answer_O": "Cholet",
+      "correct_O": true,
+      "reason_O": "Valeur active 'Cholet' validée sans contradiction",
+      "answer_A": "Niort",
+      "correct_A": false,
+      "reason_A": "Valeur active 'Cholet' absente de la réponse",
+      "answer_B": "Cholet",
+      "correct_B": true,
+      "reason_B": "Valeur active 'Cholet' validée sans contradiction",
+      "embed_backend_effectif": "llamacpp",
+      "diagnostic_A": "récence: un énoncé périmé mieux classé (rang 1 < 4)",
+      "diagnostic_B": "ok"
+    },
+    {
+      "instance": "hard_outil_01",
+      "attribut": "outil de travail",
+      "valeurs": [
+        "Notion",
+        "Obsidian",
+        "Logseq"
+      ],
+      "leurres": [
+        "Roam",
+        "Tana"
+      ],
+      "messages": 24,
+      "facts_inserted": 3,
+      "facts_in_context": [
+        "user has_skill Notion",
+        "user owns Logseq",
+        "user has_goal Obsidian"
+      ],
+      "active_in_facts": true,
+      "stale_in_facts": true,
+      "ranks_A": [
+        1,
+        8,
+        2
+      ],
+      "ranks_B": [
+        1,
+        6,
+        2
+      ],
+      "ctx_size_A": 24,
+      "ctx_size_B": 17,
+      "answer_O": "Obsidian",
+      "correct_O": false,
+      "reason_O": "Valeur active 'Logseq' absente de la réponse",
+      "answer_A": "Logseq",
+      "correct_A": true,
+      "reason_A": "Valeur active 'Logseq' validée sans contradiction",
+      "answer_B": "Obsidian",
+      "correct_B": false,
+      "reason_B": "Valeur active 'Logseq' absente de la réponse",
+      "embed_backend_effectif": "llamacpp",
+      "diagnostic_A": "ok",
+      "diagnostic_B": "hors plafond: le répondeur échoue déjà sur le transcript complet"
+    },
+    {
+      "instance": "hard_outil_02",
+      "attribut": "outil de travail",
+      "valeurs": [
+        "Evernote",
+        "Bear",
+        "Joplin"
+      ],
+      "leurres": [
+        "Reflect",
+        "Capacities"
+      ],
+      "messages": 24,
+      "facts_inserted": 2,
+      "facts_in_context": [
+        "user prefers Bear",
+        "user owns Joplin"
+      ],
+      "active_in_facts": true,
+      "stale_in_facts": true,
+      "ranks_A": [
+        1,
+        9,
+        2
+      ],
+      "ranks_B": [
+        1,
+        7,
+        2
+      ],
+      "ctx_size_A": 24,
+      "ctx_size_B": 16,
+      "answer_O": "Bear",
+      "correct_O": false,
+      "reason_O": "Valeur active 'Joplin' absente de la réponse",
+      "answer_A": "Bear",
+      "correct_A": false,
+      "reason_A": "Valeur active 'Joplin' absente de la réponse",
+      "answer_B": "Bear",
+      "correct_B": false,
+      "reason_B": "Valeur active 'Joplin' absente de la réponse",
+      "embed_backend_effectif": "llamacpp",
+      "diagnostic_A": "hors plafond: le répondeur échoue déjà sur le transcript complet",
+      "diagnostic_B": "hors plafond: le répondeur échoue déjà sur le transcript complet"
+    },
+    {
+      "instance": "hard_outil_03",
+      "attribut": "outil de travail",
+      "valeurs": [
+        "OneNote",
+        "Craft",
+        "Anytype"
+      ],
+      "leurres": [
+        "Roam",
+        "Tana"
+      ],
+      "messages": 24,
+      "facts_inserted": 2,
+      "facts_in_context": [
+        "user has_goal Craft",
+        "user owns Anytype"
+      ],
+      "active_in_facts": true,
+      "stale_in_facts": true,
+      "ranks_A": [
+        1,
+        8,
+        2
+      ],
+      "ranks_B": [
+        1,
+        6,
+        2
+      ],
+      "ctx_size_A": 24,
+      "ctx_size_B": 16,
+      "answer_O": "Craft",
+      "correct_O": false,
+      "reason_O": "Valeur active 'Anytype' absente de la réponse",
+      "answer_A": "Anytype",
+      "correct_A": true,
+      "reason_A": "Valeur active 'Anytype' validée sans contradiction",
+      "answer_B": "Anytype",
+      "correct_B": true,
+      "reason_B": "Valeur active 'Anytype' validée sans contradiction",
+      "embed_backend_effectif": "llamacpp",
+      "diagnostic_A": "ok",
+      "diagnostic_B": "ok"
+    },
+    {
+      "instance": "hard_objectif_01",
+      "attribut": "objectif",
+      "valeurs": [
+        "semi-marathon de Nantes",
+        "trail des Vosges",
+        "marathon de Berlin"
+      ],
+      "leurres": [
+        "marathon de Paris",
+        "trail du Mont-Blanc"
+      ],
+      "messages": 24,
+      "facts_inserted": 2,
+      "facts_in_context": [
+        "user has_goal participer au semi-marathon de Nantes",
+        "user has_attribute four rendu l'âme"
+      ],
+      "active_in_facts": false,
+      "stale_in_facts": true,
+      "ranks_A": [
+        3,
+        2,
+        1
+      ],
+      "ranks_B": [
+        3,
+        2,
+        1
+      ],
+      "ctx_size_A": 24,
+      "ctx_size_B": 16,
+      "answer_O": "Marathon de Berlin",
+      "correct_O": true,
+      "reason_O": "Valeur active 'marathon de Berlin' validée sans contradiction",
+      "answer_A": "Changer de plan : marathon de Berlin.",
+      "correct_A": true,
+      "reason_A": "Valeur active 'marathon de Berlin' validée sans contradiction",
+      "answer_B": "participer au semi-marathon de Nantes",
+      "correct_B": false,
+      "reason_B": "Valeur active 'marathon de Berlin' absente de la réponse",
+      "embed_backend_effectif": "llamacpp",
+      "diagnostic_A": "ok",
+      "diagnostic_B": "réponse: énoncé actif au rang 1, réponse fausse quand même"
+    },
+    {
+      "instance": "hard_objectif_02",
+      "attribut": "objectif",
+      "valeurs": [
+        "triathlon de Gérardmer",
+        "cyclosportive du Ventoux",
+        "100 km de Millau"
+      ],
+      "leurres": [
+        "Ironman de Nice",
+        "Paris-Brest"
+      ],
+      "messages": 24,
+      "facts_inserted": 2,
+      "facts_in_context": [
+        "user has_skill inscrire à un événement sportif",
+        "user has_attribute four rendu l'âme"
+      ],
+      "active_in_facts": false,
+      "stale_in_facts": false,
+      "ranks_A": [
+        3,
+        1,
+        2
+      ],
+      "ranks_B": [
+        3,
+        1,
+        2
+      ],
+      "ctx_size_A": 24,
+      "ctx_size_B": 16,
+      "answer_O": "Changer de plan : 100 km de Millau",
+      "correct_O": true,
+      "reason_O": "Valeur active '100 km de Millau' validée sans contradiction",
+      "answer_A": "Changer de plan : 100 km de Millau",
+      "correct_A": true,
+      "reason_A": "Valeur active '100 km de Millau' validée sans contradiction",
+      "answer_B": "Changer de plan pour le 100 km de Millau.",
+      "correct_B": true,
+      "reason_B": "Valeur active '100 km de Millau' validée sans contradiction",
+      "embed_backend_effectif": "llamacpp",
+      "diagnostic_A": "ok",
+      "diagnostic_B": "ok"
+    }
+  ]
+}
