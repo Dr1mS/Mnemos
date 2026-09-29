@@ -117,3 +117,33 @@ async def test_piege_n_est_pas_oublie(client: httpx.AsyncClient) -> None:
     contenus = await _memorise(client)
     assert "Don't forget that I have a jazz concert on Friday." in contenus
     assert "Noted, the concert is on Friday." in contenus
+
+
+# ── Échos antérieurs de l'assistant (règle validée, voir test_forget_echoes) ──
+# L'embedder de cette route hache le texte : seul un texte IDENTIQUE à la cible
+# garantit un cosinus de 1. C'est un test de câblage, pas de ciblage.
+
+
+async def test_route_efface_l_echo_de_l_assistant(client: httpx.AsyncClient) -> None:
+    await _add(client, "r1", [
+        _msg("user", "I love jazz", 1),          # même texte que la cible, mais UTILISATEUR
+        _msg("assistant", "I love jazz", 2),     # écho de l'assistant : visé
+    ])
+    await _add(client, "r2", [_msg("user", CONSIGNE, 3), _msg("assistant", ACCUSE, 4),
+                              _msg("user", "Recommend something for tonight.", 5)])
+    r = await client.post("/search", json={"query": "jazz", "user_id": "u1", "top_k": 100})
+    contenus = [it["content"] for it in r.json()["data"]]
+    # Il ne reste qu'UN « I love jazz » : celui de l'utilisateur.
+    assert contenus.count("I love jazz") == 1
+    assert "Recommend something for tonight." in contenus
+
+
+async def test_lot_reduit_a_la_consigne_efface_quand_meme(client: httpx.AsyncClient) -> None:
+    """Consigne + accusé seuls : rien à insérer, mais l'écho existant doit
+    disparaître et la requête doit être inscrite."""
+    await _add(client, "r1", [_msg("assistant", "I love jazz", 1)])
+    await _add(client, "r2", [_msg("user", CONSIGNE, 2), _msg("assistant", ACCUSE, 3)])
+    assert "I love jazz" not in await _memorise(client)
+    # Rejeu de r2 : succès, rien ne change.
+    await _add(client, "r2", [_msg("user", CONSIGNE, 2), _msg("assistant", ACCUSE, 3)])
+    assert await _memorise(client) == []

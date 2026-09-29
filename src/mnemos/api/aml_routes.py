@@ -34,8 +34,13 @@ from mnemos.api.deps import (
 )
 from mnemos.llm.ollama_client import is_probe_transient
 from mnemos.logging import get_logger
-from mnemos.router.forget import forgotten_in_batch
-from mnemos.stores.episodic import BatchEpisodeItem, DuplicateRequest, EpisodicStore
+from mnemos.router.forget import detect_forget, forgotten_in_batch
+from mnemos.stores.episodic import (
+    BatchEpisodeItem,
+    DuplicateRequest,
+    EpisodicStore,
+    ForgetRequest,
+)
 from mnemos.stores.semantic import SemanticStore
 from mnemos.stores.working import WorkingMemoryRegistry
 from mnemos.tagger.salience import ScoringJob, ScoringQueue
@@ -152,25 +157,41 @@ async def aml_add(
     )
     if attend:
         en_attente[cle] = True
+    # Chaque consigne efface aussi les échos ANTÉRIEURS de l'assistant (voir
+    # `EpisodicStore._echos_a_oublier`) : sa position dans le lot filtré borne
+    # ce qui la précède.
+    gardes: list[BatchEpisodeItem] = []
+    consignes: list[ForgetRequest] = []
+    for it, o in zip(items, oublier, strict=True):
+        if not o:
+            gardes.append(it)
+            continue
+        d = detect_forget(it.content, it.role)
+        if d is not None:
+            consignes.append(ForgetRequest(target=d.target, position=len(gardes)))
     if any(oublier):
         # Jamais de contenu dans ce journal : c'est précisément ce qu'on oublie.
-        logger.info("aml_add_oubli", tenant=tenant, messages_oublies=sum(oublier))
-        items = [it for it, o in zip(items, oublier, strict=True) if not o]
-        if not items:
-            # Un rejeu concurrent a déjà inscrit la requête : succès quand même.
-            with contextlib.suppress(DuplicateRequest):
-                await store.register_request(tenant, payload.request_id)
-            return AMLAddResponse(
-                success=True,
-                request_id=payload.request_id,
-                user_id=payload.user_id,
-                session_id=payload.session_id,
-            )
+        logger.info("aml_add_oubli", tenant=tenant, messages_oublies=sum(oublier),
+                    consignes=len(consignes))
+    items = gardes
+    if not items and not consignes:
+        # Lot réduit à un accusé de réception : rien à écrire ni à effacer, mais
+        # la requête doit être inscrite (un rejeu concurrent l'a peut-être fait).
+        with contextlib.suppress(DuplicateRequest):
+            await store.register_request(tenant, payload.request_id)
+        return AMLAddResponse(
+            success=True,
+            request_id=payload.request_id,
+            user_id=payload.user_id,
+            session_id=payload.session_id,
+        )
 
     # Écriture synchrone groupée (batch embedding + transaction atomique SQLite,
-    # registre d'idempotence inclus dans la même transaction)
+    # registre d'idempotence et effacement des échos inclus dans la même transaction)
     try:
-        episodes = await store.write_batch(items, request_id=payload.request_id)
+        episodes = await store.write_batch(
+            items, request_id=payload.request_id, forget=consignes, tenant=tenant
+        )
     except DuplicateRequest:
         # Course entre deux rejeux simultanés : l'écriture gagnante a eu lieu.
         return AMLAddResponse(

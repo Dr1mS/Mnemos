@@ -28,12 +28,13 @@ sûrs : un id ULID est unique tous tenants confondus.
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, cast
 
 import sqlite_vec  # type: ignore[import-untyped]
-from sqlalchemy import CursorResult, select, text, update
+from sqlalchemy import CursorResult, bindparam, select, text, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
 from ulid import ULID
@@ -74,6 +75,36 @@ DENSE_WEIGHT = _W_DENSE / _W_SUM
 SPARSE_WEIGHT = _W_SPARSE / _W_SUM
 RECENCY_WEIGHT = _W_RECENCY / _W_SUM
 RECENCY_HALF_LIFE_DAYS = 30.0
+
+# Oubli (axe 3) : échos antérieurs de l'assistant effacés avec une consigne.
+# Valeurs mesurées puis validées sur des personas jamais vues — voir
+# `EpisodicStore._echos_a_oublier`. Ne pas les retoucher sans remesurer avec
+# bench/bench_forget_targeting.py : à 0,60 les premiers dégâts apparaissent.
+FORGET_ECHO_KNN = 50
+FORGET_ECHO_MIN_COSINE = 0.65
+FORGET_ECHO_MAX = 5
+
+
+def _cosine(a: list[float], b: list[float]) -> float:
+    """Cosinus explicite. Aucun client d'embedding ne garantit des vecteurs
+    normés : un produit scalaire nu donnerait des valeurs incomparables au
+    cosinus que sqlite-vec calcule pour les épisodes déjà indexés, et le seuil
+    calibré sur l'un ne vaudrait rien sur l'autre — silencieusement."""
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(x * x for x in b))
+    if na == 0.0 or nb == 0.0:
+        return 0.0
+    return sum(x * y for x, y in zip(a, b, strict=True)) / (na * nb)
+
+
+@dataclass(frozen=True)
+class ForgetRequest:
+    """Une consigne d'oubli portée par le lot écrit (voir `write_batch`)."""
+
+    target: str    # ce qu'il faut oublier, dans les mots de l'utilisateur
+    position: int  # nombre d'épisodes du lot, après filtrage, qui précèdent la consigne
+    echo_min_cosine: float = FORGET_ECHO_MIN_COSINE
+    echo_max: int = FORGET_ECHO_MAX
 
 
 @dataclass(frozen=True)
@@ -158,6 +189,8 @@ class EpisodicStore:
         self,
         items: list[BatchEpisodeItem],
         request_id: str | None = None,
+        forget: list[ForgetRequest] | None = None,
+        tenant: str | None = None,
     ) -> list[Episode]:
         """Écrit un lot d'épisodes de manière synchrone et atomique (§13.3).
 
@@ -167,17 +200,32 @@ class EpisodicStore:
 
         `request_id` rend l'écriture idempotente : il est inscrit dans la même
         transaction, et un rejeu lève `DuplicateRequest` au lieu de dupliquer.
-        """
-        if not items:
-            return []
 
+        `forget` : consignes d'oubli portées par ce lot (axe 3). Leurs échos
+        antérieurs par l'assistant sont effacés dans la MÊME transaction —
+        physiquement, pas marqués : oublier doit oublier. Les échos situés dans
+        le lot lui-même ne sont simplement pas insérés. `tenant` sert quand le
+        lot n'a plus rien à insérer mais des échos à effacer.
+        """
+        forget = forget or []
+        if not items and not forget:
+            return []
+        tenant_ = items[0].tenant if items else (tenant or DEFAULT_TENANT)
+
+        # Les cibles d'oubli voyagent dans le même appel d'embedding que le lot.
         texts = [it.content for it in items]
-        dense_vectors = await self._embedder.embed_batch(texts)
+        vecteurs = await self._embedder.embed_batch(texts + [f.target for f in forget])
+        dense_vectors, cibles = vecteurs[: len(texts)], vecteurs[len(texts):]
+        exclus, a_effacer = await self._echos_a_oublier(
+            tenant_, items, dense_vectors, forget, cibles
+        )
 
         records: list[tuple[Episode, EpisodeSparse, dict[str, Any]]] = []
         now_default = self._clock.now_ms()
 
-        for it, dense in zip(items, dense_vectors, strict=True):
+        for j, (it, dense) in enumerate(zip(items, dense_vectors, strict=True)):
+            if j in exclus:
+                continue
             now = it.created_at if it.created_at is not None else now_default
             sparse = sparse_encode(it.content, now)
             ep = Episode(
@@ -219,13 +267,26 @@ class EpisodicStore:
                         ),
                         vec_param,
                     )
+                if a_effacer:
+                    # Le vecteur d'abord : un épisode effacé mais encore indexé
+                    # occuperait une place dans le KNN et ferait fuiter son contenu.
+                    params = {"ids": list(a_effacer), "tenant": tenant_}
+                    await session.execute(
+                        text("DELETE FROM episodes_vec WHERE episode_id IN :ids")
+                        .bindparams(bindparam("ids", expanding=True)), params)
+                    await session.execute(
+                        text("DELETE FROM episodes_sparse WHERE episode_id IN :ids")
+                        .bindparams(bindparam("ids", expanding=True)), params)
+                    await session.execute(
+                        text("DELETE FROM episodes WHERE id IN :ids AND tenant = :tenant")
+                        .bindparams(bindparam("ids", expanding=True)), params)
                 if request_id is not None:
                     # Dans la MÊME transaction que les épisodes : soit les deux
                     # atterrissent, soit aucun. Un registre écrit après coup
                     # laisserait une fenêtre où un rejeu dupliquerait.
                     session.add(
                         ProcessedRequest(
-                            tenant=items[0].tenant,
+                            tenant=tenant_,
                             request_id=request_id,
                             created_at=now_default,
                             episode_count=len(records),
@@ -237,18 +298,85 @@ class EpisodicStore:
             # c'est un succès du point de vue de l'appelant.
             if request_id is None:
                 raise
-            logger.info(
-                "write_batch_rejeu_ignore", tenant=items[0].tenant, request_id=request_id
-            )
+            logger.info("write_batch_rejeu_ignore", tenant=tenant_, request_id=request_id)
             raise DuplicateRequest(request_id) from exc
 
         episodes = [r[0] for r in records]
-        logger.info(
-            "episodes_batch_written",
-            count=len(episodes),
-            tenant=items[0].tenant if items else DEFAULT_TENANT,
-        )
+        if exclus or a_effacer:
+            # Des comptes, jamais de contenu : c'est précisément ce qu'on oublie.
+            logger.info("forget_echos_effaces", tenant=tenant_,
+                        existants=len(a_effacer), dans_le_lot=len(exclus))
+        logger.info("episodes_batch_written", count=len(episodes), tenant=tenant_)
         return episodes
+
+    async def _echos_a_oublier(
+        self,
+        tenant: str,
+        items: list[BatchEpisodeItem],
+        vecteurs_lot: list[list[float]],
+        forget: list[ForgetRequest],
+        cibles: list[list[float]],
+    ) -> tuple[set[int], set[str]]:
+        """Échos antérieurs de l'assistant à oublier, pour chaque consigne.
+
+        Règle mesurée et validée le 29/09/2026 (bench/bench_forget_targeting.py,
+        calibration 47 personas puis validation 53 personas jamais vues) :
+        parmi les 50 plus proches voisins de la cible, les messages ASSISTANT
+        antérieurs à la consigne, 5 au plus, de cosinus ≥ 0,65. En validation,
+        la préférence oubliée remonte dans le top 10 pour 16 % des questions au
+        lieu de 33 %, sans qu'aucun message-preuve d'une autre question soit
+        touché ; à 0,60 les premiers dégâts apparaissent, dans les deux moitiés.
+
+        Seul l'assistant : relus à la main, les échos de l'assistant appliquent
+        la préférence (« Since you enjoy visiting aquariums… ») ; les messages
+        de l'utilisateur au même seuil sont des QUESTIONS sur le sujet (« Can
+        you suggest some good books? »), qu'il ne faut pas effacer. Et les
+        messages postérieurs à la consigne ne sont jamais visés : une
+        re-déclaration de l'utilisateur doit survivre.
+
+        Rend (positions du lot à ne pas insérer, épisodes existants à effacer)."""
+        exclus: set[int] = set()
+        a_effacer: set[str] = set()
+        for demande, cible in zip(forget, cibles, strict=True):
+            candidats: list[tuple[float, int | str]] = [
+                (cos, eid) for eid, cos in await self._voisins_assistant(tenant, cible)
+            ]
+            candidats += [
+                (_cosine(cible, vecteurs_lot[j]), j)
+                for j in range(min(demande.position, len(items)))
+                if items[j].role == "assistant"
+            ]
+            candidats.sort(key=lambda c: c[0], reverse=True)
+            for cos, ref in candidats[: demande.echo_max]:
+                if cos < demande.echo_min_cosine:
+                    break
+                if isinstance(ref, int):
+                    exclus.add(ref)
+                else:
+                    a_effacer.add(ref)
+        return exclus, a_effacer
+
+    async def _voisins_assistant(self, tenant: str, cible: list[float]) -> list[tuple[str, float]]:
+        """Messages ASSISTANT existants parmi les voisins de la cible : (id, cosinus).
+
+        Tous les épisodes déjà stockés sont antérieurs au lot en cours, donc
+        antérieurs à ses consignes."""
+        async with self._sessions() as session:
+            knn = await session.execute(
+                text("SELECT episode_id, distance FROM episodes_vec "
+                     "WHERE embedding MATCH :emb AND k = :k AND tenant = :tenant"),
+                {"emb": sqlite_vec.serialize_float32(cible), "k": FORGET_ECHO_KNN,
+                 "tenant": tenant},
+            )
+            distances = {row[0]: float(row[1]) for row in knn}
+            if not distances:
+                return []
+            roles = (await session.execute(
+                select(Episode.id, Episode.role).where(
+                    Episode.id.in_(distances), Episode.tenant == tenant,
+                    Episode.archived == 0)
+            )).all()
+        return [(eid, 1.0 - distances[eid]) for eid, role in roles if role == "assistant"]
 
     async def update_salience(self, episode_id: str, scores: SalienceScores) -> None:
         """Mise à jour asynchrone post-scoring (§13.3) — hors write path."""
