@@ -1,0 +1,69 @@
+  Backend d'embeddings : llamacpp (http://127.0.0.1:8899)
+Consolidation : 18 faits en 298 s | échecs d'extraction : 0
+Rangs des preuves relevés sur 150 questions
+  [1/50] cat 2 | A=✓ B=✗ | faits dans B : 3
+  [2/50] cat 2 | A=✗ B=✗ | faits dans B : 3
+  [3/50] cat 1 | A=✓ B=✗ | faits dans B : 3
+  [4/50] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [5/50] cat 2 | A=✓ B=✓ | faits dans B : 4
+  [6/50] cat 2 | A=✗ B=✗ | faits dans B : 3
+  [7/50] cat 2 | A=✗ B=✗ | faits dans B : 1
+  [8/50] cat 4 | A=✓ B=✓ | faits dans B : 3
+  [9/50] cat 3 | A=✗ B=✗ | faits dans B : 5
+  [10/50] cat 4 | A=✓ B=✓ | faits dans B : 3
+  [11/50] cat 2 | A=✗ B=✗ | faits dans B : 3
+  [12/50] cat 1 | A=✗ B=✗ | faits dans B : 3
+  [13/50] cat 1 | A=✗ B=✓ | faits dans B : 2
+  [14/50] cat 1 | A=✗ B=✗ | faits dans B : 3
+  [15/50] cat 3 | A=✗ B=✗ | faits dans B : 3
+  [16/50] cat 4 | A=✓ B=✓ | faits dans B : 3
+  [17/50] cat 4 | A=✓ B=✓ | faits dans B : 3
+  [18/50] cat 3 | A=✗ B=✗ | faits dans B : 3
+  [19/50] cat 4 | A=✗ B=✗ | faits dans B : 5
+  [20/50] cat 1 | A=✗ B=✗ | faits dans B : 3
+  [21/50] cat 4 | A=✓ B=✓ | faits dans B : 3
+  [22/50] cat 1 | A=✗ B=✗ | faits dans B : 2
+  [23/50] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [24/50] cat 1 | A=✗ B=✗ | faits dans B : 3
+  [25/50] cat 4 | A=✓ B=✓ | faits dans B : 3
+  [26/50] cat 1 | A=✗ B=✗ | faits dans B : 3
+  [27/50] cat 4 | A=✓ B=✓ | faits dans B : 1
+  [28/50] cat 1 | A=✗ B=✗ | faits dans B : 1
+  [29/50] cat 3 | A=✗ B=✗ | faits dans B : 3
+  [30/50] cat 4 | A=✗ B=✗ | faits dans B : 3
+  [31/50] cat 4 | A=✓ B=✓ | faits dans B : 4
+  [32/50] cat 4 | A=✓ B=✓ | faits dans B : 3
+  [33/50] cat 1 | A=✓ B=✓ | faits dans B : 4
+  [34/50] cat 1 | A=✗ B=✓ | faits dans B : 3
+  [35/50] cat 1 | A=✗ B=✗ | faits dans B : 3
+  [36/50] cat 2 | A=✓ B=✓ | faits dans B : 3
+  [37/50] cat 2 | A=✗ B=✗ | faits dans B : 3
+  [38/50] cat 4 | A=✗ B=✗ | faits dans B : 3
+  [39/50] cat 2 | A=✗ B=✗ | faits dans B : 2
+  [40/50] cat 3 | A=✗ B=✗ | faits dans B : 2
+  [41/50] cat 2 | A=✗ B=✗ | faits dans B : 3
+  [42/50] cat 4 | A=✓ B=✗ | faits dans B : 2
+  [43/50] cat 2 | A=✓ B=✓ | faits dans B : 1
+  [44/50] cat 4 | A=✓ B=✓ | faits dans B : 3
+  [45/50] cat 2 | A=✓ B=✗ | faits dans B : 4
+  [46/50] cat 2 | A=✗ B=✗ | faits dans B : 3
+  [47/50] cat 1 | A=✓ B=✓ | faits dans B : 3
+  [48/50] cat 4 | A=✗ B=✗ | faits dans B : 2
+  [49/50] cat 2 | A=✓ B=✓ | faits dans B : 3
+  [50/50] cat 4 | A=✗ B=✗ | faits dans B : 3
+
+Exactitude A (épisodique) : 40.0 %  |  B (avec faits) : 36.0 %
+Désaccords : seul A juste 4 | seul B juste 2  (sur 50 questions)
+  catégorie 1 (N=13) : A 23 % | B 31 %
+  catégorie 2 (N=16) : A 38 % | B 25 %
+  catégorie 3 (N=5) : A 0 % | B 0 %
+  catégorie 4 (N=16) : A 69 % | B 62 %
+
+Rangs des tours-preuves (A = épisodique) — indépendant du répondeur :
+  toutes  N=150 | rappel@100 0.877 | hit@10 0.673 | meilleur rang médian 3
+  1       N= 32 | rappel@100 0.813 | hit@10 0.531 | meilleur rang médian 7
+  2       N= 37 | rappel@100 0.973 | hit@10 0.892 | meilleur rang médian 2
+  3       N= 11 | rappel@100 0.900 | hit@10 0.636 | meilleur rang médian 6
+  4       N= 70 | rappel@100 0.887 | hit@10 0.629 | meilleur rang médian 3
+Code importé : C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\src\mnemos (RECENCY_WEIGHT=0.0909)
+Rapport : bench\results\gpu\locomo_qa_apres_recouvrement.json
