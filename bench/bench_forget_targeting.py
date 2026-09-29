@@ -208,7 +208,15 @@ def supprimes(p: Persona, regle: dict[str, Any]) -> set[int]:
             out.add(c.accuse)
         seuil = regle.get("seuil")
         if seuil is not None:
-            out.update(i for i, cos in c.anterieurs[:MAX_ANTERIEURS] if cos >= seuil)
+            # Relecture du 29/09 : au seuil 0,65, les 13 messages ASSISTANT
+            # supprimés étaient des échos (« Since you enjoy visiting
+            # aquariums… ») ; les 7 messages UTILISATEUR, des questions sur le
+            # même sujet (« Can you suggest some good books? »). Filtrer le rôle
+            # AVANT le plafond, pour que les questions n'occupent pas les places.
+            roles = regle.get("roles")
+            eligibles = [(i, cos) for i, cos in c.anterieurs
+                         if roles is None or p.messages[i]["role"] in roles]
+            out.update(i for i, cos in eligibles[:MAX_ANTERIEURS] if cos >= seuil)
     return out
 
 
@@ -266,6 +274,9 @@ REGLES: dict[str, dict[str, Any]] = {
     "consigne + accusé": {"consigne": True, "accuse": True},
     **{f"+ antérieurs cos≥{s:.2f}": {"consigne": True, "accuse": True, "seuil": s}
        for s in (0.85, 0.80, 0.75, 0.70, 0.65, 0.60)},
+    **{f"+ échos assistant cos≥{s:.2f}": {"consigne": True, "accuse": True, "seuil": s,
+                                          "roles": {"assistant"}}
+       for s in (0.70, 0.65, 0.60, 0.55)},
 }
 
 
@@ -294,15 +305,19 @@ def main() -> None:
     for nom_moitie, groupe in moities.items():
         n_cons = sum(len(p.consignes) for p in groupe)
         print(f"\n== {nom_moitie} : {len(groupe)} personas, {n_cons} consignes détectées ==")
-        print(f"{'règle':26s} | {'fuite@10':>8s} {'fuite@100':>9s} {'porteurs/10':>11s}"
-              f" | {'preuve touchée':>14s} {'détruite':>8s} {'autres hit@10':>13s} | {'supprimé':>8s}")
+        print(f"{'règle':30s} | {'fuite@10':>8s} {'fuite@100':>9s} {'porteurs/10':>11s}"
+              f" | {'preuve touchée':>14s} {'détruite':>8s} {'autres hit@10*':>14s} | {'supprimé':>8s}")
         resultats[nom_moitie] = {}
         for nom, regle in REGLES.items():
             r = evaluer(groupe, regle)
             resultats[nom_moitie][nom] = r
-            print(f"{nom:26s} | {r['fuite@10']!s:>8s} {r['fuite@100']!s:>9s} {r['porteurs_top10_moyen']!s:>11s}"
+            print(f"{nom:30s} | {r['fuite@10']!s:>8s} {r['fuite@100']!s:>9s} {r['porteurs_top10_moyen']!s:>11s}"
                   f" | {r['preuve_touchee']!s:>14s} {r['preuve_detruite']!s:>8s} {r['autres_hit@10']!s:>13s}"
                   f" | {r['part_historique_supprimee']!s:>8s}")
+    print("\n* monte mécaniquement quand on supprime (les survivants remontent) : ce n'est PAS"
+          "\n  une mesure de dégâts. Les dégâts se lisent dans « preuve touchée » et « détruite »."
+          "\n  La fuite repose sur un recouvrement de mots-clés : comparer les règles entre elles,"
+          "\n  pas citer la valeur absolue.")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(resultats, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"\nRapport : {args.output}")
