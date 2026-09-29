@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
 import re
 import shutil
 import sys
@@ -99,9 +100,22 @@ def extract_evidence_ids(raw_evidence: Any) -> list[str]:
 
 
 async def setup_bench_app(
-    tmp_path: Path, mode: str, llm_model: str = "qwen2.5:3b", salience_workers: int = 0
+    tmp_path: Path,
+    mode: str,
+    llm_model: str = "qwen2.5:3b",
+    salience_workers: int = 0,
+    embed_backend: str | None = None,
 ) -> tuple[Any, list[Any], Settings]:
-    """Prépare l'application Mnemos pour le benchmark (stub ou ollama réel)."""
+    """Prépare l'application Mnemos pour le benchmark (stub ou ollama réel).
+
+    `embed_backend` choisit qui sert les embeddings : "ollama" ou "llamacpp".
+    Par défaut on suit EMBED_BACKEND de l'environnement, donc **la même pile que
+    la production**. Mesurer sur une pile qu'on n'exploite plus n'apprend rien :
+    la production sert ses embeddings par llama-server depuis le 22/09, et deux
+    benchs du 29/09 ont échoué sur des 500 d'Ollama qui ne concernaient plus la
+    production du tout.
+    """
+    backend = embed_backend or os.environ.get("EMBED_BACKEND", "ollama")
     settings = Settings(
         _env_file=None,
         DATA_DIR=tmp_path,
@@ -113,11 +127,15 @@ async def setup_bench_app(
         SALIENCE_QUEUE_WORKERS=salience_workers,
         CONSOLIDATION_DELAY_HOURS=0.0,
         CONSOLIDATION_BATCH_SIZE=50,
+        EMBED_BACKEND=backend,  # type: ignore[arg-type]
         # Le bench pilote la consolidation lui-même (drain_consolidation). La boucle
         # autonome rescorerait en tâche de fond les épisodes non scorés via le LLM,
         # y compris dans les configurations « sans LLM » (salience_workers=0).
         CONSOLIDATION_AUTO=False,
     )
+    if mode != "stub":
+        print(f"  Backend d'embeddings : {backend}"
+              f"{' (' + settings.LLAMACPP_HOST + ')' if backend == 'llamacpp' else ''}")
     clock = Clock()
     epi_engine = make_async_engine(settings.EPISODIC_DB)
     sem_engine = make_async_engine(settings.SEMANTIC_DB)
