@@ -38,6 +38,7 @@ os.environ.setdefault("DECAY_RATE_DAILY", "0.0")
 
 import httpx
 
+from bench.bench_forget_targeting import _mots, porte
 from bench.bench_locomo import drain_consolidation, setup_bench_app
 from bench.bench_personamem import DATA_DIR, chunk_messages, load_chat, load_personas, parse_query
 from mnemos.config import Settings
@@ -80,13 +81,25 @@ def parse_letter(raw: str) -> str | None:
 
 async def run(args: argparse.Namespace) -> dict[str, Any]:
     persona_rows = load_personas(DATA_DIR / "val.csv")
-    selected = [
+    disponibles = [
         pid for pid in list(persona_rows)
         if (DATA_DIR / "chats" / Path(persona_rows[pid][0]["chat_history_32k_link"]).name).exists()
-    ][: args.personas]
+    ]
+    if args.selection == "oubli-validation":
+        # Les personas de VALIDATION du ciblage d'oubli (bench_forget_targeting) :
+        # les 100 premières qui portent une question ask_to_forget, identifiant
+        # impair — jamais utilisées pour régler le seuil. Mesurer ailleurs que là
+        # où l'on a réglé est la seule façon de ne pas se flatter.
+        porteuses = [pid for pid in disponibles
+                     if any(r["pref_type"] == "ask_to_forget" for r in persona_rows[pid])][:100]
+        selected = [pid for pid in porteuses if int(pid) % 2 == 1]
+    else:
+        selected = disponibles[: args.personas]
     rng = random.Random(args.seed)
     llm = OllamaClient(Settings(_env_file=None))  # type: ignore[call-arg]
     llm_opts = {"temperature": 0.0, "num_ctx": args.num_ctx, "num_predict": 8}
+    # Vol d'essai : mieux vaut ne pas démarrer que mesurer un système dégradé.
+    await llm.generate("Réponds OK.", args.answer_model, options={"num_predict": 4})
     # Ollama tronque le DÉBUT du prompt au-delà de num_ctx : ce sont les souvenirs
     # les mieux classés qui sauteraient. On mesure donc la taille de chaque prompt.
     budget_chars = args.num_ctx * 4
@@ -145,7 +158,12 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                         )
                         raw = await llm.generate(prompt, args.answer_model, options=llm_opts)
                         letter = parse_letter(raw)
+                        fuite10 = None
+                        if row.get("pref_type") == "ask_to_forget":
+                            mp = _mots(row["prev_pref"])
+                            fuite10 = any(porte(it["content"], mp) for it in items[:10])
                         records.append({
+                            "fuite_top10": fuite10,
                             "persona": pid, "pref_type": row.get("pref_type", ""),
                             "who": row.get("who", ""), "updated": row.get("updated", ""),
                             "gold": gold, "answer": letter, "correct": letter == gold,
@@ -164,8 +182,14 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
     for t in sorted({r["pref_type"] for r in records}):
         rows = [r for r in records if r["pref_type"] == t]
         by_type[t] = {"count": len(rows), "accuracy": sum(r["correct"] for r in rows) / len(rows)}
+    import mnemos
+    from mnemos.stores import episodic as _episodic
+    fuites = [r["fuite_top10"] for r in records if r["fuite_top10"] is not None]
     result = {
         "config": {
+            "mnemos_src": str(Path(mnemos.__file__).parent),
+            "oubli_actif": hasattr(_episodic, "ForgetRequest"),
+            "selection": args.selection,
             "personas": len(selected), "questions": n, "top_k": args.top_k, "seed": args.seed,
             "mode": f"consolidation ({args.llm_model})" if consolidated else "épisodique seul",
             "answer_model": args.answer_model, "facts_inserted": cons.get("facts_inserted", 0),
@@ -175,6 +199,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         "prompt_chars_max": max((r["prompt_chars"] for r in records), default=0),
         "facts_in_context_avg": sum(r["facts_in_context"] for r in records) / n if n else 0.0,
         "by_pref_type": by_type,
+        "fuite_top10_ask_to_forget": round(sum(fuites) / len(fuites), 3) if fuites else None,
         "records": records,
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -184,6 +209,8 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
     for t, m in by_type.items():
         print(f"  {t:<32} N={int(m['count']):>3}  {m['accuracy'] * 100:>5.1f} %")
     print(f"Faits dans le contexte (moyenne) : {result['facts_in_context_avg']:.1f}")
+    print(f"Fuite top 10 (ask_to_forget, sans LLM) : {result['fuite_top10_ask_to_forget']}"
+          f" | code : {result['config']['mnemos_src']} (oubli actif : {result['config']['oubli_actif']})")
     print(f"Prompts tronqués : {result['prompts_truncated']}/{n} "
           f"(le plus long : {result['prompt_chars_max']:,} car., budget {args.num_ctx * 4:,})")
     print(f"Rapport : {args.output}")
@@ -193,6 +220,8 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(description="PersonaMem-v2 en choix multiples")
     parser.add_argument("--personas", type=int, default=20)
+    parser.add_argument("--selection", choices=("tete", "oubli-validation"), default="tete",
+                        help="tete = les N premières ; oubli-validation = validation du ciblage d'oubli")
     parser.add_argument("--top-k", type=int, default=100)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--answer-model", default="qwen3.5:9b")
