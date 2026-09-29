@@ -18,10 +18,13 @@ donc *que* la réponse. Les rangs, eux, restent lisibles et exposent le classeme
 Ne pas lire un taux élevé comme « les cas sont trop faciles » sans avoir lu les rangs.
 
 Trois contextes comparés :
-  O — le transcript complet, chronologique, sans mémoire : le **plafond du
+  O — le transcript complet, chronologique, sans mémoire : la **référence du
       répondeur**. Il ne mesure pas Mnemos ; il dit ce qu'un échec de A ou B
       peut légitimement signifier, et rend le bench valide même quand la VRAM
-      de cette machine impose un modèle de réponse plus petit ;
+      de cette machine impose un modèle de réponse plus petit. Ce n'est PAS une
+      borne supérieure stricte : mesuré le 29/09, A=8/13 contre O=7/13, parce
+      qu'un contexte court et trié par pertinence aide un 3B plus qu'un vidage
+      chronologique de 24 tours. Un résultat au-dessus de O n'est pas un bogue ;
   A — la recherche épisodique seule (`store.search`) ;
   B — la route AML `/search` complète (faits + épisodes fusionnés).
 """
@@ -423,7 +426,8 @@ async def main_async(args: argparse.Namespace) -> dict[str, Any]:
     print(f"causes d'échec (B) : {causes}")
     print("\nLe taux seul ne mesure que la réponse : à top_k=100 tout le contexte")
     print("remonte. Lire les rangs avant de conclure quoi que ce soit — et lire O")
-    print("d'abord : B ne peut pas dépasser le plafond du répondeur.")
+    print("d'abord : un échec que O partage ne dit rien de la mémoire. (O n'est")
+    print("pas une borne stricte : un contexte trié peut battre le transcript.)")
     print(f"Rapport : {args.output}")
     return result
 
