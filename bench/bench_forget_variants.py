@@ -166,6 +166,7 @@ async def main_async(args: argparse.Namespace) -> None:
                             "answer_backend": args.answer_backend, "echecs": 0}
     records: list[dict[str, Any]] = []
     deja: dict[str, str | None] = {}  # prompt -> lettre : le répondeur est déterministe
+    consecutifs = 0
     t0 = time.perf_counter()
     try:
         # Validation d'abord : c'est elle qui se compare aux vrais runs du 29/09.
@@ -201,12 +202,20 @@ async def main_async(args: argparse.Namespace) -> None:
                             try:
                                 deja[prompt] = parse_letter(
                                     await llm.generate(prompt, args.answer_model, options=opts))
-                            except RuntimeError as exc:
-                                # Un échec durable ne doit pas tuer la nuit : compté,
-                                # affiché dans le rapport, jamais masqué.
-                                print(f"  ÉCHEC : {exc}", flush=True)
+                                consecutifs = 0
+                            except Exception as exc:  # noqa: BLE001 — Ollama comme API distante
+                                # Un échec isolé ne doit pas tuer la nuit : compté,
+                                # affiché dans le rapport, jamais masqué. Le 30/09 à
+                                # 0 h 50, un 500 d'Ollama au rechargement du 7B en
+                                # contexte 24k a arrêté le run dès sa 2e question.
+                                print(f"  ÉCHEC : {str(exc)[:160]}", flush=True)
                                 meta["echecs"] += 1
+                                consecutifs += 1
                                 deja[prompt] = None
+                                if consecutifs >= 10:
+                                    # Au-delà, le répondeur est hors service : mieux vaut
+                                    # s'arrêter qu'écrire un rapport de réponses vides.
+                                    raise SystemExit("ARRÊT : 10 échecs consécutifs du répondeur") from exc
                         lettre = deja[prompt]
                         top10 = contexte[:10]
                         records.append({

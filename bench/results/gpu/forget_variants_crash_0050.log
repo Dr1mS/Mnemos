@@ -1,0 +1,46 @@
+  10/100 personas collectées
+  20/100 personas collectées
+  30/100 personas collectées
+  40/100 personas collectées
+  50/100 personas collectées
+  60/100 personas collectées
+  70/100 personas collectées
+  80/100 personas collectées
+  90/100 personas collectées
+  100/100 personas collectées
+Consignes stockées : 1813/1813
+Traceback (most recent call last):
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML_avant\src\mnemos\llm\ollama_client.py", line 100, in _post
+    resp.raise_for_status()
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\bench\bench_forget_variants.py", line 242, in <module>
+    
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\bench\bench_forget_variants.py", line 238, in main
+    _rapport(records, args.rapport, meta)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adri7\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\adri7\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adri7\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\bench\bench_forget_variants.py", line 193, in main_async
+    vus.add(k)
+    ^^^^^^^^^^^
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML_avant\src\mnemos\llm\ollama_client.py", line 150, in generate
+    data = await self._post("/api/generate", payload, timeout_s=GENERATE_TIMEOUT_S)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML_avant\src\mnemos\llm\ollama_client.py", line 113, in _post
+    raise OllamaError(
+mnemos.llm.ollama_client.OllamaError: échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
