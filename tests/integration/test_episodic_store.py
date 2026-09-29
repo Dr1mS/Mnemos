@@ -17,7 +17,14 @@ from mnemos.clock import FixedClock
 from mnemos.config import Settings
 from mnemos.models.base import make_async_engine
 from mnemos.models.episodic import EPISODIC_SCHEMA_SQL
-from mnemos.stores.episodic import DAY_MS, BatchEpisodeItem, EpisodicStore
+from mnemos.stores.episodic import (
+    DAY_MS,
+    DENSE_WEIGHT,
+    RECENCY_WEIGHT,
+    SPARSE_WEIGHT,
+    BatchEpisodeItem,
+    EpisodicStore,
+)
 from mnemos.tagger.salience import SalienceScores
 
 
@@ -269,3 +276,67 @@ async def test_write_batch(store: EpisodicStore, fixed_clock: FixedClock) -> Non
 async def test_write_batch_empty(store: EpisodicStore) -> None:
     episodes = await store.write_batch([])
     assert episodes == []
+
+
+# ── Récence : référence = le plus récent des candidats, pas l'heure au mur ──
+
+# Deux ans avant l'horloge de test (2026-07-02). Les données d'évaluation AML
+# portent leurs dates d'origine : c'est le cas nominal, pas un cas limite.
+_ANCIEN_MS = 1_688_299_200_000  # 2023-07-02
+_RECENT_MS = _ANCIEN_MS + 60 * DAY_MS  # 2023-08-31
+
+
+async def test_recence_active_sur_corpus_rejoue(store: EpisodicStore) -> None:
+    """Sur un corpus daté d'il y a trois ans, la récence doit encore trancher.
+
+    Contre l'heure au mur, `2 ** (-1096/30)` vaut ~1e-11 pour les deux épisodes :
+    le terme n'était pas faiblement pondéré, il était **nul**. Mesuré le
+    29/09/2026 sur le bench D1 dur, l'énoncé le plus ancien sortait premier dans
+    11 cas sur 13. Rapporté au plus récent des candidats, le terme redevient un
+    vrai gradient.
+
+    Contenu identique dans les deux épisodes : les composantes dense et sparse
+    sont donc à égalité stricte et seule la récence peut les départager.
+    """
+    contenu = "je vis à Limoges depuis peu"
+    await store.write_batch([
+        BatchEpisodeItem(content=contenu, role="user", created_at=_ANCIEN_MS),
+        BatchEpisodeItem(content=contenu, role="user", created_at=_RECENT_MS),
+    ])
+
+    resultats = await store.search(contenu, k=10)
+    assert len(resultats) == 2
+
+    par_date = {r.episode.created_at: r for r in resultats}
+    recent, ancien = par_date[_RECENT_MS], par_date[_ANCIEN_MS]
+
+    # Le plus récent des candidats est la référence : récence exactement 1.
+    assert recent.recency == 1.0
+    # L'ancien décroît sans s'effondrer — 60 jours, demi-vie 30 → 0,25.
+    assert ancien.recency == pytest.approx(0.25, abs=0.01)
+
+    # Dense et sparse à égalité, donc l'ordre vient de la seule récence.
+    assert recent.dense_sim == pytest.approx(ancien.dense_sim)
+    assert recent.sparse_sim == pytest.approx(ancien.sparse_sim)
+    assert resultats[0].episode.created_at == _RECENT_MS
+
+
+async def test_score_borne_a_un(store: EpisodicStore) -> None:
+    """Les poids sommaient à 1,1, donc le score dépassait 1 dès que la récence
+    cessait d'être nulle — et devenait incomparable au score des faits
+    (`1 - cosine` ∈ [0,1]) au moment de la fusion dans /search.
+
+    L'assertion sur la somme des poids est celle qui compte : borner le score
+    observé ne suffisait pas à détecter le défaut, puisque la récence morte le
+    maintenait sous 1 par accident."""
+    assert abs(DENSE_WEIGHT + SPARSE_WEIGHT + RECENCY_WEIGHT - 1.0) < 1e-9
+
+    await store.write_batch([
+        BatchEpisodeItem(content="exactement la même phrase", role="user",
+                         created_at=_RECENT_MS),
+    ])
+    resultats = await store.search("exactement la même phrase", k=5)
+    # Candidat unique donc référence de récence = lui-même, récence = 1 : c'est
+    # le cas qui faisait déborder l'ancienne pondération.
+    assert resultats[0].recency == 1.0
+    assert resultats[0].score <= 1.0

@@ -62,5 +62,39 @@ def hamming_distance(a: bytes, b: bytes) -> int:
 
 
 def sparse_similarity(a: bytes, b: bytes) -> float:
-    """Similarité normalisée [0..1] pour le score hybride (§8.2)."""
+    """Similarité normalisée [0..1] sur les 256 bits, temporels compris.
+
+    À réserver à la comparaison de deux ÉPISODES, où les bits temporels sont
+    précisément le mécanisme de séparation voulu. Pour comparer une requête à
+    un épisode, utiliser `content_similarity` — voir pourquoi ci-dessous."""
     return 1.0 - hamming_distance(a, b) / TOTAL_BITS
+
+
+# Masque des 224 bits de contenu : les 4 derniers octets (bits 224–255) portent
+# le bucket temporel et sont mis à zéro.
+_CONTENT_MASK = int.from_bytes(b"\xff" * 28 + b"\x00" * 4, "little")
+
+
+def content_similarity(a: bytes, b: bytes) -> float:
+    """Similarité [0..1] sur les seuls bits de contenu.
+
+    Une requête est encodée avec l'heure courante, un épisode avec l'horodatage
+    du message. Les deux buckets ne coïncident jamais sur un corpus rejoué :
+    les 32 bits temporels sont alors **du bruit, pas un signal**.
+
+    Mesuré le 29/09/2026 sur deux épisodes de contenu identique (donc 14 bits de
+    contenu différents dans les deux cas), requête 2026 contre épisodes 2023 :
+
+        hamming total 28 = 14 de contenu + 14 de temporel
+        hamming total 29 = 14 de contenu + 15 de temporel
+
+    La moitié de la distance venait du temporel, et c'est **lui seul** qui
+    départageait les deux épisodes (0,8906 contre 0,8867) alors que leur contenu
+    était à égalité stricte. Le classement se jouait sur le hasard d'un hash.
+
+    Les bits temporels restent écrits en base : ils séparent deux épisodes de
+    même contenu à des dates différentes, ce qui est leur rôle. On cesse
+    seulement de les interroger depuis une requête qui ne peut pas les porter."""
+    ai = int.from_bytes(a, "little") & _CONTENT_MASK
+    bi = int.from_bytes(b, "little") & _CONTENT_MASK
+    return 1.0 - (ai ^ bi).bit_count() / CONTENT_BITS

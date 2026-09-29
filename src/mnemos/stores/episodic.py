@@ -2,7 +2,15 @@
 
 Recherche (§9.2) : KNN dense top-50 (vec0, cosine) → filtres Python
 (session, fenêtre, archived, salience) → re-rank hybride
-`0.7*dense + 0.3*sparse + 0.1*récence` → top-k. Pondérations configurables.
+`0.7*dense + 0.3*sparse + 0.1*récence`, poids normalisés à somme 1 → top-k.
+
+Deux points contre-intuitifs du re-rank, tous deux mesurés le 29/09/2026 :
+la récence se calcule par rapport au **plus récent des candidats**, pas à
+l'heure au mur — sinon elle vaut 1e-12 sur tout corpus rejoué et ne
+départage rien ; et le sparse ne compare que ses **bits de contenu**, ses
+32 bits temporels étant du bruit vis-à-vis d'une requête qui ne peut pas
+porter la même date. Voir les commentaires de `search` et de
+`embeddings.sparse.content_similarity`.
 
 Décroissance (§9.2) : elapsed depuis COALESCE(last_decayed_at, created_at),
 JAMAIS depuis created_at seul (double-comptage → décroissance quadratique).
@@ -33,7 +41,7 @@ from ulid import ULID
 from mnemos.clock import Clock
 from mnemos.config import Settings
 from mnemos.embeddings.dense import DenseEmbedder
-from mnemos.embeddings.sparse import sparse_encode, sparse_similarity
+from mnemos.embeddings.sparse import content_similarity, sparse_encode
 from mnemos.logging import get_logger
 from mnemos.models.episodic import Episode, EpisodeSparse, ProcessedRequest
 from mnemos.tagger.salience import SalienceScores
@@ -55,10 +63,16 @@ logger = get_logger(__name__)
 KNN_CANDIDATES = 50
 DAY_MS = 86_400_000
 
-# Pondérations du score hybride (§8.2, documentées au README)
-DENSE_WEIGHT = 0.7
-SPARSE_WEIGHT = 0.3
-RECENCY_WEIGHT = 0.1
+# Pondérations du score hybride (§8.2, documentées au README). Elles sommaient
+# à 1,1, ce qui laissait le score dépasser 1 et le rendait incomparable au score
+# des faits (`1 - cosine` ∈ [0,1]) au moment de la fusion dans /search. La
+# division par leur somme est un changement d'échelle uniforme : elle ne modifie
+# aucun classement entre épisodes, elle rend seulement l'échelle lisible.
+_W_DENSE, _W_SPARSE, _W_RECENCY = 0.7, 0.3, 0.1
+_W_SUM = _W_DENSE + _W_SPARSE + _W_RECENCY
+DENSE_WEIGHT = _W_DENSE / _W_SUM
+SPARSE_WEIGHT = _W_SPARSE / _W_SUM
+RECENCY_WEIGHT = _W_RECENCY / _W_SUM
 RECENCY_HALF_LIFE_DAYS = 30.0
 
 
@@ -297,7 +311,7 @@ class EpisodicStore:
         # Filtres Python (§9.2 étape 3). episodes_vec (vec0) est partitionné par
         # tenant à la source. Les filtres suivants éliminent archivés, salience
         # sous le seuil, sessions et fenêtres temporelles.
-        scored: list[ScoredEpisode] = []
+        retenus: list[tuple[Episode, bytes]] = []
         for episode, sparse_bits in episodes:
             if episode.tenant != tenant:
                 continue
@@ -312,9 +326,35 @@ class EpisodicStore:
                 end_ms = int(time_window[1].timestamp() * 1000)
                 if not start_ms <= episode.created_at <= end_ms:
                     continue
+            retenus.append((episode, sparse_bits))
+
+        if not retenus:
+            return []
+
+        # Référence de récence : le souvenir le plus récent de l'ensemble
+        # classé, et non l'heure au mur.
+        #
+        # Mesuré le 29/09/2026 : sur des épisodes datés de 2023 interrogés en
+        # 2026, `2 ** (-1162/30)` vaut 2e-12. Les quatre épisodes d'une même
+        # conversation se voyaient attribuer des récences de 2,2e-12 à 5,7e-12
+        # — un écart de 3e-13 face à des similarités denses de l'ordre de 0,5.
+        # Le terme n'était pas « trop faiblement pondéré », il était nul, et la
+        # valeur la plus ancienne sortait première dans 11 cas sur 13.
+        #
+        # Les données d'évaluation portent leurs dates d'origine, donc ce cas
+        # est le cas nominal, pas un cas limite. Rapporter l'âge au plus récent
+        # des candidats rend le terme actif quel que soit le décalage entre le
+        # corpus et l'horloge, et rend la recherche reproductible : deux appels
+        # identiques à un mois d'intervalle donnent désormais le même score.
+        # Sur une mémoire vivante, le plus récent est proche de `now` : le
+        # comportement y est inchangé.
+        reference = max(e.created_at for e, _ in retenus)
+
+        scored: list[ScoredEpisode] = []
+        for episode, sparse_bits in retenus:
             dense_sim = 1.0 - distances[episode.id]  # distance cosine → similarité
-            sparse_sim = sparse_similarity(query_sparse, sparse_bits)
-            age_days = max(0.0, (now - episode.created_at) / DAY_MS)
+            sparse_sim = content_similarity(query_sparse, sparse_bits)
+            age_days = max(0.0, (reference - episode.created_at) / DAY_MS)
             recency = 2.0 ** (-age_days / RECENCY_HALF_LIFE_DAYS)
             score = (
                 DENSE_WEIGHT * dense_sim

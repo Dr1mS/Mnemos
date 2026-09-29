@@ -12,6 +12,7 @@ from datetime import UTC, datetime
 from mnemos.embeddings.sparse import (
     CONTENT_BITS,
     TOKEN_CAP,
+    content_similarity,
     hamming_distance,
     sparse_encode,
     sparse_similarity,
@@ -98,3 +99,38 @@ def test_hamming_proprietes() -> None:
     assert hamming_distance(a, b) == hamming_distance(b, a)
     assert sparse_similarity(a, a) == 1.0
     assert 0.0 <= sparse_similarity(a, b) < 1.0
+
+
+# ── content_similarity : les bits temporels sont du bruit face à une requête ──
+
+
+def test_content_similarity_ignore_la_date() -> None:
+    """Deux épisodes de contenu identique à des dates différentes doivent être
+    à égalité stricte face à une même requête.
+
+    `sparse_similarity` les départageait sur le seul hasard du hash temporel :
+    mesuré le 29/09/2026, contenu à égalité (14 bits d'écart dans les deux cas)
+    mais similarités 0,8906 contre 0,8867. Le classement se jouait sur du bruit.
+    """
+    requete = sparse_encode("dans quelle ville est-ce que je vis", ts(10, day=1))
+    ancien = sparse_encode("je vis à Limoges", ts(10, day=2))
+    recent = sparse_encode("je vis à Limoges", ts(10, day=20))
+
+    assert content_similarity(requete, ancien) == content_similarity(requete, recent)
+    # Le défaut corrigé : l'ancienne mesure, elle, les sépare.
+    assert sparse_similarity(requete, ancien) != sparse_similarity(requete, recent)
+
+
+def test_content_similarity_reste_discriminante() -> None:
+    requete = sparse_encode("le chat mange des croquettes", ts(10))
+    proche = sparse_encode("le chat mange des croquettes", ts(10, day=5))
+    loin = sparse_encode("le worker consolide les épisodes", ts(10, day=5))
+    assert content_similarity(requete, proche) == 1.0
+    assert content_similarity(requete, loin) < content_similarity(requete, proche)
+
+
+def test_content_similarity_bornee() -> None:
+    a = sparse_encode("aaa bbb", ts(10))
+    b = sparse_encode("ccc ddd", ts(10))
+    for x, y in ((a, a), (a, b), (b, a)):
+        assert 0.0 <= content_similarity(x, y) <= 1.0
