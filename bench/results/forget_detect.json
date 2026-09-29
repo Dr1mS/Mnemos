@@ -1,0 +1,34 @@
+{
+  "PersonaMem calibration": {
+    "positifs": 6347,
+    "negatifs": 36335,
+    "precision": 1.0,
+    "rappel": 1.0,
+    "faux_positifs": [],
+    "faux_negatifs": []
+  },
+  "PersonaMem validation": {
+    "positifs": 6241,
+    "negatifs": 35938,
+    "precision": 1.0,
+    "rappel": 1.0,
+    "faux_positifs": [],
+    "faux_negatifs": []
+  },
+  "LoCoMo (négatifs)": {
+    "positifs": 0,
+    "negatifs": 419,
+    "precision": null,
+    "rappel": null,
+    "faux_positifs": [],
+    "faux_negatifs": []
+  },
+  "cas fabriqués": {
+    "positifs": 19,
+    "negatifs": 35,
+    "precision": 1.0,
+    "rappel": 1.0,
+    "faux_positifs": [],
+    "faux_negatifs": []
+  }
+}

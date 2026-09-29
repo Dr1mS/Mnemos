@@ -727,3 +727,78 @@ HARD_UPDATE_INSTANCES: list[HardUpdateInstance] = (
         [("marathon de Paris", "trail du Mont-Blanc"), ("Ironman de Nice", "Paris-Brest")],
     )
 )
+
+
+# ── Axe 3 : détection des demandes d'oubli ──────────────────────────────────
+#
+# Cas fabriqués qui complètent PersonaMem, dont les 12 588 demandes réelles
+# suivent une seule grammaire anglaise (« (Please) forget that I… »). Ils
+# couvrent ce que PersonaMem ne contient pas : le français, les formes polies,
+# les verbes génériques ancrés, et surtout les PIÈGES — formes qui ressemblent à
+# une consigne d'oubli sans en être une. Un faux positif efface la mémoire de
+# l'utilisateur : ce sont eux qui comptent le plus.
+#
+# (texte, est_une_consigne, remarque)
+FORGET_CASES: list[tuple[str, bool, str]] = [
+    # Positifs anglais hors du moule PersonaMem
+    ("Can you forget my home address?", True, "demande polie"),
+    ("Could you please forget that I was diagnosed with diabetes?", True, "demande polie"),
+    ("Hey, please forget that I'm vegetarian.", True, "interjection en tête"),
+    ("Actually, forget that I said I work at Nexora.", True, "interjection en tête"),
+    ("Please delete from your memory that I live in Lyon.", True, "verbe générique ancré"),
+    ("Remove from your memory everything about my divorce.", True, "verbe générique ancré"),
+    ("Stop remembering that I have two kids.", True, "tournure alternative"),
+    ("Please don't remember my phone number.", True, "tournure alternative"),
+    ("Disregard what I told you about my salary.", True, "disregard"),
+    # Positifs français
+    ("Oublie que je suis allergique aux arachides.", True, "impératif"),
+    ("Oublie mon adresse, s'il te plaît.", True, "politesse en fin"),
+    ("S'il te plaît, oublie que j'ai déménagé à Nantes.", True, "politesse en tête"),
+    ("Peux-tu oublier mon numéro de téléphone ?", True, "demande polie"),
+    ("Tu peux oublier ce que je t'ai dit sur mon travail ?", True, "demande polie"),
+    ("Merci d'oublier que je fume.", True, "merci de"),
+    ("Efface de ta mémoire que je suis divorcé.", True, "verbe générique ancré"),
+    ("Ne retiens plus que je travaille chez Kyndra.", True, "ne retiens plus"),
+    ("Au fait, oublie que j'ai un chien.", True, "interjection en tête"),
+    # Pièges anglais
+    ("Don't forget that I have a meeting tomorrow.", False, "rappel, pas oubli"),
+    ("Do not forget my birthday next week!", False, "rappel, pas oubli"),
+    ("I'll never forget that trip to Japan with my sister.", False, "souvenir"),
+    ("I forgot my keys at home again.", False, "passé, 1re personne"),
+    ("I always forget where I parked my car.", False, "habitude"),
+    ("Forget it.", False, "laisse tomber"),
+    ("Forget about it, not important.", False, "laisse tomber"),
+    ("Oh, forget that, let's talk about dinner.", False, "changement de sujet, sans complément"),
+    ("What did I ask you to forget?", False, "question sur l'oubli (sonde D3)"),
+    ("Did you forget what I told you?", False, "question"),
+    ("Have you forgotten my name?", False, "question"),
+    ("Can you forget things?", False, "question de capacité, rien de personnel"),
+    ("She wants to forget her ex.", False, "3e personne"),
+    ("My brother asked you to forget his address.", False, "3e personne"),
+    ("Please delete this file from the repository.", False, "piste Coding"),
+    ("Remove that function, it's unused.", False, "piste Coding"),
+    ("Delete the last paragraph of my essay.", False, "édition de texte"),
+    ("Clear my calendar for Friday.", False, "action hors mémoire"),
+    ("Help me tidy this email: Hi Tom, if the date changed, please disregard this note entirely.",
+     False, "consigne dans un texte cité"),
+    ("How do I make myself forget a bad memory?", False, "question de conseil"),
+    ("Is it normal to forget things when I'm stressed?", False, "question de conseil"),
+    ("Remember that I prefer window seats.", False, "demande de mémorisation, l'inverse"),
+    ("Forget the details about pricing and focus on the features.", False,
+     "consigne de travail, pluriel — ne pas confondre avec « the detail about »"),
+    ("Please forget the preference about avoiding celebrity news from your memory.", True,
+     "auto-référence implicite, forme PersonaMem"),
+    # Pièges français
+    ("N'oublie pas que je pars lundi.", False, "rappel, pas oubli"),
+    ("Oublie pas de m'appeler demain.", False, "négation élidée du français parlé"),
+    ("J'ai oublié mon parapluie.", False, "passé"),
+    ("Je n'oublierai jamais ce voyage.", False, "souvenir"),
+    ("Oublie ça.", False, "anaphorique sans complément"),
+    ("Tu as oublié mon anniversaire ?", False, "question"),
+    ("Qu'est-ce que je t'ai demandé d'oublier ?", False, "question sur l'oubli (sonde D3)"),
+    ("Supprime ce fichier, il ne sert plus.", False, "piste Coding"),
+    ("Efface la dernière phrase de mon texte.", False, "édition de texte"),
+    ("Ma sœur veut oublier son ancien travail.", False, "3e personne"),
+    ("Comment oublier une rupture ?", False, "question de conseil"),
+    ("Retiens que je préfère le thé.", False, "demande de mémorisation, l'inverse"),
+]
