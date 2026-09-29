@@ -62,11 +62,13 @@ def hamming_distance(a: bytes, b: bytes) -> int:
 
 
 def sparse_similarity(a: bytes, b: bytes) -> float:
-    """Similarité normalisée [0..1] sur les 256 bits, temporels compris.
+    """Similarité de Hamming normalisée [0..1] sur les 256 bits, date comprise.
 
-    À réserver à la comparaison de deux ÉPISODES, où les bits temporels sont
-    précisément le mécanisme de séparation voulu. Pour classer des épisodes
-    face à une requête, utiliser `query_coverage` — voir pourquoi ci-dessous."""
+    Plus aucun appelant dans `src/` depuis le 29/09/2026 : la recherche utilise
+    `query_coverage` (voir pourquoi ci-dessous). Conservée pour les tests, qui
+    s'en servent pour démontrer les défauts corrigés, et pour
+    `bench/bench_rerank_variants.py`, qui doit pouvoir reproduire l'ancienne
+    formule. Ne pas la rebrancher sur la recherche sans remesurer."""
     return 1.0 - hamming_distance(a, b) / TOTAL_BITS
 
 

@@ -1081,5 +1081,62 @@
         "rang_median": 1
       }
     }
+  },
+  "ROUTE /search (AML)": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.877,
+        "hit@10": 0.673,
+        "rang_median": 3
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.813,
+        "hit@10": 0.531,
+        "rang_median": 7
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.892,
+        "rang_median": 2
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.9,
+        "hit@10": 0.636,
+        "rang_median": 6
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.887,
+        "hit@10": 0.629,
+        "rang_median": 3
+      },
+      "vs_ancien": {
+        "recule": 47,
+        "avance": 69
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "9/13",
+      "actif_top3": "13/13",
+      "rang_actif_moyen": 2.15
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.86,
+        "hit@10": 0.506,
+        "rang_median": 6
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
   }
 }

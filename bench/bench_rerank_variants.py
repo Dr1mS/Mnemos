@@ -190,7 +190,12 @@ def metriques_locomo(questions: list[dict[str, Any]], par_q: list[list[str]]) ->
 
 def metriques_pm(par_q: list[tuple[dict[str, str], list[str]]]) -> dict[str, Any]:
     """Rang du premier message-preuve (égalité de texte normalisé, comme
-    `bench_personamem`), global et sur les seules préférences mises à jour."""
+    `bench_personamem`), global et sur les seules préférences mises à jour.
+
+    Le sous-ensemble « mises à jour » (32 questions) est SATURÉ : rang 1 pour
+    toutes les variantes testées le 29/09/2026, la preuve étant thématiquement
+    identique à la requête. Il est gardé pour détecter une régression, jamais
+    pour départager deux variantes."""
     def resume(rows: list[int | None]) -> dict[str, Any]:
         trouves = sorted(r for r in rows if r is not None)
         return {"n": len(rows),
@@ -282,6 +287,19 @@ async def main_async(out: Path) -> dict[str, Any]:
                 c_pm = [(row, await candidats(store, parse_query(row["user_query"]), f"pm:{pid}"))
                         for pid, row in pm_q]
                 r_pm = [await reel(parse_query(row["user_query"]), f"pm:{pid}") for pid, row in pm_q]
+
+                async def route(query: str, tenant: str) -> list[str]:
+                    """Ce que la plateforme reçoit vraiment : POST /search, avec sa
+                    déduplication par contenu et son tri final. Sans consolidation,
+                    comme en production, aucun fait ne s'y mêle."""
+                    resp = await client.post("/search", json={
+                        "query": query, "user_id": tenant, "top_k": TOP_K})
+                    resp.raise_for_status()
+                    return [it["content"] for it in resp.json()["data"]]
+
+                a_locomo = [await route(q["question"], "locomo") for q in questions]
+                a_d1 = [await route(inst.probe, f"d1_{inst.id}") for inst in HARD_UPDATE_INSTANCES]
+                a_pm = [await route(parse_query(row["user_query"]), f"pm:{pid}") for pid, row in pm_q]
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -318,6 +336,15 @@ async def main_async(out: Path) -> dict[str, Any]:
         "d1": metriques_d1([(i, r) for (i, _), r in zip(c_d1, r_d1, strict=True)]),
         "personamem": metriques_pm([(row, r) for (row, _), r in zip(c_pm, r_pm, strict=True)]),
     }
+    loc = metriques_locomo(questions, a_locomo)
+    best = loc.pop("_meilleurs")
+    loc["vs_ancien"] = {"recule": sum(b > a for a, b in zip(ref_best, best, strict=True)),
+                        "avance": sum(b < a for a, b in zip(ref_best, best, strict=True))}
+    resultats["ROUTE /search (AML)"] = {
+        "locomo": loc,
+        "d1": metriques_d1([(i, r) for (i, _), r in zip(c_d1, a_d1, strict=True)]),
+        "personamem": metriques_pm([(row, r) for (row, _), r in zip(c_pm, a_pm, strict=True)]),
+    }
     # Contrôle d'implémentation : le code déployé doit classer exactement comme
     # la variante de référence, requête par requête.
     v_ref = VARIANTES[VARIANTE_DEPLOYEE]
@@ -332,14 +359,14 @@ async def main_async(out: Path) -> dict[str, Any]:
           f" {len(c_pm)} questions PersonaMem, top_k={TOP_K}\n")
     print(f"{'variante':32s} | {'hit@10':>6s} {'médian':>6s} {'rap@100':>7s} | {'recule/avance':>13s}"
           f" | {'D1 ancien devant':>16s} {'actif top3':>10s}"
-          f" | {'PM hit@10':>9s} {'méd':>4s} {'rap@100':>7s} {'maj hit@10':>10s}")
+          f" | {'PM hit@10':>9s} {'méd':>4s} {'rap@100':>7s} {'maj(saturé)':>11s}")
     for nom, r in resultats.items():
         t, d, pm = r["locomo"]["toutes"], r["d1"], r["personamem"]
         va = r["locomo"]["vs_ancien"]
         print(f"{nom:32s} | {t['hit@10']:6.3f} {t['rang_median']!s:>6s} {t['rappel@100']:7.3f} |"
               f" {va['recule']:>5d}/{va['avance']:<7d} | {d['plus_ancien_devant']:>16s} {d['actif_top3']:>10s}"
               f" | {pm['toutes']['hit@10']:9.3f} {pm['toutes']['rang_median']!s:>4s}"
-              f" {pm['toutes']['rappel@100']:7.3f} {pm['mises_a_jour']['hit@10']:10.3f}")
+              f" {pm['toutes']['rappel@100']:7.3f} {pm['mises_a_jour']['hit@10']:11.3f}")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(resultats, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"\nRapport : {out}")
