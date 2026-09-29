@@ -280,6 +280,8 @@ async def run_instance(
             "leurres": inst.decoys,
             "messages": len(messages),
             "facts_inserted": cons["facts_inserted"],
+            # Un échec d'extraction change les faits, donc B : il doit se voir.
+            "extraction_failures": cons["extraction_failures"],
             # « Les faits ne changent aucune réponse » est la thèse qu'on re-teste :
             # sans ces trois champs, une discordance nulle resterait inexplicable.
             "facts_in_context": faits,
@@ -350,6 +352,19 @@ async def main_async(args: argparse.Namespace) -> dict[str, Any]:
     print(f"Backend d'embeddings demandé : {args.embed_backend}\n")
 
     llm = OllamaClient(settings)
+    # Vol d'essai : un appel par modèle avant toute mesure. Le 29/09, un run a
+    # démarré sur un runner Ollama en mauvais état : 500 dès la première
+    # saillance, retombée sur les scores par défaut, donc des faits différents
+    # et un B incomparable — sans que rien ne l'arrête. Un bench qui mesure un
+    # système dégradé est pire qu'un bench qui ne démarre pas.
+    for modele in sorted({args.answer_model, args.llm_model}):
+        try:
+            await llm.generate("Réponds OK.", modele, options={"num_predict": 4})
+        except Exception as exc:  # noqa: BLE001 — tout échec invalide la mesure
+            await llm.aclose()
+            print(f"\nARRÊT : {modele} ne répond pas ({exc}).")
+            print("Redémarrer Ollama ou attendre, puis relancer.")
+            return {"aborted": "ollama", "modele": modele, "erreur": str(exc)}
     instances = HARD_UPDATE_INSTANCES[: args.instances]
     records: list[dict[str, Any]] = []
     try:
@@ -399,6 +414,7 @@ async def main_async(args: argparse.Namespace) -> dict[str, Any]:
         "mcnemar_verdict": verdict,
         "causes_B": causes,
         "facts_inserted_total": sum(r["facts_inserted"] for r in records),
+        "extraction_failures_total": sum(r["extraction_failures"] for r in records),
         "instances_avec_fait_actif": sum(r["active_in_facts"] for r in records),
         "instances_avec_fait_perime": sum(r["stale_in_facts"] for r in records),
         "par_attribut": {
@@ -424,6 +440,9 @@ async def main_async(args: argparse.Namespace) -> dict[str, Any]:
           f" | fait actif présent dans {result['instances_avec_fait_actif']}/{n}"
           f" | fait périmé présent dans {result['instances_avec_fait_perime']}/{n}")
     print(f"causes d'échec (B) : {causes}")
+    if result["extraction_failures_total"]:
+        print(f"\nATTENTION : {result['extraction_failures_total']} échec(s) d'extraction —"
+              " les faits, donc B, ne sont pas ceux d'un système sain.")
     print("\nLe taux seul ne mesure que la réponse : à top_k=100 tout le contexte")
     print("remonte. Lire les rangs avant de conclure quoi que ce soit — et lire O")
     print("d'abord : un échec que O partage ne dit rien de la mémoire. (O n'est")
