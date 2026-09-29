@@ -12,7 +12,7 @@ Scénarios :
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
@@ -591,3 +591,139 @@ COOPERATIVE_25_TURNS: list[tuple[str, str]] = [
     ("Comment inverser les clés et les valeurs d'un dictionnaire ?", "{v: k for k, v in my_dict.items()}"),
     ("Comment trouver le plus grand diviseur commun (PGCD) ?", "math.gcd(a, b)"),
 ]
+
+
+# ── ÉPREUVE D1 DURE : MISE À JOUR DE VALEUR EN TERRAIN AMBIGU ────────────────
+#
+# Pourquoi une seconde épreuve alors que GhostVectorInstance existe déjà :
+# celle-ci donnait 14/14, quand l'évaluation externe place la même capacité
+# (« D1 · Value updates & current state ») à 29,25. L'écart ne vient pas de la
+# façon de mesurer — les deux passent par une vraie réponse jugée — mais de la
+# difficulté des cas. GhostVector est facile sur quatre axes à la fois :
+#
+#   1. un seul type d'attribut (la résidence), toujours le même gabarit ;
+#   2. des énoncés maximalement explicites (« Finalement je vis à X ») ;
+#   3. l'assistant répète chaque valeur, donc le signal est doublé ;
+#   4. des distracteurs hors sujet (des questions Python), que la recherche
+#      sémantique écarte sans effort.
+#
+# Les cas ci-dessous retirent ces quatre béquilles : attributs variés, énoncés
+# implicites, aucun écho de la valeur finale, et surtout des distracteurs **du
+# même champ sémantique** — une entité du bon type qui n'est pas la réponse.
+# C'est ce dernier point qui fait la difficulté réelle : « mon frère a été
+# embauché chez Velora » remonte au même rang qu'un vrai changement d'employeur.
+
+
+@dataclass(frozen=True)
+class HardUpdateInstance:
+    """Trois valeurs successives d'un même attribut, en terrain ambigu."""
+
+    id: str
+    attribute: str                        # libellé lisible, pour les rapports
+    probe: str                            # la question posée
+    answer_hint: str                      # consigne de format donnée au répondeur
+    value_0: str
+    value_1: str
+    value_2: str                          # la valeur active, seule bonne réponse
+    statements: tuple[str, str, str]      # gabarits `{}` — volontairement implicites
+    distractors: list[str]                # tours du MÊME champ, jamais la réponse
+    decoys: list[str]                     # entités citées par les distracteurs
+
+
+def _hard_family(
+    prefix: str,
+    attribute: str,
+    probe: str,
+    answer_hint: str,
+    statements: tuple[str, str, str],
+    triplets: list[tuple[str, str, str]],
+    distractor_tpl: list[str],
+    decoy_sets: list[tuple[str, ...]],
+) -> list[HardUpdateInstance]:
+    out: list[HardUpdateInstance] = []
+    for i, (v0, v1, v2) in enumerate(triplets, 1):
+        decoys = decoy_sets[(i - 1) % len(decoy_sets)]
+        out.append(
+            HardUpdateInstance(
+                id=f"{prefix}_{i:02d}",
+                attribute=attribute,
+                probe=probe,
+                answer_hint=answer_hint,
+                value_0=v0,
+                value_1=v1,
+                value_2=v2,
+                statements=statements,
+                # Le distracteur cite une entité du bon type qui n'est pas la
+                # réponse, et l'ancienne valeur au passé explicite : les deux
+                # pièges que D1 sanctionne.
+                distractors=[t.format(decoy=decoys[j % len(decoys)], ancien=v0)
+                             for j, t in enumerate(distractor_tpl)],
+                decoys=list(decoys),
+            )
+        )
+    return out
+
+
+HARD_UPDATE_INSTANCES: list[HardUpdateInstance] = (
+    _hard_family(
+        "hard_employeur", "employeur",
+        "Où est-ce que je travaille en ce moment ?",
+        "Answer with the employer name only.",
+        ("Je viens de signer chez {}.",
+         "Premier jour chez {} demain, je suis un peu nerveux.",
+         "Ça y est, j'ai rejoint {} lundi dernier."),
+        [("Datalyse", "Kyndra", "Nexora"),
+         ("Orvex", "Talmis", "Fyrelane"),
+         ("Brenmar", "Solvix", "Wardell"),
+         ("Pellenor", "Ashgrove", "Kestrel")],
+        ["Mon frère vient d'être embauché chez {decoy}, il est ravi.",
+         "J'ai passé un entretien chez {decoy} l'an dernier, ça n'a rien donné.",
+         "L'équipe de {ancien} organisait de très bons séminaires à l'époque."],
+        [("Velora", "Mirestone"), ("Halcyon", "Drayton"), ("Quillon", "Ferrow")],
+    )
+    + _hard_family(
+        "hard_ville", "ville de résidence",
+        "Dans quelle ville est-ce que je vis actuellement ?",
+        "Answer with the city name only.",
+        ("Je m'installe à {} le mois prochain.",
+         "Les cartons sont enfin défaits ici à {}.",
+         "J'ai pris un appartement à {}, je récupère les clés vendredi."),
+        [("Limoges", "Perpignan", "Quimper"),
+         ("Valence", "Béziers", "Lorient"),
+         ("Colmar", "Chambéry", "Vannes"),
+         ("Troyes", "Niort", "Cholet")],
+        ["Ma cousine a déménagé à {decoy} pour son travail.",
+         "On part en vacances à {decoy} cet été, j'ai hâte.",
+         "J'ai adoré {ancien} quand j'y vivais, mais c'est loin maintenant."],
+        [("Arles", "Sète"), ("Auray", "Dinan"), ("Gap", "Albi")],
+    )
+    + _hard_family(
+        "hard_outil", "outil de travail",
+        "Quel outil est-ce que j'utilise pour mes notes ?",
+        "Answer with the tool name only.",
+        ("J'essaie {} pour mes notes.",
+         "Finalement j'ai tout basculé sur {}.",
+         "Je prends mes notes dans {} depuis quelques semaines."),
+        [("Notion", "Obsidian", "Logseq"),
+         ("Evernote", "Bear", "Joplin"),
+         ("OneNote", "Craft", "Anytype")],
+        ["Un collègue ne jure que par {decoy}, je n'ai pas accroché.",
+         "J'ai testé {decoy} une soirée avant d'abandonner.",
+         "{ancien} m'a bien servi pendant deux ans."],
+        [("Roam", "Tana"), ("Reflect", "Capacities")],
+    )
+    + _hard_family(
+        "hard_objectif", "objectif",
+        "Quel est mon objectif sportif en ce moment ?",
+        "Answer with the goal only.",
+        ("Je me suis inscrit au {}.",
+         "Le {} sera mon prochain défi.",
+         "J'ai changé de plan : ce sera le {}."),
+        [("semi-marathon de Nantes", "trail des Vosges", "marathon de Berlin"),
+         ("triathlon de Gérardmer", "cyclosportive du Ventoux", "100 km de Millau")],
+        ["Un ami prépare le {decoy}, il s'entraîne tous les jours.",
+         "J'ai regardé le {decoy} à la télé dimanche.",
+         "Le {ancien} m'avait épuisé l'année dernière."],
+        [("marathon de Paris", "trail du Mont-Blanc"), ("Ironman de Nice", "Paris-Brest")],
+    )
+)
