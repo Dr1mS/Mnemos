@@ -62,8 +62,8 @@ def mcnemar_test(system_results: list[bool], baseline_results: list[bool]) -> tu
     if not system_results or len(system_results) != len(baseline_results):
         return 1.0, "non significatif"
 
-    b = sum(1 for s, base in zip(system_results, baseline_results) if s and not base)
-    c = sum(1 for s, base in zip(system_results, baseline_results) if not s and base)
+    b = sum(1 for s, base in zip(system_results, baseline_results, strict=True) if s and not base)
+    c = sum(1 for s, base in zip(system_results, baseline_results, strict=True) if not s and base)
     n_discordant = b + c
     if n_discordant == 0:
         return 1.0, "non significatif"
@@ -103,6 +103,33 @@ def holm_bonferroni_correction(p_values: list[float]) -> list[float]:
     return [adj for _, adj in adjusted_indexed]
 
 
+# Marqueurs qui situent explicitement une mention dans le passé. L'imparfait
+# compte : « vous travailliez chez Datalyse » est une réponse correcte, et un
+# juge qui la recale fait passer le système pour plus mauvais qu'il n'est.
+PAST_MARKER_RE = re.compile(
+    r"\b(?:avant|auparavant|anciennement|precedemment|autrefois|historique"
+    r"|ancien|ancienne|passe de"
+    r"|quitt\w*|remplac\w*|abandonn\w*|migr\w*"
+    # Imparfait explicite. Les terminaisons sont OBLIGATOIRES : sans cela, le
+    # radical « et » laisserait passer la conjonction « et » et blanchirait
+    # n'importe quelle phrase.
+    r"|(?:travaill|viv|habit|utilis|boss|pren|et|av)(?:ais|ait|iez|ions|aient))\b"
+)
+
+
+def mentions_term(norm_haystack: str, norm_term: str) -> bool:
+    """Appartenance au mot près, sur des textes déjà passés par `normalize_text`.
+
+    Un simple `in` fait mentir le juge dans les deux sens : `Gap` (une ville)
+    est un sous-mot de `gaspillage`, et `Bear` (un outil) de `bearing`. Un juge
+    qui peut échouer à tort est exactement la classe de défaut qu'on cherche à
+    corriger ailleurs. `normalize_text` n'a laissé que des mots et des espaces,
+    donc `\\b` suffit."""
+    if not norm_term:
+        return False
+    return re.search(rf"\b{re.escape(norm_term)}\b", norm_haystack) is not None
+
+
 def check_active_fact_answer(
     answer: str, active_val: str, stale_vals: list[str]
 ) -> tuple[bool, str]:
@@ -117,7 +144,7 @@ def check_active_fact_answer(
     norm_ans = normalize_text(answer)
     norm_active = normalize_text(active_val)
 
-    if norm_active not in norm_ans:
+    if not mentions_term(norm_ans, norm_active):
         return False, f"Valeur active '{active_val}' absente de la réponse"
 
     # Vérification de négation sur la valeur active
@@ -132,30 +159,36 @@ def check_active_fact_answer(
         if re.search(pat, norm_ans):
             return False, f"Valeur active '{active_val}' contredite ou niée ({pat})"
 
-    # Vérification des valeurs périmées
+    # Vérification des valeurs périmées, sur une FENÊTRE autour de la mention.
+    #
+    # L'ancienne version cherchait un marqueur d'actualité n'importe où après la
+    # valeur périmée (`\bdatalyse\b.*?maintenant`). Elle rejetait donc « Avant
+    # chez Datalyse, maintenant chez Nexora » — une réponse parfaitement juste,
+    # où « maintenant » qualifie Nexora et pas Datalyse. Un juge qui recale une
+    # bonne réponse gonfle la difficulté apparente et envoie corriger des
+    # problèmes fantômes ; on décide donc sur le voisinage immédiat, et le
+    # marqueur de passé qui PRÉCÈDE la mention l'emporte.
+    mots = norm_ans.split()
     for stale in stale_vals:
         norm_stale = normalize_text(stale)
-        if norm_stale in norm_ans:
-            escaped_stale = re.escape(norm_stale)
-            # Présentée comme courante -> rejet
-            stale_current_patterns = [
-                rf"(?:maintenant|actuellement|d[eé]sormais|aujourd'?hui)\s+.*?\b{escaped_stale}\b",
-                rf"\b{escaped_stale}\b.*?(?:maintenant|actuellement|d[eé]sormais|aujourd'?hui)",
-                rf"(?:notre|le|la|mon)\s+.*?\b{escaped_stale}\b\s+(?:est|actuel|actif)",
-                rf"nouveau\s+.*?\b{escaped_stale}\b",
-            ]
-            for pat in stale_current_patterns:
-                if re.search(pat, norm_ans):
-                    return False, f"Valeur périmée '{stale}' présentée comme actuelle ({pat})"
+        if not mentions_term(norm_ans, norm_stale):
+            continue
+        tete = norm_stale.split()[0]
+        pos = next((i for i, m in enumerate(mots) if m == tete), None)
+        if pos is None:  # mention en plusieurs mots dont le premier a été recollé
+            pos = 0
+        avant = " ".join(mots[max(0, pos - 6):pos])
+        apres = " ".join(mots[pos + len(norm_stale.split()):][:4])
 
-            # Si mentionnée, doit être accompagnée d'un marqueur passé explicite
-            past_markers = [
-                "avant", "auparavant", "anciennement", "precedemment", "historique",
-                f"remplace {norm_stale}", f"migre de {norm_stale}", f"abandonne {norm_stale}",
-                f"anciennement {norm_stale}", f"apres {norm_stale}",
-            ]
-            if not any(pm in norm_ans for pm in past_markers):
-                return False, f"Valeur périmée '{stale}' mentionnée sans marqueur de passé explicite"
+        if PAST_MARKER_RE.search(avant):
+            continue  # explicitement située dans le passé : c'est correct
+
+        for marqueur in ("maintenant", "actuellement", "desormais", "aujourd hui",
+                         "aujourdhui", "nouveau", "actuel", "actif"):
+            if marqueur in avant or marqueur in apres:
+                return False, f"Valeur périmée '{stale}' présentée comme actuelle ({marqueur})"
+
+        return False, f"Valeur périmée '{stale}' mentionnée sans marqueur de passé explicite"
 
     return True, f"Valeur active '{active_val}' validée sans contradiction"
 
