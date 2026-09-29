@@ -1,0 +1,34 @@
+  Backend d'embeddings : llamacpp (http://127.0.0.1:8899)
+PersonaMem : 50 personas ingérées
+Biais de longueur parmi les 30000 candidats LoCoMo (moyennes par quartile) :
+  dense     quart court (<= 16 mots) 0.515 | quart long (>= 31 mots) 0.510
+  s_cont    quart court (<= 16 mots) 0.919 | quart long (>= 31 mots) 0.831
+  s_recouv  quart court (<= 16 mots) 0.248 | quart long (>= 31 mots) 0.408
+  s_jaccard quart court (<= 16 mots) 0.099 | quart long (>= 31 mots) 0.082
+
+Contrôle d'implémentation : store.search et « sparse recouvrement » diffèrent sur 5 requête(s) sur 327
+
+150 questions LoCoMo, 13 instances D1, 164 questions PersonaMem, top_k=100
+
+variante                         | hit@10 médian rap@100 | recule/avance | D1 ancien devant actif top3 | PM hit@10  méd rap@100 maj hit@10
+ancien (8ed4ea0)                 |  0.593      6   0.828 |     0/0       |            11/13       8/13 |     0.348   16   0.835      1.000
+HEAD (6e1cd11)                   |  0.373     15   0.813 |   104/27      |             8/13      10/13 |     0.341   17   0.823      1.000
+sparse contenu, récence morte    |  0.587      6   0.823 |    41/28      |            11/13       7/13 |     0.341   17   0.823      1.000
+sparse contenu, sans récence     |  0.587      6   0.823 |    41/28      |            11/13       7/13 |     0.341   17   0.823      1.000
+dense seul                       |  0.707      4   0.862 |    18/86      |            11/13       8/13 |     0.409   12   0.848      1.000
+ancien, requête à +4 h           |  0.620      6   0.833 |    38/37      |            11/13       8/13 |     0.348   16   0.835      1.000
+ancien, requête à +8 h           |  0.627      6   0.837 |    35/38      |            11/13       5/13 |     0.348   16   0.835      1.000
+ancien, requête à +12 h          |  0.607      6   0.828 |    29/29      |            11/13       6/13 |     0.348   16   0.835      1.000
+ancien, requête à +16 h          |  0.593      6   0.833 |    29/43      |            11/13       5/13 |     0.348   16   0.835      1.000
+ancien, requête à +20 h          |  0.613      6   0.833 |    36/45      |            11/13       5/13 |     0.348   16   0.835      1.000
+sparse recouvrement              |  0.673      3   0.877 |    47/69      |             9/13      13/13 |     0.506    6   0.860      1.000
+sparse Jaccard                   |  0.687      4   0.877 |    36/68      |            11/13      11/13 |     0.402   11   0.848      1.000
+récence rel. w=0,005             |  0.580      6   0.828 |    43/30      |            11/13       8/13 |     0.341   17   0.823      1.000
+récence rel. w=0,01              |  0.580      6   0.828 |    46/31      |            11/13       8/13 |     0.341   17   0.823      1.000
+récence rel. w=0,02              |  0.613      6   0.823 |    58/33      |            11/13       8/13 |     0.341   17   0.823      1.000
+récence rel. w=0,04              |  0.560      7   0.837 |    78/30      |            11/13       9/13 |     0.341   17   0.823      1.000
+récence rel. demi-vie 180 j      |  0.567      7   0.818 |    74/40      |            11/13       9/13 |     0.341   17   0.823      1.000
+récence rel. demi-vie 365 j      |  0.587      6   0.813 |    60/36      |            11/13       8/13 |     0.341   17   0.823      1.000
+CODE RÉEL (store.search)         |  0.673      3   0.877 |    47/69      |             9/13      13/13 |     0.506    6   0.860      1.000
+
+Rapport : bench\results\gpu\rerank_variants.json

@@ -65,8 +65,8 @@ def sparse_similarity(a: bytes, b: bytes) -> float:
     """Similarité normalisée [0..1] sur les 256 bits, temporels compris.
 
     À réserver à la comparaison de deux ÉPISODES, où les bits temporels sont
-    précisément le mécanisme de séparation voulu. Pour comparer une requête à
-    un épisode, utiliser `content_similarity` — voir pourquoi ci-dessous."""
+    précisément le mécanisme de séparation voulu. Pour classer des épisodes
+    face à une requête, utiliser `query_coverage` — voir pourquoi ci-dessous."""
     return 1.0 - hamming_distance(a, b) / TOTAL_BITS
 
 
@@ -75,26 +75,38 @@ def sparse_similarity(a: bytes, b: bytes) -> float:
 _CONTENT_MASK = int.from_bytes(b"\xff" * 28 + b"\x00" * 4, "little")
 
 
-def content_similarity(a: bytes, b: bytes) -> float:
-    """Similarité [0..1] sur les seuls bits de contenu.
+def query_coverage(query: bytes, episode: bytes) -> float:
+    """Part [0..1] des jetons de la requête présents dans l'épisode.
 
-    Une requête est encodée avec l'heure courante, un épisode avec l'horodatage
-    du message. Les deux buckets ne coïncident jamais sur un corpus rejoué :
-    les 32 bits temporels sont alors **du bruit, pas un signal**.
+    C'est la composante lexicale du score de recherche. Elle remplace la
+    similarité de Hamming pour deux défauts mesurés le 29/09/2026 :
 
-    Mesuré le 29/09/2026 sur deux épisodes de contenu identique (donc 14 bits de
-    contenu différents dans les deux cas), requête 2026 contre épisodes 2023 :
+    **Hamming pénalise la longueur.** `distance = |Q| + |E| − 2·|Q∩E|` : à
+    recouvrement égal, un épisode long est plus « loin » qu'un court. Sur 30 000
+    candidats LoCoMo, Hamming donnait 0,919 au quart des épisodes les plus
+    courts et 0,831 au quart le plus long, quand la similarité dense était plate
+    (0,515 contre 0,510). Le terme récompensait les répliques creuses.
 
-        hamming total 28 = 14 de contenu + 14 de temporel
-        hamming total 29 = 14 de contenu + 15 de temporel
+    **Les bits temporels sont du bruit face à une requête.** Une requête est
+    encodée avec l'heure courante et ne porte jamais la date d'un épisode
+    rejoué. Sur deux épisodes de contenu identique, la moitié de la distance de
+    Hamming venait de là, et c'est elle seule qui les départageait. Le
+    classement changeait selon la tranche de 4 h où l'on interrogeait (hit@10
+    LoCoMo de 0,593 à 0,627 sur six tranches).
 
-    La moitié de la distance venait du temporel, et c'est **lui seul** qui
-    départageait les deux épisodes (0,8906 contre 0,8867) alors que leur contenu
-    était à égalité stricte. Le classement se jouait sur le hasard d'un hash.
+    Mesuré par `bench/bench_rerank_variants.py`, mêmes candidats, seule la
+    formule change, poids 0,7/0,3 inchangés :
 
-    Les bits temporels restent écrits en base : ils séparent deux épisodes de
-    même contenu à des dates différentes, ce qui est leur rôle. On cesse
-    seulement de les interroger depuis une requête qui ne peut pas les porter."""
-    ai = int.from_bytes(a, "little") & _CONTENT_MASK
-    bi = int.from_bytes(b, "little") & _CONTENT_MASK
-    return 1.0 - (ai ^ bi).bit_count() / CONTENT_BITS
+        PersonaMem, 164 questions, 50 conversations
+            Hamming       hit@10 0,348   rang médian 16   rappel@100 0,835
+            recouvrement  hit@10 0,506   rang médian  6   rappel@100 0,860
+        LoCoMo, 150 questions
+            Hamming       hit@10 0,607   rang médian  6   rappel@100 0,833
+            recouvrement  hit@10 0,673   rang médian  3   rappel@100 0,877
+
+    Seuls les bits de contenu entrent en compte. Les bits temporels restent
+    écrits en base, où ils séparent deux épisodes de même contenu à des dates
+    différentes : c'est leur rôle."""
+    q = int.from_bytes(query, "little") & _CONTENT_MASK
+    e = int.from_bytes(episode, "little") & _CONTENT_MASK
+    return (q & e).bit_count() / max(1, q.bit_count())

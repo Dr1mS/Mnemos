@@ -6,10 +6,11 @@ Recherche (§9.2) : KNN dense top-50 (vec0, cosine) → filtres Python
 
 Deux points du re-rank, mesurés le 29/09/2026 : la récence se calcule à
 l'horloge murale et reste donc inerte sur un corpus rejoué — la rendre
-active a été mesuré et rejeté (voir `search`) ; et le sparse ne compare que
-ses **bits de contenu**, ses 32 bits temporels étant du bruit vis-à-vis
-d'une requête qui ne peut pas porter la même date. Voir
-`embeddings.sparse.content_similarity`.
+active a été mesuré et rejeté (voir `search`) ; et la composante lexicale
+est un **recouvrement** — la part des jetons de la requête présents dans
+l'épisode — et non plus une similarité de Hamming, qui pénalisait la longueur
+et se laissait départager par des bits de date. Voir
+`embeddings.sparse.query_coverage`.
 
 Décroissance (§9.2) : elapsed depuis COALESCE(last_decayed_at, created_at),
 JAMAIS depuis created_at seul (double-comptage → décroissance quadratique).
@@ -40,7 +41,7 @@ from ulid import ULID
 from mnemos.clock import Clock
 from mnemos.config import Settings
 from mnemos.embeddings.dense import DenseEmbedder
-from mnemos.embeddings.sparse import content_similarity, sparse_encode
+from mnemos.embeddings.sparse import query_coverage, sparse_encode
 from mnemos.logging import get_logger
 from mnemos.models.episodic import Episode, EpisodeSparse, ProcessedRequest
 from mnemos.tagger.salience import SalienceScores
@@ -349,7 +350,7 @@ class EpisodicStore:
         scored: list[ScoredEpisode] = []
         for episode, sparse_bits in retenus:
             dense_sim = 1.0 - distances[episode.id]  # distance cosine → similarité
-            sparse_sim = content_similarity(query_sparse, sparse_bits)
+            sparse_sim = query_coverage(query_sparse, sparse_bits)
             age_days = max(0.0, (now - episode.created_at) / DAY_MS)
             recency = 2.0 ** (-age_days / RECENCY_HALF_LIFE_DAYS)
             score = (

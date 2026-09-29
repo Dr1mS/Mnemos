@@ -1,0 +1,1085 @@
+{
+  "ancien (8ed4ea0)": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.828,
+        "hit@10": 0.593,
+        "rang_median": 6
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.733,
+        "hit@10": 0.5,
+        "rang_median": 7
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.703,
+        "rang_median": 4
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.65,
+        "hit@10": 0.273,
+        "rang_median": 13
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.901,
+        "hit@10": 0.629,
+        "rang_median": 6
+      },
+      "vs_ancien": {
+        "recule": 0,
+        "avance": 0
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "11/13",
+      "actif_top3": "8/13",
+      "rang_actif_moyen": 3.08
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.835,
+        "hit@10": 0.348,
+        "rang_median": 16
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "HEAD (6e1cd11)": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.813,
+        "hit@10": 0.373,
+        "rang_median": 15
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.68,
+        "hit@10": 0.188,
+        "rang_median": 25
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.459,
+        "rang_median": 12
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.7,
+        "hit@10": 0.273,
+        "rang_median": 40
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.901,
+        "hit@10": 0.429,
+        "rang_median": 11
+      },
+      "vs_ancien": {
+        "recule": 104,
+        "avance": 27
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "8/13",
+      "actif_top3": "10/13",
+      "rang_actif_moyen": 2.85
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.823,
+        "hit@10": 0.341,
+        "rang_median": 17
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "sparse contenu, récence morte": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.823,
+        "hit@10": 0.587,
+        "rang_median": 6
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.72,
+        "hit@10": 0.5,
+        "rang_median": 10
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.676,
+        "rang_median": 5
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.65,
+        "hit@10": 0.364,
+        "rang_median": 13
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.901,
+        "hit@10": 0.614,
+        "rang_median": 6
+      },
+      "vs_ancien": {
+        "recule": 41,
+        "avance": 28
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "11/13",
+      "actif_top3": "7/13",
+      "rang_actif_moyen": 3.31
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.823,
+        "hit@10": 0.341,
+        "rang_median": 17
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "sparse contenu, sans récence": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.823,
+        "hit@10": 0.587,
+        "rang_median": 6
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.72,
+        "hit@10": 0.5,
+        "rang_median": 10
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.676,
+        "rang_median": 5
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.65,
+        "hit@10": 0.364,
+        "rang_median": 13
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.901,
+        "hit@10": 0.614,
+        "rang_median": 6
+      },
+      "vs_ancien": {
+        "recule": 41,
+        "avance": 28
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "11/13",
+      "actif_top3": "7/13",
+      "rang_actif_moyen": 3.31
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.823,
+        "hit@10": 0.341,
+        "rang_median": 17
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "dense seul": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.862,
+        "hit@10": 0.707,
+        "rang_median": 4
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.787,
+        "hit@10": 0.594,
+        "rang_median": 6
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.838,
+        "rang_median": 2
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.8,
+        "hit@10": 0.545,
+        "rang_median": 7
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.901,
+        "hit@10": 0.714,
+        "rang_median": 4
+      },
+      "vs_ancien": {
+        "recule": 18,
+        "avance": 86
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "11/13",
+      "actif_top3": "8/13",
+      "rang_actif_moyen": 3.31
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.848,
+        "hit@10": 0.409,
+        "rang_median": 12
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "ancien, requête à +4 h": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.833,
+        "hit@10": 0.62,
+        "rang_median": 6
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.747,
+        "hit@10": 0.531,
+        "rang_median": 8
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.757,
+        "rang_median": 4
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.65,
+        "hit@10": 0.364,
+        "rang_median": 11
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.901,
+        "hit@10": 0.629,
+        "rang_median": 6
+      },
+      "vs_ancien": {
+        "recule": 38,
+        "avance": 37
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "11/13",
+      "actif_top3": "8/13",
+      "rang_actif_moyen": 3.15
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.835,
+        "hit@10": 0.348,
+        "rang_median": 16
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "ancien, requête à +8 h": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.837,
+        "hit@10": 0.627,
+        "rang_median": 6
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.76,
+        "hit@10": 0.5,
+        "rang_median": 9
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.73,
+        "rang_median": 4
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.65,
+        "hit@10": 0.455,
+        "rang_median": 10
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.901,
+        "hit@10": 0.657,
+        "rang_median": 7
+      },
+      "vs_ancien": {
+        "recule": 35,
+        "avance": 38
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "11/13",
+      "actif_top3": "5/13",
+      "rang_actif_moyen": 3.46
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.835,
+        "hit@10": 0.348,
+        "rang_median": 16
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "ancien, requête à +12 h": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.828,
+        "hit@10": 0.607,
+        "rang_median": 6
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.733,
+        "hit@10": 0.531,
+        "rang_median": 7
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.703,
+        "rang_median": 4
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.65,
+        "hit@10": 0.364,
+        "rang_median": 13
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.901,
+        "hit@10": 0.629,
+        "rang_median": 6
+      },
+      "vs_ancien": {
+        "recule": 29,
+        "avance": 29
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "11/13",
+      "actif_top3": "6/13",
+      "rang_actif_moyen": 3.46
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.835,
+        "hit@10": 0.348,
+        "rang_median": 16
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "ancien, requête à +16 h": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.833,
+        "hit@10": 0.593,
+        "rang_median": 6
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.747,
+        "hit@10": 0.5,
+        "rang_median": 7
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.703,
+        "rang_median": 4
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.65,
+        "hit@10": 0.364,
+        "rang_median": 13
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.901,
+        "hit@10": 0.614,
+        "rang_median": 6
+      },
+      "vs_ancien": {
+        "recule": 29,
+        "avance": 43
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "11/13",
+      "actif_top3": "5/13",
+      "rang_actif_moyen": 3.38
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.835,
+        "hit@10": 0.348,
+        "rang_median": 16
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "ancien, requête à +20 h": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.833,
+        "hit@10": 0.613,
+        "rang_median": 6
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.747,
+        "hit@10": 0.5,
+        "rang_median": 14
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.703,
+        "rang_median": 4
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.65,
+        "hit@10": 0.364,
+        "rang_median": 17
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.901,
+        "hit@10": 0.657,
+        "rang_median": 6
+      },
+      "vs_ancien": {
+        "recule": 36,
+        "avance": 45
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "11/13",
+      "actif_top3": "5/13",
+      "rang_actif_moyen": 3.54
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.835,
+        "hit@10": 0.348,
+        "rang_median": 16
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "sparse recouvrement": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.877,
+        "hit@10": 0.673,
+        "rang_median": 3
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.813,
+        "hit@10": 0.531,
+        "rang_median": 7
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.892,
+        "rang_median": 2
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.9,
+        "hit@10": 0.636,
+        "rang_median": 6
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.887,
+        "hit@10": 0.629,
+        "rang_median": 3
+      },
+      "vs_ancien": {
+        "recule": 47,
+        "avance": 69
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "9/13",
+      "actif_top3": "13/13",
+      "rang_actif_moyen": 2.15
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.86,
+        "hit@10": 0.506,
+        "rang_median": 6
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "sparse Jaccard": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.877,
+        "hit@10": 0.687,
+        "rang_median": 4
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.813,
+        "hit@10": 0.562,
+        "rang_median": 7
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.865,
+        "rang_median": 2
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.85,
+        "hit@10": 0.455,
+        "rang_median": 24
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.901,
+        "hit@10": 0.686,
+        "rang_median": 4
+      },
+      "vs_ancien": {
+        "recule": 36,
+        "avance": 68
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "11/13",
+      "actif_top3": "11/13",
+      "rang_actif_moyen": 2.62
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.848,
+        "hit@10": 0.402,
+        "rang_median": 11
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "récence rel. w=0,005": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.828,
+        "hit@10": 0.58,
+        "rang_median": 6
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.733,
+        "hit@10": 0.5,
+        "rang_median": 9
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.703,
+        "rang_median": 5
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.65,
+        "hit@10": 0.273,
+        "rang_median": 13
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.901,
+        "hit@10": 0.6,
+        "rang_median": 6
+      },
+      "vs_ancien": {
+        "recule": 43,
+        "avance": 30
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "11/13",
+      "actif_top3": "8/13",
+      "rang_actif_moyen": 3.23
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.823,
+        "hit@10": 0.341,
+        "rang_median": 17
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "récence rel. w=0,01": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.828,
+        "hit@10": 0.58,
+        "rang_median": 6
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.733,
+        "hit@10": 0.5,
+        "rang_median": 9
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.703,
+        "rang_median": 5
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.65,
+        "hit@10": 0.273,
+        "rang_median": 13
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.901,
+        "hit@10": 0.6,
+        "rang_median": 6
+      },
+      "vs_ancien": {
+        "recule": 46,
+        "avance": 31
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "11/13",
+      "actif_top3": "8/13",
+      "rang_actif_moyen": 3.15
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.823,
+        "hit@10": 0.341,
+        "rang_median": 17
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "récence rel. w=0,02": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.823,
+        "hit@10": 0.613,
+        "rang_median": 6
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.72,
+        "hit@10": 0.531,
+        "rang_median": 10
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.757,
+        "rang_median": 5
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.65,
+        "hit@10": 0.364,
+        "rang_median": 15
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.901,
+        "hit@10": 0.614,
+        "rang_median": 7
+      },
+      "vs_ancien": {
+        "recule": 58,
+        "avance": 33
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "11/13",
+      "actif_top3": "8/13",
+      "rang_actif_moyen": 3.15
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.823,
+        "hit@10": 0.341,
+        "rang_median": 17
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "récence rel. w=0,04": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.837,
+        "hit@10": 0.56,
+        "rang_median": 7
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.747,
+        "hit@10": 0.469,
+        "rang_median": 12
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.676,
+        "rang_median": 3
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.75,
+        "hit@10": 0.364,
+        "rang_median": 35
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.887,
+        "hit@10": 0.571,
+        "rang_median": 7
+      },
+      "vs_ancien": {
+        "recule": 78,
+        "avance": 30
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "11/13",
+      "actif_top3": "9/13",
+      "rang_actif_moyen": 2.92
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.823,
+        "hit@10": 0.341,
+        "rang_median": 17
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "récence rel. demi-vie 180 j": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.818,
+        "hit@10": 0.567,
+        "rang_median": 7
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.693,
+        "hit@10": 0.469,
+        "rang_median": 7
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.703,
+        "rang_median": 4
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.75,
+        "hit@10": 0.364,
+        "rang_median": 27
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.887,
+        "hit@10": 0.571,
+        "rang_median": 7
+      },
+      "vs_ancien": {
+        "recule": 74,
+        "avance": 40
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "11/13",
+      "actif_top3": "9/13",
+      "rang_actif_moyen": 3.08
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.823,
+        "hit@10": 0.341,
+        "rang_median": 17
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "récence rel. demi-vie 365 j": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.813,
+        "hit@10": 0.587,
+        "rang_median": 6
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.72,
+        "hit@10": 0.5,
+        "rang_median": 10
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.703,
+        "rang_median": 4
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.65,
+        "hit@10": 0.364,
+        "rang_median": 15
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.873,
+        "hit@10": 0.6,
+        "rang_median": 5
+      },
+      "vs_ancien": {
+        "recule": 60,
+        "avance": 36
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "11/13",
+      "actif_top3": "8/13",
+      "rang_actif_moyen": 3.15
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.823,
+        "hit@10": 0.341,
+        "rang_median": 17
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  },
+  "CODE RÉEL (store.search)": {
+    "locomo": {
+      "toutes": {
+        "n": 150,
+        "rappel@100": 0.877,
+        "hit@10": 0.673,
+        "rang_median": 3
+      },
+      "cat1": {
+        "n": 32,
+        "rappel@100": 0.813,
+        "hit@10": 0.531,
+        "rang_median": 7
+      },
+      "cat2": {
+        "n": 37,
+        "rappel@100": 0.973,
+        "hit@10": 0.892,
+        "rang_median": 2
+      },
+      "cat3": {
+        "n": 11,
+        "rappel@100": 0.9,
+        "hit@10": 0.636,
+        "rang_median": 6
+      },
+      "cat4": {
+        "n": 70,
+        "rappel@100": 0.887,
+        "hit@10": 0.629,
+        "rang_median": 3
+      },
+      "vs_ancien": {
+        "recule": 47,
+        "avance": 69
+      }
+    },
+    "d1": {
+      "plus_ancien_devant": "9/13",
+      "actif_top3": "13/13",
+      "rang_actif_moyen": 2.15
+    },
+    "personamem": {
+      "toutes": {
+        "n": 164,
+        "rappel@100": 0.86,
+        "hit@10": 0.506,
+        "rang_median": 6
+      },
+      "mises_a_jour": {
+        "n": 32,
+        "rappel@100": 1.0,
+        "hit@10": 1.0,
+        "rang_median": 1
+      }
+    }
+  }
+}
