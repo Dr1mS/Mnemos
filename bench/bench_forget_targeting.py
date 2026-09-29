@@ -35,6 +35,7 @@ import argparse
 import asyncio
 import json
 import os
+import pickle
 import re
 import shutil
 import sys
@@ -117,14 +118,25 @@ async def _knn(store: Any, emb: list[float], tenant: str, k: int) -> list[tuple[
         return [(r[0], float(r[1])) for r in rows]
 
 
-async def collecter(n_personas: int) -> list[Persona]:
+async def collecter(n_personas: int, cache: Path) -> list[Persona]:
+    """Ingère et analyse persona par persona, en écrivant le cache après chacune.
+
+    Un run a été tué le 29/09 pour manque de mémoire sur la machine, à 13
+    personas sur 100, sans rien laisser : le cache n'était écrit qu'à la fin.
+    Chaque persona vit dans son propre tenant, donc les traiter une à une est
+    équivalent, et un nouveau lancement reprend là où le précédent s'est arrêté."""
     rows = load_personas(DATA_DIR / "val.csv")
     choisies = [pid for pid, rs in rows.items()
                 if any(r["pref_type"] == "ask_to_forget" for r in rs)
                 and (DATA_DIR / "chats" / Path(rs[0]["chat_history_32k_link"]).name).exists()]
     choisies = choisies[:n_personas]
-    personas = [Persona(pid, load_chat(DATA_DIR / "chats" / Path(rows[pid][0]["chat_history_32k_link"]).name))
-                for pid in choisies]
+    faites: list[Persona] = pickle.loads(cache.read_bytes()) if cache.exists() else []
+    deja = {p.pid for p in faites}
+    restantes = [pid for pid in choisies if pid not in deja]
+    if faites:
+        print(f"Reprise : {len(faites)} personas déjà en cache, {len(restantes)} à collecter", flush=True)
+    if not restantes:
+        return faites
 
     tmp = Path(tempfile.mkdtemp(prefix="mnemos_forget_"))
     try:
@@ -132,7 +144,8 @@ async def collecter(n_personas: int) -> list[Persona]:
         async with app.router.lifespan_context(app):
             transport = httpx.ASGITransport(app=app)
             async with httpx.AsyncClient(transport=transport, base_url="http://t", timeout=600) as c:
-                for n, p in enumerate(personas, 1):
+                for n, pid in enumerate(restantes, 1):
+                    p = Persona(pid, load_chat(DATA_DIR / "chats" / Path(rows[pid][0]["chat_history_32k_link"]).name))
                     # Horodatages explicites et croissants : l'ordre des messages
                     # se relit ensuite par created_at, sans ambiguïté.
                     msgs = [{**m, "timestamp": BASE_MS + i * 1000} for i, m in enumerate(p.messages)]
@@ -140,46 +153,50 @@ async def collecter(n_personas: int) -> list[Persona]:
                         (await c.post("/add", json={
                             "request_id": f"pm:{p.pid}:{k}", "user_id": f"pm:{p.pid}",
                             "session_id": f"pm:{p.pid}", "messages": chunk})).raise_for_status()
-                    if n % 20 == 0:
-                        print(f"  ingestion {n}/{len(personas)} personas", flush=True)
-
-            store = app.state.store
-            now = store._clock.now_ms()
-            for p in personas:
-                tenant = f"pm:{p.pid}"
-                async with store._sessions() as s:
-                    eps = (await s.execute(select(Episode.id, Episode.created_at)
-                                           .where(Episode.tenant == tenant))).all()
-                p.idx_par_id = {eid: (ts - BASE_MS) // 1000 for eid, ts in eps}
-
-                for i, m in enumerate(p.messages):
-                    d = detect_forget(m["content"], m["role"])
-                    if d is None:
-                        continue
-                    emb = await store._embedder.embed(d.target)
-                    voisins = await _knn(store, emb, tenant, KNN_CIBLES)
-                    anterieurs = sorted(
-                        ((p.idx_par_id[e], 1.0 - dist) for e, dist in voisins
-                         if e in p.idx_par_id and p.idx_par_id[e] < i),
-                        key=lambda x: -x[1])
-                    accuse = i + 1 if i + 1 < len(p.messages) and p.messages[i + 1]["role"] == "assistant" else None
-                    p.consignes.append(Consigne(i, d.target, accuse, anterieurs))
-
-                for row in rows[p.pid]:
-                    q = parse_query(row["user_query"])
-                    emb = await store._embedder.embed(q)
-                    voisins = await _knn(store, emb, tenant, KNN_LARGE)
-                    q_sparse = sparse_encode(q, now)
-                    async with store._sessions() as s:
-                        bits = dict((await s.execute(
-                            select(EpisodeSparse.episode_id, EpisodeSparse.sparse_bits)
-                            .where(EpisodeSparse.episode_id.in_([e for e, _ in voisins])))).all())
-                    cands = [(p.idx_par_id[e], dist, query_coverage(q_sparse, bits[e]))
-                             for e, dist in voisins if e in p.idx_par_id and e in bits]
-                    p.questions.append((row, sorted(cands, key=lambda x: x[1])))
+                    await _analyser(app.state.store, rows, p)
+                    faites.append(p)
+                    cache.write_bytes(pickle.dumps(faites))
+                    if n % 10 == 0 or n == len(restantes):
+                        print(f"  {len(faites)}/{len(choisies)} personas collectées", flush=True)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
-    return personas
+    return faites
+
+
+async def _analyser(store: Any, rows: dict[str, list[dict[str, str]]], p: Persona) -> None:
+    """Consignes détectées, voisins de leur cible, et candidats de chaque question."""
+    now = store._clock.now_ms()
+    tenant = f"pm:{p.pid}"
+    async with store._sessions() as s:
+        eps = (await s.execute(select(Episode.id, Episode.created_at)
+                               .where(Episode.tenant == tenant))).all()
+    p.idx_par_id = {eid: (ts - BASE_MS) // 1000 for eid, ts in eps}
+
+    for i, m in enumerate(p.messages):
+        d = detect_forget(m["content"], m["role"])
+        if d is None:
+            continue
+        emb = await store._embedder.embed(d.target)
+        voisins = await _knn(store, emb, tenant, KNN_CIBLES)
+        anterieurs = sorted(
+            ((p.idx_par_id[e], 1.0 - dist) for e, dist in voisins
+             if e in p.idx_par_id and p.idx_par_id[e] < i),
+            key=lambda x: -x[1])
+        accuse = i + 1 if i + 1 < len(p.messages) and p.messages[i + 1]["role"] == "assistant" else None
+        p.consignes.append(Consigne(i, d.target, accuse, anterieurs))
+
+    for row in rows[p.pid]:
+        q = parse_query(row["user_query"])
+        emb = await store._embedder.embed(q)
+        voisins = await _knn(store, emb, tenant, KNN_LARGE)
+        q_sparse = sparse_encode(q, now)
+        async with store._sessions() as s:
+            bits = dict((await s.execute(
+                select(EpisodeSparse.episode_id, EpisodeSparse.sparse_bits)
+                .where(EpisodeSparse.episode_id.in_([e for e, _ in voisins])))).all())
+        cands = [(p.idx_par_id[e], dist, query_coverage(q_sparse, bits[e]))
+                 for e, dist in voisins if e in p.idx_par_id and e in bits]
+        p.questions.append((row, sorted(cands, key=lambda x: x[1])))
 
 
 def supprimes(p: Persona, regle: dict[str, Any]) -> set[int]:
@@ -265,15 +282,10 @@ def main() -> None:
     # L'ingestion coûte ~45 min pour 100 personas (réponses longues de
     # l'assistant). Les règles, elles, s'évaluent hors ligne en secondes : on
     # met en cache ce qui a été collecté, hors du dépôt.
+    # Le cache est écrit après chaque persona : un run interrompu reprend.
     cache = Path(tempfile.gettempdir()) / f"mnemos_forget_targeting_{args.personas}.pkl"
-    if cache.exists():
-        import pickle
-        personas = pickle.loads(cache.read_bytes())
-        print(f"Collecte relue depuis le cache : {cache}")
-    else:
-        import pickle
-        personas = asyncio.run(collecter(args.personas))
-        cache.write_bytes(pickle.dumps(personas))
+    personas = asyncio.run(collecter(args.personas, cache))
+    print(f"Cache : {cache}")
     moities = {"calibration": [p for p in personas if int(p.pid) % 2 == 0]}
     if args.validation:
         moities["validation"] = [p for p in personas if int(p.pid) % 2 == 1]
