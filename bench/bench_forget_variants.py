@@ -60,6 +60,7 @@ os.environ.setdefault("DECAY_RATE_DAILY", "0.0")
 from bench.bench_forget_targeting import Persona, _mots, classer, collecter, porte, supprimes
 from bench.bench_personamem import parse_query
 from bench.bench_personamem_qa import ANSWER_PROMPT, LETTERS, build_options, parse_letter
+from bench.remote_llm import RemoteChat
 from mnemos.config import Settings
 from mnemos.llm.ollama_client import OllamaClient
 
@@ -101,7 +102,8 @@ def _rapport(records: list[dict[str, Any]], chemin: Path, meta: dict[str, Any]) 
         "",
         f"Généré le {time.strftime('%d/%m/%Y %H:%M')} — {len(records)} réponses"
         f" ({len(records) // len(VARIANTES)} questions × {len(VARIANTES)} variantes).",
-        f"Répondeur `{meta['answer_model']}`, num_ctx {meta['num_ctx']}, top_k 100.",
+        f"Répondeur `{meta['answer_model']}` ({meta.get('answer_backend', 'ollama')}),"
+        f" num_ctx {meta['num_ctx']}, top_k 100. Appels en échec : {meta.get('echecs', 0)}.",
         "",
         "A rien · B tout supprimer (f412fda) · C garder la consigne · D garder consigne + accusé",
         "",
@@ -135,6 +137,11 @@ def _rapport(records: list[dict[str, Any]], chemin: Path, meta: dict[str, Any]) 
         lignes.append("")
     if meta.get("fidelite"):
         lignes += ["## Contrôle de fidélité (validation)", "", meta["fidelite"], ""]
+    elif meta.get("answer_backend", "ollama") != "ollama":
+        lignes += ["## Contrôle de fidélité", "",
+                   "Sans objet pour ce répondeur : les chiffres de référence du vrai code (26,7 % /"
+                   " 18,7 %) ont été obtenus avec qwen2.5:7b. La fidélité de la simulation elle-même"
+                   " est établie par le run 7B de la même nuit (même cache, mêmes contextes).", ""]
     chemin.write_text("\n".join(lignes), encoding="utf-8")
 
 
@@ -151,10 +158,12 @@ async def main_async(args: argparse.Namespace) -> None:
         raise SystemExit("ARRÊT : les consignes n'ont pas été stockées — la collecte a tourné AVEC "
                          "l'oubli. Relancer avec PYTHONPATH vers un src/ sans oubli (436cb75).")
 
-    llm = OllamaClient(Settings(_env_file=None))  # type: ignore[call-arg]
+    llm: Any = (OllamaClient(Settings(_env_file=None))  # type: ignore[call-arg]
+                if args.answer_backend == "ollama" else RemoteChat(args.answer_backend))
     opts = {"temperature": 0.0, "num_ctx": args.num_ctx, "num_predict": 8}
     await llm.generate("Réponds OK.", args.answer_model, options={"num_predict": 4})
-    meta: dict[str, Any] = {"answer_model": args.answer_model, "num_ctx": args.num_ctx}
+    meta: dict[str, Any] = {"answer_model": args.answer_model, "num_ctx": args.num_ctx,
+                            "answer_backend": args.answer_backend, "echecs": 0}
     records: list[dict[str, Any]] = []
     deja: dict[str, str | None] = {}  # prompt -> lettre : le répondeur est déterministe
     t0 = time.perf_counter()
@@ -189,8 +198,15 @@ async def main_async(args: argparse.Namespace) -> None:
                             context=ctx, question=question,
                             options="\n".join(f"{LETTERS[n]}. {o}" for n, o in enumerate(options)))
                         if prompt not in deja:
-                            deja[prompt] = parse_letter(
-                                await llm.generate(prompt, args.answer_model, options=opts))
+                            try:
+                                deja[prompt] = parse_letter(
+                                    await llm.generate(prompt, args.answer_model, options=opts))
+                            except RuntimeError as exc:
+                                # Un échec durable ne doit pas tuer la nuit : compté,
+                                # affiché dans le rapport, jamais masqué.
+                                print(f"  ÉCHEC : {exc}", flush=True)
+                                meta["echecs"] += 1
+                                deja[prompt] = None
                         lettre = deja[prompt]
                         top10 = contexte[:10]
                         records.append({
@@ -207,7 +223,7 @@ async def main_async(args: argparse.Namespace) -> None:
                         print(f"  {moitie} : {n_q} questions, {len(deja)} appels LLM,"
                               f" {time.perf_counter() - t0:.0f} s", flush=True)
                         _rapport(records, args.rapport, meta)
-            if moitie == "validation":
+            if moitie == "validation" and args.answer_backend == "ollama" and "7b" in args.answer_model:
                 f = {v: [r for r in records if r["moitie"] == "validation" and r["variante"] == v
                          and r["pref_type"] == "ask_to_forget"] for v in VARIANTES}
                 acc = {v: 100 * sum(r["correct"] for r in xs) / len(xs) for v, xs in f.items() if xs}
@@ -229,6 +245,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Oubli : quelle variante aide le répondeur ?")
     parser.add_argument("--personas", type=int, default=100)
     parser.add_argument("--answer-model", default="qwen2.5:7b-instruct-q4_K_M")
+    parser.add_argument("--answer-backend", choices=("ollama", "nvidia", "mistral"), default="ollama",
+                        help="ollama = local ; nvidia / mistral = API distante (bench/remote_llm.py)")
     parser.add_argument("--num-ctx", type=int, default=24576)
     parser.add_argument("--output", type=Path, default=Path("bench/results/gpu/forget_variants.json"))
     parser.add_argument("--rapport", type=Path, default=Path("bench/results/gpu/forget_variants.md"))
