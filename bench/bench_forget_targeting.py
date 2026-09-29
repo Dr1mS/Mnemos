@@ -280,6 +280,13 @@ REGLES: dict[str, dict[str, Any]] = {
 }
 
 
+# Règle retenue le 29/09/2026 sur la SEULE calibration (47 personas, 874
+# consignes), figée ici AVANT toute lecture de la validation : c'est le seuil le
+# plus bas qui ne touche aucun message-preuve (0,60 en touche 2,3 %), et le
+# rôle assistant seul évite d'effacer les questions de l'utilisateur.
+REGLE_RETENUE = "+ échos assistant cos≥0.65"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Ciblage de la suppression : fuite contre dégâts")
     parser.add_argument("--personas", type=int, default=100)
