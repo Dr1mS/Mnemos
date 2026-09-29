@@ -154,6 +154,21 @@ class FactExtractor:
             options={"temperature": 0.0, "num_predict": 768},
         )
         data = parse_llm_json(raw)
+
+        # Un zéro fait a deux causes très différentes, jusqu'ici indiscernables :
+        # le modèle n'a rien trouvé (légitime — l'ontologie n'admet que dix états
+        # persistants, et une salutation n'en contient aucun), ou il a répondu à
+        # côté du schéma et `data.get("facts", [])` l'a avalé sans un mot. On les
+        # sépare, sinon toute mesure de rendement d'extraction est ininterprétable.
+        if "facts" not in data and "entities" not in data:
+            logger.warning(
+                "extraction_schema_mismatch",
+                cles_recues=sorted(data)[:8],
+                model=self._model,
+            )
+        # Contenu utilisateur : DEBUG seulement (anti-pattern 10, cf. mnemos.logging).
+        logger.debug("extraction_raw", raw=raw[:2000], model=self._model)
+
         return Extraction(
             facts=self._validate_facts(data.get("facts", [])),
             entities=self._validate_entities(data.get("entities", [])),

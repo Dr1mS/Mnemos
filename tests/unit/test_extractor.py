@@ -435,3 +435,79 @@ async def test_extraction_discrimination_predicates() -> None:
     assert preds["is_a"] == "architecte cloud"
 
 
+
+
+class _LoggerEspion:
+    """Enregistre les avertissements émis par le module testé.
+
+    On remplace le logger plutôt que d'utiliser `capture_logs` ou `caplog` :
+    selon ce que d'autres tests ont déjà configuré, structlog route vers sa
+    propre sortie ou vers `logging`, et l'assertion passait isolément mais
+    échouait dans la suite complète. Un test ne doit pas dépendre de cet ordre.
+    """
+
+    def __init__(self) -> None:
+        self.warnings: list[tuple[str, dict[str, object]]] = []
+
+    def warning(self, event: str, **kw: object) -> None:
+        self.warnings.append((event, kw))
+
+    def debug(self, event: str, **kw: object) -> None:
+        pass
+
+    def evenements(self) -> list[str]:
+        return [event for event, _ in self.warnings]
+
+
+def espionner(monkeypatch: pytest.MonkeyPatch) -> _LoggerEspion:
+    import mnemos.consolidation.extractor as module
+
+    espion = _LoggerEspion()
+    monkeypatch.setattr(module, "logger", espion)
+    return espion
+
+
+async def test_abstention_explicite_ne_leve_pas_d_alerte(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Zéro fait est souvent la BONNE réponse.
+
+    L'ontologie n'admet que dix états persistants ; une salutation ou une
+    question n'en contient aucun. Ce cas ne doit donc pas être signalé comme
+    une anomalie, sinon l'alerte devient du bruit.
+    """
+    espion = espionner(monkeypatch)
+    extractor = make_extractor({"facts": [], "entities": []})
+    result = await extractor.extract("Hey Mel! How have you been?", "user", 1_782_727_200_000)
+    assert result.facts == [] and result.entities == []
+    assert "extraction_schema_mismatch" not in espion.evenements()
+
+
+async def test_reponse_hors_schema_est_signalee(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Le cas qui était muet : le modèle répond, mais sous d'autres clés.
+
+    `data.get("facts", [])` avalait la divergence sans un mot, produisant un
+    résultat byte-identique à une vraie abstention. Toute mesure de rendement
+    d'extraction était donc ininterprétable — on ne pouvait pas distinguer
+    « rien à extraire » de « on a tout jeté ».
+    """
+    espion = espionner(monkeypatch)
+    extractor = make_extractor(
+        {"fact": [{"subject": "user", "predicate": "owns", "object": "Yuzu"}]}
+    )
+    result = await extractor.extract("j'ai un chat", "user", 1_782_727_200_000)
+    assert result.facts == []  # le comportement ne change pas…
+    alertes = [kw for event, kw in espion.warnings if event == "extraction_schema_mismatch"]
+    assert alertes, "la divergence de schéma doit être visible"
+    assert alertes[0]["cles_recues"] == ["fact"]  # …et elle dit ce qu'on a reçu
+
+
+async def test_facts_present_mais_entities_absent_reste_silencieux() -> None:
+    """Un schéma partiellement respecté n'est pas une divergence : le modèle a
+    compris la structure, il n'a simplement pas émis d'entité."""
+    extractor = make_extractor(
+        {"facts": [{"subject": "user", "predicate": "owns", "object": "Yuzu"}]}
+    )
+    result = await extractor.extract("j'ai un chat", "user", 1_782_727_200_000)
+    assert len(result.facts) == 1
+    assert result.entities == []
