@@ -157,9 +157,17 @@ def ollama_loaded_models(host: str) -> list[dict[str, Any]]:
 
 
 def _sync_download(url: str, local_path: Path) -> None:
+    """Téléchargement atomique : écrit dans un `.part`, renomme à la fin.
+
+    Écrire directement dans le fichier final laissait, en cas d'interruption,
+    un fichier tronqué que `download_file_if_missing` prenait ensuite pour
+    complet (il ne vérifie que `size > 0`) — un JSON coupé, découvert bien plus
+    tard au chargement."""
+    partiel = local_path.with_name(local_path.name + ".part")
     req = urllib.request.Request(url, headers={"User-Agent": "Mnemos-Benchmark/1.0"})
-    with urllib.request.urlopen(req) as resp, open(local_path, "wb") as f:
+    with urllib.request.urlopen(req, timeout=120) as resp, open(partiel, "wb") as f:
         shutil.copyfileobj(resp, f)
+    partiel.replace(local_path)
 
 
 async def download_file_if_missing(url: str, local_path: Path) -> None:
