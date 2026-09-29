@@ -93,6 +93,7 @@ async def run_qa_bench(
     answer_model: str,
     output: Path,
     user_id: str = "locomo_qa",
+    with_facts: bool = True,
 ) -> dict[str, Any]:
     data = json.loads(Path("bench/data/locomo_sample.json").read_text(encoding="utf-8"))
     conv = data["conversation"]
@@ -108,12 +109,15 @@ async def run_qa_bench(
     # Vol d'essai : un runner Ollama en mauvais état fait retomber la saillance
     # sur ses valeurs par défaut sans rien arrêter (vu le 29/09). Mieux vaut ne
     # pas démarrer que mesurer un système dégradé.
-    for modele in sorted({answer_model, "qwen2.5:3b"}):
+    for modele in sorted({answer_model, "qwen2.5:3b"} if with_facts else {answer_model}):
         await llm.generate("Réponds OK.", modele, options={"num_predict": 4})
 
     tmp = Path(tempfile.mkdtemp(prefix="mnemos_locomo_qa_"))
     try:
-        app, _, _ = await setup_bench_app(tmp, "ollama", salience_workers=2)
+        # Sans faits : ni saillance ni consolidation. Le contexte A n'en dépend pas
+        # (la recherche ignore la saillance, la consolidation ne modifie ni
+        # n'archive aucun épisode) ; on n'économise que du temps GPU.
+        app, _, _ = await setup_bench_app(tmp, "ollama", salience_workers=2 if with_facts else 0)
         async with app.router.lifespan_context(app):
             transport = httpx.ASGITransport(app=app)
             async with httpx.AsyncClient(transport=transport, base_url="http://t", timeout=600) as client:
@@ -137,8 +141,11 @@ async def run_qa_bench(
                     })
                     resp.raise_for_status()
                 t0 = time.perf_counter()
-                await app.state.queue.join()
-                cons = await drain_consolidation(app)
+                if with_facts:
+                    await app.state.queue.join()
+                    cons = await drain_consolidation(app)
+                else:
+                    cons = {"facts_inserted": 0, "extraction_failures": 0}
                 print(f"Consolidation : {cons['facts_inserted']} faits en {time.perf_counter() - t0:.0f} s"
                       f" | échecs d'extraction : {cons['extraction_failures']}")
 
@@ -181,7 +188,7 @@ async def run_qa_bench(
                         "facts_in_context": len(fact_ranks),
                         "first_fact_rank": fact_ranks[0] if fact_ranks else None,
                     }
-                    for label, ctx in (("A", ctx_a), ("B", ctx_b)):
+                    for label, ctx in (("A", ctx_a), ("B", ctx_b))[: 2 if with_facts else 1]:
                         answer = (await ask(ANSWER_PROMPT.format(
                             context=_format_context(ctx), question=q["question"],
                         ))).strip()
@@ -192,23 +199,24 @@ async def run_qa_bench(
                         row[f"answer_{label}"] = answer
                         row[f"correct_{label}"] = bool(isinstance(verdict, dict) and verdict.get("correct"))
                     records.append(row)
-                    print(f"  [{n}/{len(questions)}] cat {q['category']} | A={'✓' if row['correct_A'] else '✗'} "
-                          f"B={'✓' if row['correct_B'] else '✗'} | faits dans B : {row['facts_in_context']}")
+                    b_txt = (f"B={'✓' if row['correct_B'] else '✗'} | faits dans B : {row['facts_in_context']}"
+                             if with_facts else "")
+                    print(f"  [{n}/{len(questions)}] cat {q['category']} | A={'✓' if row['correct_A'] else '✗'} {b_txt}")
     finally:
         await llm.aclose()
         shutil.rmtree(tmp, ignore_errors=True)
 
     n = len(records)
-    acc = {lab: sum(r[f"correct_{lab}"] for r in records) / n for lab in ("A", "B")}
-    only_a = sum(r["correct_A"] and not r["correct_B"] for r in records)
-    only_b = sum(r["correct_B"] and not r["correct_A"] for r in records)
+    bras = ("A", "B") if with_facts else ("A",)
+    acc = {lab: sum(r[f"correct_{lab}"] for r in records) / n for lab in bras}
+    only_a = sum(r["correct_A"] and not r.get("correct_B", False) for r in records) if with_facts else None
+    only_b = sum(r.get("correct_B", False) and not r["correct_A"] for r in records) if with_facts else None
     by_cat: dict[int, dict[str, float]] = {}
     for c in sorted({r["category"] for r in records}):
         rows = [r for r in records if r["category"] == c]
         by_cat[c] = {
             "count": len(rows),
-            "A": sum(r["correct_A"] for r in rows) / len(rows),
-            "B": sum(r["correct_B"] for r in rows) / len(rows),
+            **{lab: sum(r[f"correct_{lab}"] for r in rows) / len(rows) for lab in bras},
         }
     import mnemos
     from mnemos.stores import episodic as _episodic
@@ -233,7 +241,7 @@ async def run_qa_bench(
     }
     result = {
         "config": {"questions": n, "seed": seed, "top_k": top_k, "answer_and_judge_model": answer_model,
-                   "user_id": user_id,
+                   "user_id": user_id, "with_facts": with_facts,
                    "embed_backend": os.environ.get("EMBED_BACKEND", "ollama"),
                    "extraction_model": "qwen2.5:3b", "facts_inserted": cons["facts_inserted"],
                    "extraction_failures": cons["extraction_failures"],
@@ -250,10 +258,14 @@ async def run_qa_bench(
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
 
-    print(f"\nExactitude A (épisodique) : {acc['A'] * 100:.1f} %  |  B (avec faits) : {acc['B'] * 100:.1f} %")
-    print(f"Désaccords : seul A juste {only_a} | seul B juste {only_b}  (sur {n} questions)")
+    n_a = sum(r["correct_A"] for r in records)
+    b_acc = f"  |  B (avec faits) : {acc['B'] * 100:.1f} %" if with_facts else "  (bras B non mesuré)"
+    print(f"\nExactitude A (épisodique) : {acc['A'] * 100:.1f} % ({n_a}/{n}){b_acc}")
+    if with_facts:
+        print(f"Désaccords : seul A juste {only_a} | seul B juste {only_b}  (sur {n} questions)")
     for c, m in by_cat.items():
-        print(f"  catégorie {c} (N={m['count']}) : A {m['A'] * 100:.0f} % | B {m['B'] * 100:.0f} %")
+        b_cat = f" | B {m['B'] * 100:.0f} %" if with_facts else ""
+        print(f"  catégorie {c} (N={m['count']}) : A {m['A'] * 100:.0f} %{b_cat}")
     print("\nRangs des tours-preuves (A = épisodique) — indépendant du répondeur :")
     for c, par in [("toutes", result["evidence_ranks"]["all"]), *rangs_par_cat.items()]:
         a = par["A"]
@@ -274,11 +286,16 @@ def main() -> None:
     # Le user_id sert de sujet des faits extraits (canonical_subject) : un identifiant
     # opaque comme ceux d'AML ("eval:run:…") pollue les faits et leur embedding.
     parser.add_argument("--user-id", default="locomo_qa")
+    # Le bras B (faits consolidés) coûte la consolidation et deux appels LLM de plus
+    # par question, pour une configuration que la production n'expédie pas.
+    parser.add_argument("--sans-faits", action="store_true",
+                        help="mesurer seulement le bras A (épisodique), comme en production")
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")  # console Windows cp1252
     asyncio.run(run_qa_bench(
-        args.questions, args.seed, args.top_k, args.answer_model, args.output, args.user_id
+        args.questions, args.seed, args.top_k, args.answer_model, args.output, args.user_id,
+        with_facts=not args.sans_faits,
     ))
 
 
