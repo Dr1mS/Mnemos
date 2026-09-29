@@ -187,3 +187,39 @@ def detect_forget(content: str, role: str) -> ForgetDirective | None:
             continue
         return ForgetDirective(target=target, family=family)
     return None
+
+
+def forgotten_in_batch(
+    messages: list[tuple[str, str]], ack_pending: bool = False
+) -> tuple[list[bool], bool]:
+    """Quels messages d'un lot `/add` ne doivent jamais être mémorisés.
+
+    `messages` : (rôle, contenu) dans l'ordre du lot. `ack_pending` : le lot
+    précédent de la même session s'est terminé sur une consigne, dont l'accusé
+    de réception ouvre donc ce lot.
+
+    Deux messages disparaissent pour chaque consigne : **la consigne elle-même**
+    et **l'accusé de réception de l'assistant qui la suit**. Tous deux répètent
+    ce qu'il faut oublier — relevé sur PersonaMem-v2, l'accusé répète la
+    préférence dans 77 cas sur 119 (« Got it — I'll forget that you watch
+    historical documentaries »). Les garder, c'est la faire fuiter dans le
+    contexte du répondeur, qui n'applique pas l'instruction (13 fois sur 13).
+
+    Mesuré sur 47 personas et 874 consignes (bench/bench_forget_targeting.py) :
+    la préférence oubliée remonte dans le top 10 pour 49 % des questions au lieu
+    de 83 %, sans qu'aucun message-preuve d'une autre question soit touché — ce
+    ne sont que des messages nouveaux, jamais des souvenirs existants.
+
+    Rend (oublier[i], accusé encore attendu après ce lot)."""
+    oublier = [False] * len(messages)
+    attend_accuse = ack_pending
+    for i, (role, content) in enumerate(messages):
+        if attend_accuse and role == "assistant":
+            oublier[i] = True
+            attend_accuse = False
+            continue
+        attend_accuse = False
+        if detect_forget(content, role) is not None:
+            oublier[i] = True
+            attend_accuse = True
+    return oublier, attend_accuse

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from mnemos.router.forget import detect_forget
+from mnemos.router.forget import detect_forget, forgotten_in_batch
 
 # (message, cible attendue après nettoyage)
 CONSIGNES = [
@@ -96,3 +96,43 @@ def test_famille_rapportee() -> None:
     ancree = detect_forget("Please delete from your memory that I like jazz.", "user")
     assert explicite is not None and explicite.family == "explicit"
     assert ancree is not None and ancree.family == "anchored"
+
+
+# ── forgotten_in_batch : ce qui ne sera jamais mémorisé dans un lot /add ──
+
+C = "Please forget that I love jazz."
+A = "Got it — I'll forget that you love jazz."
+
+
+def test_lot_consigne_et_accuse_oublies_rien_d_autre() -> None:
+    lot = [("user", "I love jazz."), ("assistant", "Nice!"), ("user", C),
+           ("assistant", A), ("user", "What now?")]
+    oublier, attend = forgotten_in_batch(lot)
+    assert oublier == [False, False, True, True, False]
+    assert attend is False
+
+
+def test_lot_qui_finit_sur_une_consigne_attend_l_accuse() -> None:
+    oublier, attend = forgotten_in_batch([("user", "Hi."), ("user", C)])
+    assert oublier == [False, True] and attend is True
+    # Le lot suivant s'ouvre sur l'accusé : il disparaît, l'attente s'éteint.
+    oublier, attend = forgotten_in_batch([("assistant", A), ("user", "Ok.")], ack_pending=True)
+    assert oublier == [True, False] and attend is False
+
+
+def test_attente_eteinte_par_un_message_utilisateur() -> None:
+    oublier, attend = forgotten_in_batch([("user", "Anyway."), ("assistant", "Sure.")],
+                                         ack_pending=True)
+    assert oublier == [False, False] and attend is False
+
+
+def test_consigne_sans_accuse_puis_nouvelle_consigne() -> None:
+    oublier, attend = forgotten_in_batch([("user", C), ("user", "Please forget that I own a cat."),
+                                          ("assistant", "Done.")])
+    assert oublier == [True, True, True] and attend is False
+
+
+def test_texte_d_assistant_qui_parle_d_oubli_n_est_pas_une_consigne() -> None:
+    oublier, _ = forgotten_in_batch([("assistant", "Please forget that I said that."),
+                                     ("assistant", "Anyway, here is the plan.")])
+    assert oublier == [False, False]

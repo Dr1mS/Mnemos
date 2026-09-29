@@ -9,6 +9,7 @@ Fournit les endpoints conformes au contrat de la compétition :
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -33,6 +34,7 @@ from mnemos.api.deps import (
 )
 from mnemos.llm.ollama_client import is_probe_transient
 from mnemos.logging import get_logger
+from mnemos.router.forget import forgotten_in_batch
 from mnemos.stores.episodic import BatchEpisodeItem, DuplicateRequest, EpisodicStore
 from mnemos.stores.semantic import SemanticStore
 from mnemos.stores.working import WorkingMemoryRegistry
@@ -59,6 +61,20 @@ def _ts_to_iso(ts_ms: int) -> str:
     return datetime.fromtimestamp(ts_ms / 1000.0, tz=UTC).isoformat().replace("+00:00", "Z")
 
 
+def _forget_ack_pending(request: Request) -> dict[tuple[str, str], bool]:
+    """Sessions dont le dernier lot s'est terminé sur une consigne d'oubli.
+
+    En mémoire : perdu au redémarrage, ce qui ne coûte au pire qu'un accusé de
+    réception conservé. La plateforme découpe par lots de 20 messages ; une
+    consigne tombe en fin de lot environ une fois sur vingt."""
+    state = request.app.state
+    pending: dict[tuple[str, str], bool] | None = getattr(state, "forget_ack_pending", None)
+    if pending is None:
+        pending = {}
+        state.forget_ack_pending = pending
+    return pending
+
+
 def _extract_text(val: str | list[dict[str, Any]]) -> str:
     """Extrait le texte brut d'une chaîne ou d'une liste ordonnée de ContentPart (multimodal)."""
     if isinstance(val, str):
@@ -80,6 +96,7 @@ def _extract_text(val: str | list[dict[str, Any]]) -> str:
 )
 async def aml_add(
     payload: AMLAddRequest,
+    request: Request,
     store: StoreDep,
     wm: WMDep,
     queue: QueueDep,
@@ -121,6 +138,34 @@ async def aml_add(
         )
         for msg in payload.messages
     ]
+
+    # Oubli (catégorie D3). Le contrat n'a pas d'opération de suppression :
+    # « please forget that I… » arrive comme un message ordinaire. La consigne
+    # et l'accusé de réception qui la suit ne sont jamais mémorisés, car tous
+    # deux répètent ce qu'il faut oublier (voir `forgotten_in_batch`). Aucun
+    # souvenir existant n'est touché. Si le lot se termine sur une consigne,
+    # son accusé ouvrira le lot suivant de la même session : on s'en souvient.
+    en_attente = _forget_ack_pending(request)
+    cle = (tenant, session_id)
+    oublier, attend = forgotten_in_batch(
+        [(it.role, it.content) for it in items], en_attente.pop(cle, False)
+    )
+    if attend:
+        en_attente[cle] = True
+    if any(oublier):
+        # Jamais de contenu dans ce journal : c'est précisément ce qu'on oublie.
+        logger.info("aml_add_oubli", tenant=tenant, messages_oublies=sum(oublier))
+        items = [it for it, o in zip(items, oublier, strict=True) if not o]
+        if not items:
+            # Un rejeu concurrent a déjà inscrit la requête : succès quand même.
+            with contextlib.suppress(DuplicateRequest):
+                await store.register_request(tenant, payload.request_id)
+            return AMLAddResponse(
+                success=True,
+                request_id=payload.request_id,
+                user_id=payload.user_id,
+                session_id=payload.session_id,
+            )
 
     # Écriture synchrone groupée (batch embedding + transaction atomique SQLite,
     # registre d'idempotence inclus dans la même transaction)

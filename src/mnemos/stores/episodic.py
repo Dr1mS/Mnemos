@@ -367,6 +367,24 @@ class EpisodicStore:
         async with self._sessions() as session:
             return await session.get(Episode, episode_id)
 
+    async def register_request(self, tenant: str, request_id: str) -> None:
+        """Inscrit un `request_id` dont aucun épisode n'est à écrire.
+
+        Cas d'un lot `/add` entièrement oublié (une consigne d'oubli et son
+        accusé, rien d'autre). Sans inscription, un rejeu de la plateforme
+        repasserait dans le filtre d'oubli et pourrait réarmer « accusé
+        attendu » pour la session, écartant à tort le message suivant.
+        Même règle de course que `write_batch` : le perdant lève
+        `DuplicateRequest`, que l'appelant traite en succès."""
+        try:
+            async with self._sessions() as session, session.begin():
+                session.add(ProcessedRequest(
+                    tenant=tenant, request_id=request_id,
+                    created_at=self._clock.now_ms(), episode_count=0,
+                ))
+        except IntegrityError as exc:
+            raise DuplicateRequest(request_id) from exc
+
     async def has_request(self, tenant: str, request_id: str) -> bool:
         """Ce `request_id` a-t-il déjà été écrit pour ce tenant ?
 
