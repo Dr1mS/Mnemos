@@ -4,12 +4,11 @@ Recherche (§9.2) : KNN dense top-50 (vec0, cosine) → filtres Python
 (session, fenêtre, archived, salience) → re-rank hybride
 `0.7*dense + 0.3*sparse + 0.1*récence`, poids normalisés à somme 1 → top-k.
 
-Deux points contre-intuitifs du re-rank, tous deux mesurés le 29/09/2026 :
-la récence se calcule par rapport au **plus récent des candidats**, pas à
-l'heure au mur — sinon elle vaut 1e-12 sur tout corpus rejoué et ne
-départage rien ; et le sparse ne compare que ses **bits de contenu**, ses
-32 bits temporels étant du bruit vis-à-vis d'une requête qui ne peut pas
-porter la même date. Voir les commentaires de `search` et de
+Deux points du re-rank, mesurés le 29/09/2026 : la récence se calcule à
+l'horloge murale et reste donc inerte sur un corpus rejoué — la rendre
+active a été mesuré et rejeté (voir `search`) ; et le sparse ne compare que
+ses **bits de contenu**, ses 32 bits temporels étant du bruit vis-à-vis
+d'une requête qui ne peut pas porter la même date. Voir
 `embeddings.sparse.content_similarity`.
 
 Décroissance (§9.2) : elapsed depuis COALESCE(last_decayed_at, created_at),
@@ -331,30 +330,27 @@ class EpisodicStore:
         if not retenus:
             return []
 
-        # Référence de récence : le souvenir le plus récent de l'ensemble
-        # classé, et non l'heure au mur.
+        # Récence : l'âge se mesure à l'horloge murale, pas au corpus.
         #
-        # Mesuré le 29/09/2026 : sur des épisodes datés de 2023 interrogés en
-        # 2026, `2 ** (-1162/30)` vaut 2e-12. Les quatre épisodes d'une même
-        # conversation se voyaient attribuer des récences de 2,2e-12 à 5,7e-12
-        # — un écart de 3e-13 face à des similarités denses de l'ordre de 0,5.
-        # Le terme n'était pas « trop faiblement pondéré », il était nul, et la
-        # valeur la plus ancienne sortait première dans 11 cas sur 13.
+        # Conséquence assumée : sur un corpus rejoué (données datées de 2023
+        # interrogées en 2026), `2 ** (-1162/30)` vaut 2e-12 et le terme est
+        # INERTE. C'est le cas des évaluations AML.
         #
-        # Les données d'évaluation portent leurs dates d'origine, donc ce cas
-        # est le cas nominal, pas un cas limite. Rapporter l'âge au plus récent
-        # des candidats rend le terme actif quel que soit le décalage entre le
-        # corpus et l'horloge, et rend la recherche reproductible : deux appels
-        # identiques à un mois d'intervalle donnent désormais le même score.
-        # Sur une mémoire vivante, le plus récent est proche de `now` : le
-        # comportement y est inchangé.
-        reference = max(e.created_at for e, _ in retenus)
-
+        # L'alternative évidente — rapporter l'âge au plus récent des candidats
+        # pour le rendre actif — a été mesurée le 29/09/2026 et REJETÉE
+        # (bench/bench_rerank_variants.py, bench/bench_locomo_qa.py) : elle
+        # améliore un jeu fabriqué de bascule de valeur (le plus ancien devant
+        # l'actif 11/13 → 8/13) mais recule la meilleure preuve LoCoMo sur 104
+        # questions sur 150 (hit@10 0,607 → 0,373). Un poids réduit (0,005 à
+        # 0,04) ou une demi-vie allongée (180, 365 j) n'améliorent D1 dans aucun
+        # cas sans coûter sur LoCoMo. Sur une conversation de plusieurs mois,
+        # une récence vivante écrase la similarité. Ne pas la réactiver sans
+        # remesurer sur ces deux jeux.
         scored: list[ScoredEpisode] = []
         for episode, sparse_bits in retenus:
             dense_sim = 1.0 - distances[episode.id]  # distance cosine → similarité
             sparse_sim = content_similarity(query_sparse, sparse_bits)
-            age_days = max(0.0, (reference - episode.created_at) / DAY_MS)
+            age_days = max(0.0, (now - episode.created_at) / DAY_MS)
             recency = 2.0 ** (-age_days / RECENCY_HALF_LIFE_DAYS)
             score = (
                 DENSE_WEIGHT * dense_sim
