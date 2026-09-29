@@ -60,6 +60,24 @@ Candidate answer: {candidate}
 Reply with JSON only: {{"correct": true}} or {{"correct": false}}"""
 
 
+def _evidence_ids(q: dict[str, Any]) -> list[str]:
+    """Identifiants des tours-preuves (`D3:12`). Le jeu en contient quelques-uns
+    groupés dans une seule chaîne (`"D8:6; D9:17"`) : on les sépare."""
+    ids: list[str] = []
+    for ev in q.get("evidence") or []:
+        ids.extend(p.strip() for p in str(ev).replace(",", ";").split(";") if p.strip())
+    return ids
+
+
+def _evidence_ranks(contents: list[str], ids: list[str]) -> list[int | None]:
+    """Rang (1-based) de chaque tour-preuve dans le contexte rendu, None s'il en
+    est absent. Les épisodes sont écrits `[D3:12] Locuteur: texte`."""
+    return [
+        next((i for i, c in enumerate(contents, 1) if c.startswith(f"[{ev}]")), None)
+        for ev in ids
+    ]
+
+
 def _format_context(items: list[tuple[str, str]]) -> str:
     return "\n".join(f"{i}. [{date}] {content}" for i, (date, content) in enumerate(items, 1))
 
@@ -86,6 +104,12 @@ async def run_qa_bench(
 
     async def ask(prompt: str, fmt: str | None = None) -> str:
         return await llm.generate(prompt, answer_model, format=fmt, options=llm_opts)  # type: ignore[arg-type]
+
+    # Vol d'essai : un runner Ollama en mauvais état fait retomber la saillance
+    # sur ses valeurs par défaut sans rien arrêter (vu le 29/09). Mieux vaut ne
+    # pas démarrer que mesurer un système dégradé.
+    for modele in sorted({answer_model, "qwen2.5:3b"}):
+        await llm.generate("Réponds OK.", modele, options={"num_predict": 4})
 
     tmp = Path(tempfile.mkdtemp(prefix="mnemos_locomo_qa_"))
     try:
@@ -115,9 +139,32 @@ async def run_qa_bench(
                 t0 = time.perf_counter()
                 await app.state.queue.join()
                 cons = await drain_consolidation(app)
-                print(f"Consolidation : {cons['facts_inserted']} faits en {time.perf_counter() - t0:.0f} s")
+                print(f"Consolidation : {cons['facts_inserted']} faits en {time.perf_counter() - t0:.0f} s"
+                      f" | échecs d'extraction : {cons['extraction_failures']}")
 
-                # 2. Deux contextes par question, réponse puis jugement
+                # 2. Rangs des tours-preuves, sur TOUTES les questions éligibles.
+                # Aucune génération : la mesure ne dépend ni du répondeur ni du
+                # juge, et elle coûte des recherches, pas des appels LLM. C'est
+                # l'instrument de non-régression du classement ; le taux de
+                # réponses justes, sur 50 questions et un juge local, est trop
+                # bruité pour trancher seul.
+                rangs: list[dict[str, Any]] = []
+                for q in pool:
+                    ids = _evidence_ids(q)
+                    if not ids:
+                        continue
+                    eps = await app.state.store.search(q["question"], k=top_k, tenant=user_id)
+                    items = (await client.post("/search", json={
+                        "query": q["question"], "user_id": user_id, "top_k": top_k,
+                    })).json()["data"]
+                    rangs.append({
+                        "question": q["question"], "category": q["category"], "evidence": ids,
+                        "ranks_A": _evidence_ranks([e.episode.content for e in eps], ids),
+                        "ranks_B": _evidence_ranks([it["content"] for it in items], ids),
+                    })
+                print(f"Rangs des preuves relevés sur {len(rangs)} questions")
+
+                # 3. Deux contextes par question, réponse puis jugement
                 records: list[dict[str, Any]] = []
                 for n, q in enumerate(questions, 1):
                     episodes = await app.state.store.search(q["question"], k=top_k, tenant=user_id)
@@ -163,12 +210,42 @@ async def run_qa_bench(
             "A": sum(r["correct_A"] for r in rows) / len(rows),
             "B": sum(r["correct_B"] for r in rows) / len(rows),
         }
+    import mnemos
+    from mnemos.stores import episodic as _episodic
+
+    def _resume_rangs(lab: str, rows: list[dict[str, Any]]) -> dict[str, float]:
+        """Rappel des preuves dans le top_k, meilleur rang, et part des questions
+        dont au moins une preuve est dans le top 10."""
+        tous = [r for row in rows for r in row[f"ranks_{lab}"]]
+        meilleurs = [min((r for r in row[f"ranks_{lab}"] if r is not None), default=None)
+                     for row in rows]
+        trouves = sorted(m for m in meilleurs if m is not None)
+        return {
+            "questions": len(rows),
+            "rappel_preuves": round(sum(r is not None for r in tous) / len(tous), 4) if tous else 0.0,
+            "hit_at_10": round(sum(1 for m in trouves if m <= 10) / len(rows), 4) if rows else 0.0,
+            "meilleur_rang_median": trouves[len(trouves) // 2] if trouves else None,
+        }
+
+    rangs_par_cat = {
+        c: {lab: _resume_rangs(lab, [r for r in rangs if r["category"] == c]) for lab in ("A", "B")}
+        for c in sorted({r["category"] for r in rangs})
+    }
     result = {
         "config": {"questions": n, "seed": seed, "top_k": top_k, "answer_and_judge_model": answer_model,
                    "user_id": user_id,
-                   "extraction_model": "qwen2.5:3b", "facts_inserted": cons["facts_inserted"]},
+                   "embed_backend": os.environ.get("EMBED_BACKEND", "ollama"),
+                   "extraction_model": "qwen2.5:3b", "facts_inserted": cons["facts_inserted"],
+                   "extraction_failures": cons["extraction_failures"],
+                   # Empreinte du code réellement importé : un avant/après n'a de
+                   # valeur que si l'on peut prouver quel `src/` a tourné.
+                   "mnemos_src": str(Path(mnemos.__file__).parent),
+                   "recency_weight": _episodic.RECENCY_WEIGHT},
         "accuracy": acc, "only_A_correct": only_a, "only_B_correct": only_b,
-        "by_category": by_cat, "records": records,
+        "by_category": by_cat,
+        "evidence_ranks": {"all": {lab: _resume_rangs(lab, rangs) for lab in ("A", "B")},
+                           "by_category": rangs_par_cat},
+        "records": records, "rank_records": rangs,
     }
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -177,6 +254,12 @@ async def run_qa_bench(
     print(f"Désaccords : seul A juste {only_a} | seul B juste {only_b}  (sur {n} questions)")
     for c, m in by_cat.items():
         print(f"  catégorie {c} (N={m['count']}) : A {m['A'] * 100:.0f} % | B {m['B'] * 100:.0f} %")
+    print("\nRangs des tours-preuves (A = épisodique) — indépendant du répondeur :")
+    for c, par in [("toutes", result["evidence_ranks"]["all"]), *rangs_par_cat.items()]:
+        a = par["A"]
+        print(f"  {str(c):7s} N={a['questions']:3d} | rappel@{top_k} {a['rappel_preuves']:.3f}"
+              f" | hit@10 {a['hit_at_10']:.3f} | meilleur rang médian {a['meilleur_rang_median']}")
+    print(f"Code importé : {result['config']['mnemos_src']} (RECENCY_WEIGHT={_episodic.RECENCY_WEIGHT:.4f})")
     print(f"Rapport : {output}")
     return result
 
