@@ -1,0 +1,292 @@
+{
+  "calibration": {
+    "rien (état actuel)": {
+      "fuite@10": 0.493,
+      "fuite@100": 0.58,
+      "porteurs_top10_moyen": 0.55,
+      "autres_questions": 86,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.395,
+      "part_historique_supprimee": 0.0,
+      "n_ask_to_forget": 69
+    },
+    "consigne seule": {
+      "fuite@10": 0.493,
+      "fuite@100": 0.58,
+      "porteurs_top10_moyen": 0.55,
+      "autres_questions": 86,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.395,
+      "part_historique_supprimee": 0.078,
+      "n_ask_to_forget": 69
+    },
+    "consigne + accusé": {
+      "fuite@10": 0.493,
+      "fuite@100": 0.58,
+      "porteurs_top10_moyen": 0.55,
+      "autres_questions": 86,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.395,
+      "part_historique_supprimee": 0.156,
+      "n_ask_to_forget": 69
+    },
+    "+ antérieurs cos≥0.85": {
+      "fuite@10": 0.493,
+      "fuite@100": 0.58,
+      "porteurs_top10_moyen": 0.55,
+      "autres_questions": 86,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.395,
+      "part_historique_supprimee": 0.156,
+      "n_ask_to_forget": 69
+    },
+    "+ antérieurs cos≥0.80": {
+      "fuite@10": 0.493,
+      "fuite@100": 0.58,
+      "porteurs_top10_moyen": 0.55,
+      "autres_questions": 86,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.395,
+      "part_historique_supprimee": 0.156,
+      "n_ask_to_forget": 69
+    },
+    "+ antérieurs cos≥0.75": {
+      "fuite@10": 0.493,
+      "fuite@100": 0.58,
+      "porteurs_top10_moyen": 0.54,
+      "autres_questions": 86,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.395,
+      "part_historique_supprimee": 0.158,
+      "n_ask_to_forget": 69
+    },
+    "+ antérieurs cos≥0.70": {
+      "fuite@10": 0.449,
+      "fuite@100": 0.536,
+      "porteurs_top10_moyen": 0.48,
+      "autres_questions": 86,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.407,
+      "part_historique_supprimee": 0.176,
+      "n_ask_to_forget": 69
+    },
+    "+ antérieurs cos≥0.65": {
+      "fuite@10": 0.203,
+      "fuite@100": 0.304,
+      "porteurs_top10_moyen": 0.22,
+      "autres_questions": 86,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.419,
+      "part_historique_supprimee": 0.218,
+      "n_ask_to_forget": 69
+    },
+    "+ antérieurs cos≥0.60": {
+      "fuite@10": 0.058,
+      "fuite@100": 0.159,
+      "porteurs_top10_moyen": 0.06,
+      "autres_questions": 86,
+      "preuve_touchee": 0.023,
+      "preuve_detruite": 0.012,
+      "autres_hit@10": 0.43,
+      "part_historique_supprimee": 0.287,
+      "n_ask_to_forget": 69
+    },
+    "+ échos assistant cos≥0.70": {
+      "fuite@10": 0.449,
+      "fuite@100": 0.536,
+      "porteurs_top10_moyen": 0.48,
+      "autres_questions": 86,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.395,
+      "part_historique_supprimee": 0.17,
+      "n_ask_to_forget": 69
+    },
+    "+ échos assistant cos≥0.65": {
+      "fuite@10": 0.232,
+      "fuite@100": 0.333,
+      "porteurs_top10_moyen": 0.25,
+      "autres_questions": 86,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.395,
+      "part_historique_supprimee": 0.195,
+      "n_ask_to_forget": 69
+    },
+    "+ échos assistant cos≥0.60": {
+      "fuite@10": 0.087,
+      "fuite@100": 0.174,
+      "porteurs_top10_moyen": 0.09,
+      "autres_questions": 86,
+      "preuve_touchee": 0.023,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.395,
+      "part_historique_supprimee": 0.233,
+      "n_ask_to_forget": 69
+    },
+    "+ échos assistant cos≥0.55": {
+      "fuite@10": 0.058,
+      "fuite@100": 0.188,
+      "porteurs_top10_moyen": 0.06,
+      "autres_questions": 86,
+      "preuve_touchee": 0.093,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.384,
+      "part_historique_supprimee": 0.28,
+      "n_ask_to_forget": 69
+    }
+  },
+  "validation": {
+    "rien (état actuel)": {
+      "fuite@10": 0.333,
+      "fuite@100": 0.467,
+      "porteurs_top10_moyen": 0.36,
+      "autres_questions": 132,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.47,
+      "part_historique_supprimee": 0.0,
+      "n_ask_to_forget": 75
+    },
+    "consigne seule": {
+      "fuite@10": 0.333,
+      "fuite@100": 0.467,
+      "porteurs_top10_moyen": 0.36,
+      "autres_questions": 132,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.47,
+      "part_historique_supprimee": 0.075,
+      "n_ask_to_forget": 75
+    },
+    "consigne + accusé": {
+      "fuite@10": 0.333,
+      "fuite@100": 0.467,
+      "porteurs_top10_moyen": 0.36,
+      "autres_questions": 132,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.47,
+      "part_historique_supprimee": 0.148,
+      "n_ask_to_forget": 75
+    },
+    "+ antérieurs cos≥0.85": {
+      "fuite@10": 0.333,
+      "fuite@100": 0.467,
+      "porteurs_top10_moyen": 0.36,
+      "autres_questions": 132,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.47,
+      "part_historique_supprimee": 0.148,
+      "n_ask_to_forget": 75
+    },
+    "+ antérieurs cos≥0.80": {
+      "fuite@10": 0.32,
+      "fuite@100": 0.453,
+      "porteurs_top10_moyen": 0.35,
+      "autres_questions": 132,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.47,
+      "part_historique_supprimee": 0.148,
+      "n_ask_to_forget": 75
+    },
+    "+ antérieurs cos≥0.75": {
+      "fuite@10": 0.32,
+      "fuite@100": 0.453,
+      "porteurs_top10_moyen": 0.35,
+      "autres_questions": 132,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.47,
+      "part_historique_supprimee": 0.15,
+      "n_ask_to_forget": 75
+    },
+    "+ antérieurs cos≥0.70": {
+      "fuite@10": 0.253,
+      "fuite@100": 0.387,
+      "porteurs_top10_moyen": 0.27,
+      "autres_questions": 132,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.47,
+      "part_historique_supprimee": 0.163,
+      "n_ask_to_forget": 75
+    },
+    "+ antérieurs cos≥0.65": {
+      "fuite@10": 0.16,
+      "fuite@100": 0.267,
+      "porteurs_top10_moyen": 0.16,
+      "autres_questions": 132,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.477,
+      "part_historique_supprimee": 0.207,
+      "n_ask_to_forget": 75
+    },
+    "+ antérieurs cos≥0.60": {
+      "fuite@10": 0.093,
+      "fuite@100": 0.173,
+      "porteurs_top10_moyen": 0.09,
+      "autres_questions": 132,
+      "preuve_touchee": 0.023,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.515,
+      "part_historique_supprimee": 0.274,
+      "n_ask_to_forget": 75
+    },
+    "+ échos assistant cos≥0.70": {
+      "fuite@10": 0.253,
+      "fuite@100": 0.387,
+      "porteurs_top10_moyen": 0.27,
+      "autres_questions": 132,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.47,
+      "part_historique_supprimee": 0.159,
+      "n_ask_to_forget": 75
+    },
+    "+ échos assistant cos≥0.65": {
+      "fuite@10": 0.16,
+      "fuite@100": 0.267,
+      "porteurs_top10_moyen": 0.16,
+      "autres_questions": 132,
+      "preuve_touchee": 0.0,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.47,
+      "part_historique_supprimee": 0.186,
+      "n_ask_to_forget": 75
+    },
+    "+ échos assistant cos≥0.60": {
+      "fuite@10": 0.08,
+      "fuite@100": 0.173,
+      "porteurs_top10_moyen": 0.08,
+      "autres_questions": 132,
+      "preuve_touchee": 0.015,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.47,
+      "part_historique_supprimee": 0.219,
+      "n_ask_to_forget": 75
+    },
+    "+ échos assistant cos≥0.55": {
+      "fuite@10": 0.04,
+      "fuite@100": 0.16,
+      "porteurs_top10_moyen": 0.04,
+      "autres_questions": 132,
+      "preuve_touchee": 0.106,
+      "preuve_detruite": 0.0,
+      "autres_hit@10": 0.477,
+      "part_historique_supprimee": 0.266,
+      "n_ask_to_forget": 75
+    }
+  }
+}
