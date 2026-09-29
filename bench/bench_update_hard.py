@@ -32,6 +32,7 @@ import argparse
 import asyncio
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -71,6 +72,11 @@ ORDRES = {"O": "in chronological order", "A": "most relevant first",
           "B": "most relevant first"}
 
 DAY_MS = 86_400_000
+
+# Garde-fou : certains modèles rendent leur réflexion dans le corps de la
+# réponse même avec think=False. On la retire quand elle est balisée ; quand
+# elle ne l'est pas, c'est le contexte O qui s'effondre et prévient.
+_THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL | re.IGNORECASE)
 
 # Du remplissage neutre, jamais du même champ sémantique que l'attribut testé :
 # il donne du corps au contexte sans être un distracteur déguisé. Sans lui, une
@@ -291,9 +297,9 @@ async def run_instance(
                     question=inst.probe, hint=inst.answer_hint,
                 ),
                 answer_model,
-                options={"temperature": 0.0, "num_ctx": 8192, "num_predict": 32},
+                options={"temperature": 0.0, "num_ctx": 8192, "num_predict": 64},
             )
-            answer = raw.strip()
+            answer = _THINK_RE.sub("", raw).strip()
             ok, reason = check_active_fact_answer(answer, inst.value_2, interdits)
             row[f"answer_{label}"] = answer
             row[f"correct_{label}"] = ok
@@ -426,11 +432,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="D1 dur : mise à jour de valeur en terrain ambigu")
     parser.add_argument("--instances", type=int, default=len(HARD_UPDATE_INSTANCES))
     parser.add_argument("--top-k", type=int, default=100)
-    # Le plus gros répondeur qui tienne sur 12 Go à côté de llama-server ET du
-    # modèle de l'autre projet qui partage la carte. Ce n'est pas le meilleur
-    # répondeur disponible ; c'est celui qui ne fait pas tomber Ollama. Le
-    # contexte O mesure ce que ce choix coûte, et le rend donc révisable.
-    parser.add_argument("--answer-model", default="qwen3:4b")
+    # PAS un modèle à raisonnement. Le premier passage tournait sur qwen3:4b :
+    # `think=False` n'a pas supprimé sa réflexion, elle est sortie dans le corps
+    # de la réponse et num_predict l'a coupée avant toute conclusion. Résultat,
+    # O=0/13 — le contrôle oracle a invalidé la mesure au lieu de laisser croire
+    # que la mémoire échouait. qwen2.5 n'a pas de mode réflexion, et le 3b est
+    # déjà résident pour l'extraction : zéro VRAM supplémentaire.
+    parser.add_argument("--answer-model", default="qwen2.5:3b")
     parser.add_argument("--llm-model", default="qwen2.5:3b")
     # La production sert ses embeddings par llama-server depuis le 22/09. Suivre
     # l'environnement en silence, c'est mesurer une pile qu'on n'exploite plus.
