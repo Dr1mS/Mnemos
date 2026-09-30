@@ -156,7 +156,19 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                             context=ctx, question=question,
                             options="\n".join(f"{LETTERS[i]}. {o}" for i, o in enumerate(options)),
                         )
-                        raw = await llm.generate(prompt, args.answer_model, options=llm_opts)
+                        # Le 30/09, le processus d'Ollama qui sert le modèle a planté
+                        # deux fois en pleine série (VRAM saturée par des modèles restés
+                        # chargés) ; Ollama le relance seul en ~1 min. On l'attend
+                        # plutôt que de perdre 30 min d'ingestion.
+                        for essai in range(4):
+                            try:
+                                raw = await llm.generate(prompt, args.answer_model, options=llm_opts)
+                                break
+                            except Exception:  # noqa: BLE001
+                                if essai == 3:
+                                    raise
+                                print("  répondeur indisponible, nouvel essai dans 60 s", flush=True)
+                                await asyncio.sleep(60)
                         letter = parse_letter(raw)
                         fuite10 = None
                         if row.get("pref_type") == "ask_to_forget":

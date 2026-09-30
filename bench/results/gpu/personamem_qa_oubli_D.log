@@ -1,0 +1,36 @@
+Ingestion : 12357 messages en 2213 s
+  [10] exactitude courante 20.0 %
+  [20] exactitude courante 20.0 %
+  [30] exactitude courante 30.0 %
+  [40] exactitude courante 32.5 %
+  [50] exactitude courante 32.0 %
+  [60] exactitude courante 30.0 %
+  [70] exactitude courante 31.4 %
+  [80] exactitude courante 31.2 %
+  [90] exactitude courante 31.1 %
+  [100] exactitude courante 33.0 %
+  [110] exactitude courante 31.8 %
+  [120] exactitude courante 34.2 %
+  [130] exactitude courante 34.6 %
+  [140] exactitude courante 35.0 %
+  [150] exactitude courante 34.7 %
+  [160] exactitude courante 36.2 %
+  [170] exactitude courante 35.3 %
+  [180] exactitude courante 36.1 %
+  [190] exactitude courante 35.8 %
+  [200] exactitude courante 35.0 %
+  [210] exactitude courante 34.3 %
+
+Mode : épisodique seul | 217 questions
+Exactitude globale : 35.5 % (hasard ≈ 25 %)
+  anti_stereotypical_pref          N= 32   21.9 %
+  ask_to_forget                    N= 75   30.7 %
+  health_and_medical_conditions    N= 23   39.1 %
+  neutral_preferences              N= 30   56.7 %
+  sensitive_info                   N= 10   20.0 %
+  stereotypical_pref               N= 21   47.6 %
+  therapy_background               N= 26   34.6 %
+Faits dans le contexte (moyenne) : 0.0
+Fuite top 10 (ask_to_forget, sans LLM) : 0.653 | code : C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\src\mnemos (oubli actif : True)
+Prompts tronqués : 39/217 (le plus long : 125,793 car., budget 98,304)
+Rapport : bench\results\gpu\personamem_qa_oubli_D.json
