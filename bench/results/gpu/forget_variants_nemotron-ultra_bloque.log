@@ -1,0 +1,10 @@
+Reprise : 100 personas déjà en cache, 0 à collecter
+Consignes stockées : 1813/1813
+  validation : 10 questions, 37 appels LLM, 103 s
+  validation : 20 questions, 74 appels LLM, 229 s
+  validation : 30 questions, 110 appels LLM, 324 s
+  validation : 40 questions, 149 appels LLM, 454 s
+  validation : 50 questions, 189 appels LLM, 564 s
+  validation : 60 questions, 226 appels LLM, 675 s
+  validation : 70 questions, 265 appels LLM, 926 s
+  ÉCHEC : nvidia/nvidia/nemotron-3-ultra-550b-a55b : échec après 10 essais (ConnectTimeout)

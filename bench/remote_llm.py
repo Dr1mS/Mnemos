@@ -104,6 +104,14 @@ class RemoteChat:
                     break  # erreur définitive : inutile d'insister
             except (httpx.TimeoutException, httpx.TransportError) as exc:
                 derniere_erreur = type(exc).__name__
+                # Nuit du 30/09 : après une coupure de NVIDIA, le client ouvert
+                # depuis des heures n'a plus jamais réussi à se connecter, alors
+                # qu'une connexion neuve passait. On repart donc d'un client neuf.
+                await self._client.aclose()
+                self._client = httpx.AsyncClient(
+                    base_url=self._conf["base_url"], timeout=180,
+                    headers={"Authorization": f"Bearer {_lire_cle(self._conf['key_env'])}"},
+                )
             self.reprises += 1
             await asyncio.sleep(min(_ATTENTE_MAX_S, 5.0 * 2 ** essai))
         self.echecs += 1
