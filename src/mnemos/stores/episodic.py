@@ -201,11 +201,11 @@ class EpisodicStore:
         `request_id` rend l'écriture idempotente : il est inscrit dans la même
         transaction, et un rejeu lève `DuplicateRequest` au lieu de dupliquer.
 
-        `forget` : consignes d'oubli portées par ce lot (axe 3). Leurs échos
-        antérieurs par l'assistant sont effacés dans la MÊME transaction —
-        physiquement, pas marqués : oublier doit oublier. Les échos situés dans
-        le lot lui-même ne sont simplement pas insérés. `tenant` sert quand le
-        lot n'a plus rien à insérer mais des échos à effacer.
+        `forget` : consignes d'oubli portées par ce lot (axe 3). La consigne
+        elle-même est écrite normalement ; ses échos ANTÉRIEURS par l'assistant
+        sont effacés dans la MÊME transaction — physiquement, pas marqués :
+        oublier doit oublier. Les échos situés plus tôt dans le lot lui-même ne
+        sont simplement pas insérés.
         """
         forget = forget or []
         if not items and not forget:
@@ -494,24 +494,6 @@ class EpisodicStore:
     async def get_by_id(self, episode_id: str) -> Episode | None:
         async with self._sessions() as session:
             return await session.get(Episode, episode_id)
-
-    async def register_request(self, tenant: str, request_id: str) -> None:
-        """Inscrit un `request_id` dont aucun épisode n'est à écrire.
-
-        Cas d'un lot `/add` entièrement oublié (une consigne d'oubli et son
-        accusé, rien d'autre). Sans inscription, un rejeu de la plateforme
-        repasserait dans le filtre d'oubli et pourrait réarmer « accusé
-        attendu » pour la session, écartant à tort le message suivant.
-        Même règle de course que `write_batch` : le perdant lève
-        `DuplicateRequest`, que l'appelant traite en succès."""
-        try:
-            async with self._sessions() as session, session.begin():
-                session.add(ProcessedRequest(
-                    tenant=tenant, request_id=request_id,
-                    created_at=self._clock.now_ms(), episode_count=0,
-                ))
-        except IntegrityError as exc:
-            raise DuplicateRequest(request_id) from exc
 
     async def has_request(self, tenant: str, request_id: str) -> bool:
         """Ce `request_id` a-t-il déjà été écrit pour ce tenant ?

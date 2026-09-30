@@ -189,37 +189,29 @@ def detect_forget(content: str, role: str) -> ForgetDirective | None:
     return None
 
 
-def forgotten_in_batch(
-    messages: list[tuple[str, str]], ack_pending: bool = False
-) -> tuple[list[bool], bool]:
-    """Quels messages d'un lot `/add` ne doivent jamais être mémorisés.
+def forget_requests_in_batch(messages: list[tuple[str, str]]) -> list[tuple[int, str]]:
+    """Consignes d'oubli d'un lot `/add` : (position dans le lot, cible).
 
-    `messages` : (rôle, contenu) dans l'ordre du lot. `ack_pending` : le lot
-    précédent de la même session s'est terminé sur une consigne, dont l'accusé
-    de réception ouvre donc ce lot.
+    La consigne et l'accusé de réception de l'assistant qui la suit sont
+    **mémorisés normalement**. Seuls les échos ANTÉRIEURS de l'assistant (« Since
+    you enjoy visiting aquariums… ») sont effacés, par le store — la position
+    borne ce qui précède la consigne dans le lot.
 
-    Deux messages disparaissent pour chaque consigne : **la consigne elle-même**
-    et **l'accusé de réception de l'assistant qui la suit**. Tous deux répètent
-    ce qu'il faut oublier — relevé sur PersonaMem-v2, l'accusé répète la
-    préférence dans 77 cas sur 119 (« Got it — I'll forget that you watch
-    historical documentaries »). Les garder, c'est la faire fuiter dans le
-    contexte du répondeur, qui n'applique pas l'instruction (13 fois sur 13).
+    Choix tranché le 30/09/2026 par `bench/bench_forget_variants.py` : 385
+    questions PersonaMem en choix multiples, mêmes candidats, trois répondeurs.
+    Supprimer aussi la consigne et l'accusé (première version, f412fda) faisait
+    tomber le score d'oubli de Nemotron 3 Ultra de 47,4 % à 15,5 % (37 questions
+    perdues, 0 gagnée) : pour le répondeur, « please forget that I… » et « Got
+    it — I'll forget that you… » sont le SIGNAL de ce qu'il faut éviter. Les
+    garder et n'effacer que les échos donne le meilleur score avec les trois :
 
-    Mesuré sur 47 personas et 874 consignes (bench/bench_forget_targeting.py) :
-    la préférence oubliée remonte dans le top 10 pour 49 % des questions au lieu
-    de 83 %, sans qu'aucun message-preuve d'une autre question soit touché — ce
-    ne sont que des messages nouveaux, jamais des souvenirs existants.
+        questions d'oubli    rien    tout supprimer    consigne+accusé gardés
+        qwen2.5 7B           22,2        22,2                27,8
+        Ministral 14B        22,2        11,8                29,9
+        Nemotron 3 Ultra     47,4        15,5                54,3
 
-    Rend (oublier[i], accusé encore attendu après ce lot)."""
-    oublier = [False] * len(messages)
-    attend_accuse = ack_pending
-    for i, (role, content) in enumerate(messages):
-        if attend_accuse and role == "assistant":
-            oublier[i] = True
-            attend_accuse = False
-            continue
-        attend_accuse = False
-        if detect_forget(content, role) is not None:
-            oublier[i] = True
-            attend_accuse = True
-    return oublier, attend_accuse
+    sans dégrader les autres types de questions. L'indicateur qui avait orienté
+    la première version comptait la consigne comme une « fuite » parce qu'elle
+    contient les mots de la préférence — alors qu'elle la nie."""
+    return [(i, d.target) for i, (role, content) in enumerate(messages)
+            if (d := detect_forget(content, role)) is not None]

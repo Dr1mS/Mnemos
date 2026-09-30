@@ -1,8 +1,19 @@
-"""Oubli sur le chemin AML (catégorie D3) : la consigne et son accusé ne sont
-jamais mémorisés, et rien d'autre n'est touché.
+"""Oubli sur le chemin AML (catégorie D3), variante retenue le 30/09/2026.
 
-Un `/search` à top_k=100 sur quelques épisodes les renvoie tous : on lit donc
-directement ce qui a été mémorisé.
+La consigne d'oubli et l'accusé de réception de l'assistant sont MÉMORISÉS : pour
+le répondeur, ce sont eux qui disent quoi éviter. Seuls les échos ANTÉRIEURS de
+l'assistant, qui affirmaient la préférence, sont effacés. Supprimer aussi la
+consigne et l'accusé (première version, f412fda) faisait tomber le score d'oubli
+de Nemotron 3 Ultra de 47,4 % à 15,5 % (bench/bench_forget_variants.py).
+
+L'embedder de cette route hache le texte : seul un texte IDENTIQUE à la cible
+garantit un cosinus de 1. Ce sont des tests de câblage ; le ciblage lui-même est
+testé avec un embedder thématique dans test_forget_echoes.py.
+
+On lit la BASE, pas /search : la route déduplique les contenus identiques, si
+bien qu'un écho de l'assistant identique au message de l'utilisateur y serait
+invisible — et un test fondé sur /search passerait même sans aucune suppression
+(constaté par mutation le 30/09).
 """
 
 from __future__ import annotations
@@ -12,6 +23,7 @@ from pathlib import Path
 
 import httpx
 import pytest
+from sqlalchemy import text
 from tests.conftest import make_stub_app
 
 
@@ -21,6 +33,7 @@ async def client(tmp_path: Path) -> AsyncIterator[httpx.AsyncClient]:
     async with app.router.lifespan_context(app):
         transport = httpx.ASGITransport(app=app)
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as c:
+            c.app_state = app.state  # type: ignore[attr-defined]
             yield c
     for engine in engines:
         await engine.dispose()
@@ -38,112 +51,73 @@ async def _add(client: httpx.AsyncClient, rid: str, messages: list[dict[str, obj
     assert r.status_code == 200 and r.json()["success"] is True
 
 
-async def _memorise(client: httpx.AsyncClient, user: str = "u1") -> list[str]:
-    r = await client.post("/search", json={"query": "jazz", "user_id": user, "top_k": 100})
-    return [it["content"] for it in r.json()["data"]]
+async def _memorise(client: httpx.AsyncClient, user: str = "u1") -> list[tuple[str, str]]:
+    """(rôle, contenu) de chaque épisode stocké pour cet utilisateur."""
+    store = client.app_state.store  # type: ignore[attr-defined]
+    async with store._sessions() as s:
+        rows = await s.execute(
+            text("SELECT role, content FROM episodes WHERE tenant = :t ORDER BY created_at"),
+            {"t": user})
+        return [(r[0], r[1]) for r in rows]
 
 
 CONSIGNE = "Please forget that I love jazz."
 ACCUSE = "Got it — I'll forget that you love jazz."
+ECHO = "I love jazz"  # texte identique à la cible : cosinus 1 avec l'embedder haché
 
 
-async def test_consigne_et_accuse_jamais_memorises(client: httpx.AsyncClient) -> None:
+async def test_consigne_et_accuse_sont_memorises(client: httpx.AsyncClient) -> None:
+    """Le cœur de la variante retenue : garder ce qui NIE la préférence."""
+    await _add(client, "r1", [_msg("user", CONSIGNE, 1), _msg("assistant", ACCUSE, 2)])
+    stockes = await _memorise(client)
+    assert ("user", CONSIGNE) in stockes
+    assert ("assistant", ACCUSE) in stockes
+
+
+async def test_echo_anterieur_de_l_assistant_efface(client: httpx.AsyncClient) -> None:
     await _add(client, "r1", [
-        _msg("user", "I love jazz, especially Coltrane.", 1),
-        _msg("assistant", "Great taste!", 2),
-        _msg("user", CONSIGNE, 3),
-        _msg("assistant", ACCUSE, 4),
-        _msg("user", "What should I do tonight?", 5),
+        _msg("user", ECHO, 1),            # même texte, mais UTILISATEUR : gardé
+        _msg("assistant", ECHO, 2),       # écho de l'assistant : effacé
     ])
-    contenus = await _memorise(client)
-    assert CONSIGNE not in contenus
-    assert ACCUSE not in contenus
-    # Règle étroite : aucun souvenir EXISTANT n'est touché, pas même l'énoncé d'origine.
-    assert "I love jazz, especially Coltrane." in contenus
-    assert "What should I do tonight?" in contenus
-    assert "Great taste!" in contenus
+    await _add(client, "r2", [_msg("user", CONSIGNE, 3), _msg("assistant", ACCUSE, 4)])
+    stockes = await _memorise(client)
+    assert ("user", ECHO) in stockes      # la parole de l'utilisateur est gardée
+    assert ("assistant", ECHO) not in stockes
+    assert ("user", CONSIGNE) in stockes and ("assistant", ACCUSE) in stockes
 
 
-async def test_accuse_dans_le_lot_suivant(client: httpx.AsyncClient) -> None:
-    """La plateforme découpe par lots de 20 : la consigne peut clore un lot et
-    son accusé ouvrir le suivant. Il doit disparaître quand même."""
-    await _add(client, "r1", [_msg("user", "Hi there.", 1), _msg("user", CONSIGNE, 2)])
-    await _add(client, "r2", [_msg("assistant", ACCUSE, 3), _msg("user", "Thanks.", 4)])
-    contenus = await _memorise(client)
-    assert CONSIGNE not in contenus and ACCUSE not in contenus
-    assert "Thanks." in contenus
-
-
-async def test_attente_d_accuse_isolee_par_session_et_par_user(client: httpx.AsyncClient) -> None:
-    """Une consigne en fin de lot dans une session ne doit pas faire disparaître
-    le premier message assistant d'une autre session, ni d'un autre utilisateur."""
-    await _add(client, "r1", [_msg("user", CONSIGNE, 1)], user="u1", session="s1")
-    await _add(client, "r2", [_msg("assistant", "Autre session.", 2)], user="u1", session="s2")
-    await _add(client, "r3", [_msg("assistant", "Autre user.", 3)], user="u2", session="s1")
-    assert "Autre session." in await _memorise(client, "u1")
-    assert "Autre user." in await _memorise(client, "u2")
-
-
-async def test_lot_suivant_qui_commence_par_l_utilisateur(client: httpx.AsyncClient) -> None:
-    """Pas d'accusé : l'attente s'éteint, rien d'autre n'est écarté."""
-    await _add(client, "r1", [_msg("user", CONSIGNE, 1)])
-    await _add(client, "r2", [_msg("user", "Anyway.", 2), _msg("assistant", "Sure!", 3)])
-    contenus = await _memorise(client)
-    assert "Anyway." in contenus and "Sure!" in contenus
-
-
-async def test_lot_entierement_oublie_est_idempotent(client: httpx.AsyncClient) -> None:
-    """Un lot qui ne contient qu'une consigne et son accusé n'écrit rien, mais
-    sa requête est inscrite : un rejeu ne doit pas réarmer l'attente d'accusé,
-    sinon le prochain message assistant disparaîtrait à tort."""
-    # Le lot se termine sur une consigne SANS accusé : l'attente est armée, puis
-    # consommée par le lot r2. Un rejeu tardif de r1 ne doit pas la réarmer.
-    await _add(client, "r1", [_msg("user", CONSIGNE, 1)])
-    await _add(client, "r2", [_msg("assistant", ACCUSE, 2)])
-    await _add(client, "r1", [_msg("user", CONSIGNE, 1)])
-    await _add(client, "r3", [_msg("assistant", "Useful advice about jazz clubs.", 3)])
-    contenus = await _memorise(client)
-    assert ACCUSE not in contenus
-    assert "Useful advice about jazz clubs." in contenus
-
-
-async def test_piege_n_est_pas_oublie(client: httpx.AsyncClient) -> None:
-    """« Don't forget » est un rappel : il doit être mémorisé, et le message
-    assistant qui suit aussi."""
+async def test_echo_du_meme_lot_avant_la_consigne_non_insere(client: httpx.AsyncClient) -> None:
+    """La position de la consigne dans le lot borne ce qui la précède."""
     await _add(client, "r1", [
-        _msg("user", "Don't forget that I have a jazz concert on Friday.", 1),
-        _msg("assistant", "Noted, the concert is on Friday.", 2),
+        _msg("assistant", ECHO, 1),       # avant la consigne : non inséré
+        _msg("user", CONSIGNE, 2),
+        _msg("assistant", ACCUSE, 3),
+        _msg("assistant", ECHO, 4),       # après : histoire nouvelle, gardé
     ])
-    contenus = await _memorise(client)
-    assert "Don't forget that I have a jazz concert on Friday." in contenus
-    assert "Noted, the concert is on Friday." in contenus
+    stockes = await _memorise(client)
+    assert stockes.count(("assistant", ECHO)) == 1  # seul celui d'après la consigne
+    assert stockes[-1] == ("assistant", ECHO)
+    assert ("user", CONSIGNE) in stockes and ("assistant", ACCUSE) in stockes
 
 
-# ── Échos antérieurs de l'assistant (règle validée, voir test_forget_echoes) ──
-# L'embedder de cette route hache le texte : seul un texte IDENTIQUE à la cible
-# garantit un cosinus de 1. C'est un test de câblage, pas de ciblage.
+async def test_rien_n_est_efface_sans_consigne(client: httpx.AsyncClient) -> None:
+    """« Don't forget » est un rappel : aucun écho ne doit disparaître."""
+    await _add(client, "r1", [_msg("assistant", ECHO, 1)])
+    await _add(client, "r2", [_msg("user", "Don't forget that I love jazz.", 2)])
+    assert ("assistant", ECHO) in await _memorise(client)
 
 
-async def test_route_efface_l_echo_de_l_assistant(client: httpx.AsyncClient) -> None:
-    await _add(client, "r1", [
-        _msg("user", "I love jazz", 1),          # même texte que la cible, mais UTILISATEUR
-        _msg("assistant", "I love jazz", 2),     # écho de l'assistant : visé
-    ])
-    await _add(client, "r2", [_msg("user", CONSIGNE, 3), _msg("assistant", ACCUSE, 4),
-                              _msg("user", "Recommend something for tonight.", 5)])
-    r = await client.post("/search", json={"query": "jazz", "user_id": "u1", "top_k": 100})
-    contenus = [it["content"] for it in r.json()["data"]]
-    # Il ne reste qu'UN « I love jazz » : celui de l'utilisateur.
-    assert contenus.count("I love jazz") == 1
-    assert "Recommend something for tonight." in contenus
+async def test_rejeu_d_un_lot_avec_consigne_idempotent(client: httpx.AsyncClient) -> None:
+    await _add(client, "r1", [_msg("assistant", ECHO, 1)])
+    lot = [_msg("user", CONSIGNE, 2), _msg("assistant", ACCUSE, 3)]
+    await _add(client, "r2", lot)
+    await _add(client, "r2", lot)         # rejeu de la plateforme : aucun doublon
+    stockes = await _memorise(client)
+    assert stockes.count(("user", CONSIGNE)) == 1 and stockes.count(("assistant", ACCUSE)) == 1
+    assert ("assistant", ECHO) not in stockes
 
 
-async def test_lot_reduit_a_la_consigne_efface_quand_meme(client: httpx.AsyncClient) -> None:
-    """Consigne + accusé seuls : rien à insérer, mais l'écho existant doit
-    disparaître et la requête doit être inscrite."""
-    await _add(client, "r1", [_msg("assistant", "I love jazz", 1)])
-    await _add(client, "r2", [_msg("user", CONSIGNE, 2), _msg("assistant", ACCUSE, 3)])
-    assert "I love jazz" not in await _memorise(client)
-    # Rejeu de r2 : succès, rien ne change.
-    await _add(client, "r2", [_msg("user", CONSIGNE, 2), _msg("assistant", ACCUSE, 3)])
-    assert await _memorise(client) == []
+async def test_isolation_entre_utilisateurs(client: httpx.AsyncClient) -> None:
+    await _add(client, "r1", [_msg("assistant", ECHO, 1)], user="u2")
+    await _add(client, "r2", [_msg("user", CONSIGNE, 2)], user="u1")
+    assert ("assistant", ECHO) in await _memorise(client, "u2")
