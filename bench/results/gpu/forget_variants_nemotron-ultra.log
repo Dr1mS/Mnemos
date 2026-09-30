@@ -1,0 +1,45 @@
+Reprise : 100 personas déjà en cache, 0 à collecter
+Consignes stockées : 1813/1813
+  validation : 10 questions, 37 appels LLM, 557 s
+  validation : 20 questions, 74 appels LLM, 1191 s
+  validation : 30 questions, 110 appels LLM, 1814 s
+  validation : 40 questions, 149 appels LLM, 2422 s
+  validation : 50 questions, 189 appels LLM, 3100 s
+  validation : 60 questions, 226 appels LLM, 3670 s
+  validation : 70 questions, 265 appels LLM, 4412 s
+  validation : 80 questions, 300 appels LLM, 5059 s
+  validation : 90 questions, 339 appels LLM, 5614 s
+  validation : 100 questions, 374 appels LLM, 6299 s
+  validation : 110 questions, 410 appels LLM, 6984 s
+  validation : 120 questions, 448 appels LLM, 7510 s
+  validation : 130 questions, 478 appels LLM, 7999 s
+  validation : 140 questions, 515 appels LLM, 8543 s
+  validation : 150 questions, 552 appels LLM, 9343 s
+  validation : 160 questions, 591 appels LLM, 10018 s
+  validation : 170 questions, 630 appels LLM, 10711 s
+  validation : 180 questions, 670 appels LLM, 11234 s
+  validation : 190 questions, 705 appels LLM, 11855 s
+  validation : 200 questions, 736 appels LLM, 12320 s
+  validation : 210 questions, 773 appels LLM, 13022 s
+  calibration : 220 questions, 811 appels LLM, 13908 s
+  calibration : 230 questions, 848 appels LLM, 14598 s
+  calibration : 240 questions, 886 appels LLM, 15272 s
+  calibration : 250 questions, 923 appels LLM, 15826 s
+  calibration : 260 questions, 962 appels LLM, 16418 s
+  calibration : 270 questions, 1001 appels LLM, 17166 s
+  calibration : 280 questions, 1040 appels LLM, 17976 s
+  calibration : 290 questions, 1078 appels LLM, 18781 s
+  calibration : 300 questions, 1117 appels LLM, 19905 s
+  ÉCHEC : nvidia/nvidia/nemotron-3-ultra-550b-a55b : échec après 10 essais (HTTP 400 {"status":400,"title":"Bad Request","detail":"Function id '948fe171-ce7a-4332-8bc0-5e
+  ÉCHEC : nvidia/nvidia/nemotron-3-ultra-550b-a55b : échec après 10 essais (HTTP 400 {"status":400,"title":"Bad Request","detail":"Function id '948fe171-ce7a-4332-8bc0-5e
+  ÉCHEC : nvidia/nvidia/nemotron-3-ultra-550b-a55b : échec après 10 essais (HTTP 400 {"status":400,"title":"Bad Request","detail":"Function id '948fe171-ce7a-4332-8bc0-5e
+  ÉCHEC : nvidia/nvidia/nemotron-3-ultra-550b-a55b : échec après 10 essais (HTTP 503 {"error":{"message":"Service temporarily overloaded","type":"Service Unavailable","co
+  calibration : 310 questions, 1154 appels LLM, 25041 s
+  calibration : 320 questions, 1191 appels LLM, 25698 s
+  calibration : 330 questions, 1229 appels LLM, 26412 s
+  calibration : 340 questions, 1267 appels LLM, 27085 s
+  calibration : 350 questions, 1306 appels LLM, 27743 s
+  calibration : 360 questions, 1346 appels LLM, 28181 s
+  calibration : 370 questions, 1385 appels LLM, 29021 s
+  calibration : 380 questions, 1421 appels LLM, 29662 s
+Terminé : 1540 réponses. Rapport : bench\results\gpu\forget_variants_nemotron-ultra.md
