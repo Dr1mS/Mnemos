@@ -35,6 +35,7 @@ os.environ.setdefault("DECAY_RATE_DAILY", "0.0")
 import httpx
 
 from bench.bench_locomo import drain_consolidation, parse_locomo_datetime, setup_bench_app
+from bench.remote_llm import RemoteChat
 from mnemos.config import Settings
 from mnemos.llm.json_cleaner import parse_llm_json
 from mnemos.llm.ollama_client import OllamaClient
@@ -94,6 +95,7 @@ async def run_qa_bench(
     output: Path,
     user_id: str = "locomo_qa",
     with_facts: bool = True,
+    answer_backend: str = "ollama",
 ) -> dict[str, Any]:
     data = json.loads(Path("bench/data/locomo_sample.json").read_text(encoding="utf-8"))
     conv = data["conversation"]
@@ -101,16 +103,20 @@ async def run_qa_bench(
     questions = random.Random(seed).sample(pool, min(n_questions, len(pool)))
 
     llm = OllamaClient(Settings(_env_file=None))  # type: ignore[call-arg]
+    # Répondeur ET juge : le même modèle, local ou distant (LoCoMo est public).
+    # L'extracteur des faits reste local, comme en production.
+    repondeur: Any = llm if answer_backend == "ollama" else RemoteChat(answer_backend)
     llm_opts = {"temperature": 0.0, "num_ctx": 8192, "num_predict": 64}
 
     async def ask(prompt: str, fmt: str | None = None) -> str:
-        return await llm.generate(prompt, answer_model, format=fmt, options=llm_opts)  # type: ignore[arg-type]
+        return await repondeur.generate(prompt, answer_model, format=fmt, options=llm_opts)  # type: ignore[no-any-return]
 
     # Vol d'essai : un runner Ollama en mauvais état fait retomber la saillance
     # sur ses valeurs par défaut sans rien arrêter (vu le 29/09). Mieux vaut ne
     # pas démarrer que mesurer un système dégradé.
-    for modele in sorted({answer_model, "qwen2.5:3b"} if with_facts else {answer_model}):
-        await llm.generate("Réponds OK.", modele, options={"num_predict": 4})
+    await repondeur.generate("Réponds OK.", answer_model, options={"num_predict": 4})
+    if with_facts:
+        await llm.generate("Réponds OK.", "qwen2.5:3b", options={"num_predict": 4})
 
     tmp = Path(tempfile.mkdtemp(prefix="mnemos_locomo_qa_"))
     try:
@@ -146,7 +152,18 @@ async def run_qa_bench(
                     cons = await drain_consolidation(app)
                 else:
                     cons = {"facts_inserted": 0, "extraction_failures": 0}
-                print(f"Consolidation : {cons['facts_inserted']} faits en {time.perf_counter() - t0:.0f} s"
+                # Débit de la consolidation (saillance + extraction), sans charge
+                # d'ingestion concurrente : c'est un plafond. Le Full en a ingéré
+                # ~4,9 épisodes/s pendant 25 h ; en dessous, les faits d'une tâche
+                # n'existent pas encore quand sa recherche arrive.
+                n_episodes = sum(len(conv[s]) for s in sessions)
+                duree_cons = time.perf_counter() - t0
+                debit: dict[str, Any] = {
+                    "episodes": n_episodes, "duree_s": round(duree_cons, 1),
+                    "episodes_par_s": round(n_episodes / duree_cons, 2) if with_facts else None,
+                }
+                print(f"Consolidation : {cons['facts_inserted']} faits en {duree_cons:.0f} s"
+                      f" | {n_episodes} épisodes, {debit['episodes_par_s']} épisodes/s"
                       f" | échecs d'extraction : {cons['extraction_failures']}")
 
                 # 2. Rangs des tours-preuves, sur TOUTES les questions éligibles.
@@ -204,6 +221,8 @@ async def run_qa_bench(
                     print(f"  [{n}/{len(questions)}] cat {q['category']} | A={'✓' if row['correct_A'] else '✗'} {b_txt}")
     finally:
         await llm.aclose()
+        if repondeur is not llm:
+            await repondeur.aclose()
         shutil.rmtree(tmp, ignore_errors=True)
 
     n = len(records)
@@ -241,6 +260,7 @@ async def run_qa_bench(
     }
     result = {
         "config": {"questions": n, "seed": seed, "top_k": top_k, "answer_and_judge_model": answer_model,
+                   "answer_backend": answer_backend, "consolidation": {**cons, **debit},
                    "user_id": user_id, "with_facts": with_facts,
                    "embed_backend": os.environ.get("EMBED_BACKEND", "ollama"),
                    "extraction_model": "qwen2.5:3b", "facts_inserted": cons["facts_inserted"],
@@ -282,6 +302,8 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--top-k", type=int, default=100)
     parser.add_argument("--answer-model", default="qwen3.5:9b")
+    parser.add_argument("--answer-backend", choices=("ollama", "nvidia", "mistral"), default="ollama",
+                        help="ollama = local ; nvidia / mistral = API distante (LoCoMo est public)")
     parser.add_argument("--output", type=Path, default=Path("bench/results/gpu/locomo_qa.json"))
     # Le user_id sert de sujet des faits extraits (canonical_subject) : un identifiant
     # opaque comme ceux d'AML ("eval:run:…") pollue les faits et leur embedding.
@@ -295,7 +317,7 @@ def main() -> None:
         sys.stdout.reconfigure(encoding="utf-8")  # console Windows cp1252
     asyncio.run(run_qa_bench(
         args.questions, args.seed, args.top_k, args.answer_model, args.output, args.user_id,
-        with_facts=not args.sans_faits,
+        with_facts=not args.sans_faits, answer_backend=args.answer_backend,
     ))
 
 

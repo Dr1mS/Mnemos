@@ -59,6 +59,7 @@ from bench.eval_utils import (
     normalize_text,
     wilson_score_interval,
 )
+from bench.remote_llm import RemoteChat
 from mnemos.config import Settings
 from mnemos.llm.ollama_client import OllamaClient
 
@@ -222,7 +223,7 @@ async def preparer_vram(settings: Settings, keep: set[str], modele_reponse: str)
 
 async def run_instance(
     inst: HardUpdateInstance,
-    llm: OllamaClient,
+    llm: Any,
     answer_model: str,
     top_k: int,
     user_id: str,
@@ -336,10 +337,13 @@ def _diagnostic(row: dict[str, Any], label: str) -> str:
 
 async def main_async(args: argparse.Namespace) -> dict[str, Any]:
     settings = Settings(_env_file=None)  # type: ignore[call-arg]
-    garde = {args.answer_model, args.llm_model}
+    distant = args.answer_backend != "ollama"
+    # Répondeur distant : seul l'extracteur occupe la VRAM locale.
+    modele_local = args.llm_model if distant else args.answer_model
+    garde = {modele_local, args.llm_model}
     if args.embed_backend == "ollama":
         garde.add(settings.EMBED_MODEL)
-    vram = await preparer_vram(settings, garde, args.answer_model)
+    vram = await preparer_vram(settings, garde, modele_local)
     print(f"VRAM — déchargé : {vram['dechargés'] or 'rien'}"
           f" | libre {vram['libre_mib']} Mio | requis ~{vram['requis_mib']} Mio")
     if vram["étrangers"]:
@@ -352,16 +356,20 @@ async def main_async(args: argparse.Namespace) -> dict[str, Any]:
     print(f"Backend d'embeddings demandé : {args.embed_backend}\n")
 
     llm = OllamaClient(settings)
+    repondeur: Any = RemoteChat(args.answer_backend) if distant else llm
     # Vol d'essai : un appel par modèle avant toute mesure. Le 29/09, un run a
     # démarré sur un runner Ollama en mauvais état : 500 dès la première
     # saillance, retombée sur les scores par défaut, donc des faits différents
     # et un B incomparable — sans que rien ne l'arrête. Un bench qui mesure un
     # système dégradé est pire qu'un bench qui ne démarre pas.
-    for modele in sorted({args.answer_model, args.llm_model}):
+    essais = [(repondeur, args.answer_model), (llm, args.llm_model)]
+    for client, modele in dict.fromkeys(essais):
         try:
-            await llm.generate("Réponds OK.", modele, options={"num_predict": 4})
+            await client.generate("Réponds OK.", modele, options={"num_predict": 4})
         except Exception as exc:  # noqa: BLE001 — tout échec invalide la mesure
             await llm.aclose()
+            if distant:
+                await repondeur.aclose()
             print(f"\nARRÊT : {modele} ne répond pas ({exc}).")
             print("Redémarrer Ollama ou attendre, puis relancer.")
             return {"aborted": "ollama", "modele": modele, "erreur": str(exc)}
@@ -370,7 +378,7 @@ async def main_async(args: argparse.Namespace) -> dict[str, Any]:
     try:
         for n, inst in enumerate(instances, 1):
             row = await run_instance(
-                inst, llm, args.answer_model, args.top_k, args.user_id,
+                inst, repondeur, args.answer_model, args.top_k, args.user_id,
                 args.llm_model, args.embed_backend,
             )
             records.append(row)
@@ -383,6 +391,8 @@ async def main_async(args: argparse.Namespace) -> dict[str, Any]:
             )
     finally:
         await llm.aclose()
+        if distant:
+            await repondeur.aclose()
 
     o = sum(r["correct_O"] for r in records)
     a = sum(r["correct_A"] for r in records)
@@ -400,7 +410,8 @@ async def main_async(args: argparse.Namespace) -> dict[str, Any]:
 
     result = {
         "config": {"instances": n, "top_k": args.top_k, "user_id": args.user_id,
-                   "answer_model": args.answer_model, "extraction_model": args.llm_model,
+                   "answer_model": args.answer_model, "answer_backend": args.answer_backend,
+                   "extraction_model": args.llm_model,
                    "embed_backend": records[0]["embed_backend_effectif"] if records else None},
         "vram": vram,
         "accuracy": {"O_plafond_repondeur": o / n if n else 0.0,
@@ -462,6 +473,8 @@ def main() -> None:
     # que la mémoire échouait. qwen2.5 n'a pas de mode réflexion, et le 3b est
     # déjà résident pour l'extraction : zéro VRAM supplémentaire.
     parser.add_argument("--answer-model", default="qwen2.5:3b")
+    parser.add_argument("--answer-backend", choices=("ollama", "nvidia", "mistral"), default="ollama",
+                        help="ollama = local ; nvidia / mistral = API distante (données fabriquées)")
     parser.add_argument("--llm-model", default="qwen2.5:3b")
     # La production sert ses embeddings par llama-server depuis le 22/09. Suivre
     # l'environnement en silence, c'est mesurer une pile qu'on n'exploite plus.
