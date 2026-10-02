@@ -1,0 +1,168 @@
+Consolidation : 62 faits en 489 s | 419 épisodes, 0.86 épisodes/s | échecs d'extraction : 2
+Rangs des preuves relevés sur 150 questions
+  [1/150] cat 2 | A=✗ B=✗ | faits dans B : 6
+  [2/150] cat 2 | A=✗ B=✗ | faits dans B : 2
+  [3/150] cat 1 | A=✗ B=✗ | faits dans B : 2
+  [4/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [5/150] cat 2 | A=✓ B=✓ | faits dans B : 1
+  [6/150] cat 2 | A=✗ B=✗ | faits dans B : 1
+  [7/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [8/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [9/150] cat 3 | A=✗ B=✗ | faits dans B : 2
+  [10/150] cat 4 | A=✓ B=✓ | faits dans B : 9
+  [11/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [12/150] cat 1 | A=✗ B=✗ | faits dans B : 0
+  [13/150] cat 1 | A=✗ B=✗ | faits dans B : 0
+  [14/150] cat 1 | A=✗ B=✗ | faits dans B : 0
+  [15/150] cat 3 | A=✗ B=✗ | faits dans B : 0
+  [16/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [17/150] cat 4 | A=✓ B=✓ | faits dans B : 1
+  [18/150] cat 3 | A=✓ B=✓ | faits dans B : 0
+  [19/150] cat 4 | A=✓ B=✓ | faits dans B : 7
+  [20/150] cat 1 | A=✗ B=✗ | faits dans B : 0
+  [21/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [22/150] cat 1 | A=✗ B=✗ | faits dans B : 0
+  [23/150] cat 2 | A=✗ B=✗ | faits dans B : 1
+  [24/150] cat 1 | A=✗ B=✗ | faits dans B : 1
+  [25/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [26/150] cat 1 | A=✓ B=✗ | faits dans B : 0
+  [27/150] cat 4 | A=✗ B=✗ | faits dans B : 0
+  [28/150] cat 1 | A=✓ B=✓ | faits dans B : 0
+  [29/150] cat 3 | A=✗ B=✗ | faits dans B : 2
+  [30/150] cat 4 | A=✗ B=✗ | faits dans B : 1
+  [31/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [32/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [33/150] cat 1 | A=✓ B=✓ | faits dans B : 3
+  [34/150] cat 1 | A=✓ B=✓ | faits dans B : 0
+  [35/150] cat 1 | A=✗ B=✗ | faits dans B : 1
+  [36/150] cat 2 | A=✓ B=✓ | faits dans B : 0
+  [37/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [38/150] cat 4 | A=✗ B=✗ | faits dans B : 0
+  [39/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [40/150] cat 3 | A=✗ B=✗ | faits dans B : 0
+  [41/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [42/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [43/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [44/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [45/150] cat 2 | A=✗ B=✗ | faits dans B : 2
+  [46/150] cat 2 | A=✓ B=✓ | faits dans B : 0
+  [47/150] cat 1 | A=✓ B=✗ | faits dans B : 0
+  [48/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [49/150] cat 2 | A=✓ B=✓ | faits dans B : 1
+  [50/150] cat 4 | A=✗ B=✗ | faits dans B : 0
+  [51/150] cat 1 | A=✓ B=✓ | faits dans B : 0
+  [52/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [53/150] cat 2 | A=✗ B=✗ | faits dans B : 7
+  [54/150] cat 3 | A=✓ B=✓ | faits dans B : 1
+  [55/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [56/150] cat 1 | A=✗ B=✗ | faits dans B : 0
+  [57/150] cat 4 | A=✗ B=✗ | faits dans B : 9
+  [58/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [59/150] cat 4 | A=✓ B=✓ | faits dans B : 8
+  [60/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [61/150] cat 2 | A=✗ B=✗ | faits dans B : 2
+  [62/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [63/150] cat 4 | A=✗ B=✗ | faits dans B : 4
+  [64/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [65/150] cat 4 | A=✗ B=✗ | faits dans B : 1
+  [66/150] cat 4 | A=✗ B=✗ | faits dans B : 0
+  [67/150] cat 4 | A=✗ B=✗ | faits dans B : 35
+  [68/150] cat 4 | A=✗ B=✗ | faits dans B : 0
+  [69/150] cat 3 | A=✗ B=✗ | faits dans B : 1
+  [70/150] cat 4 | A=✓ B=✓ | faits dans B : 41
+  [71/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [72/150] cat 1 | A=✓ B=✓ | faits dans B : 6
+  [73/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [74/150] cat 4 | A=✓ B=✓ | faits dans B : 2
+  [75/150] cat 1 | A=✗ B=✗ | faits dans B : 2
+  [76/150] cat 2 | A=✗ B=✗ | faits dans B : 3
+  [77/150] cat 2 | A=✗ B=✗ | faits dans B : 1
+  [78/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [79/150] cat 2 | A=✗ B=✗ | faits dans B : 2
+  [80/150] cat 4 | A=✓ B=✓ | faits dans B : 1
+  [81/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [82/150] cat 4 | A=✓ B=✓ | faits dans B : 17
+  [83/150] cat 4 | A=✗ B=✗ | faits dans B : 25
+  [84/150] cat 4 | A=✗ B=✗ | faits dans B : 0
+  [85/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [86/150] cat 4 | A=✗ B=✗ | faits dans B : 15
+  [87/150] cat 4 | A=✓ B=✓ | faits dans B : 6
+  [88/150] cat 1 | A=✓ B=✓ | faits dans B : 0
+  [89/150] cat 4 | A=✓ B=✓ | faits dans B : 2
+  [90/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [91/150] cat 2 | A=✗ B=✗ | faits dans B : 3
+  [92/150] cat 3 | A=✗ B=✗ | faits dans B : 0
+  [93/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [94/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [95/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [96/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [97/150] cat 4 | A=✓ B=✓ | faits dans B : 3
+  [98/150] cat 2 | A=✗ B=✗ | faits dans B : 1
+  [99/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [100/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [101/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [102/150] cat 4 | A=✗ B=✓ | faits dans B : 0
+  [103/150] cat 1 | A=✗ B=✗ | faits dans B : 0
+  [104/150] cat 1 | A=✗ B=✗ | faits dans B : 4
+  [105/150] cat 1 | A=✗ B=✗ | faits dans B : 0
+  [106/150] cat 2 | A=✗ B=✗ | faits dans B : 2
+  [107/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [108/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [109/150] cat 4 | A=✗ B=✗ | faits dans B : 0
+  [110/150] cat 3 | A=✗ B=✗ | faits dans B : 0
+  [111/150] cat 4 | A=✓ B=✓ | faits dans B : 42
+  [112/150] cat 4 | A=✗ B=✗ | faits dans B : 1
+  [113/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [114/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [115/150] cat 4 | A=✓ B=✓ | faits dans B : 14
+  [116/150] cat 4 | A=✗ B=✗ | faits dans B : 0
+  [117/150] cat 3 | A=✗ B=✗ | faits dans B : 7
+  [118/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [119/150] cat 1 | A=✗ B=✗ | faits dans B : 2
+  [120/150] cat 1 | A=✗ B=✗ | faits dans B : 0
+  [121/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [122/150] cat 4 | A=✓ B=✓ | faits dans B : 6
+  [123/150] cat 4 | A=✓ B=✓ | faits dans B : 2
+  [124/150] cat 1 | A=✓ B=✓ | faits dans B : 2
+  [125/150] cat 1 | A=✓ B=✓ | faits dans B : 0
+  [126/150] cat 1 | A=✓ B=✓ | faits dans B : 0
+  [127/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [128/150] cat 4 | A=✓ B=✓ | faits dans B : 14
+  [129/150] cat 1 | A=✗ B=✗ | faits dans B : 0
+  [130/150] cat 2 | A=✓ B=✓ | faits dans B : 6
+  [131/150] cat 4 | A=✗ B=✗ | faits dans B : 0
+  [132/150] cat 3 | A=✓ B=✓ | faits dans B : 1
+  [133/150] cat 4 | A=✓ B=✓ | faits dans B : 8
+  [134/150] cat 4 | A=✗ B=✗ | faits dans B : 0
+  [135/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [136/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [137/150] cat 3 | A=✓ B=✓ | faits dans B : 3
+  [138/150] cat 4 | A=✓ B=✓ | faits dans B : 14
+  [139/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [140/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [141/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [142/150] cat 4 | A=✓ B=✓ | faits dans B : 0
+  [143/150] cat 1 | A=✗ B=✗ | faits dans B : 0
+  [144/150] cat 1 | A=✗ B=✗ | faits dans B : 0
+  [145/150] cat 3 | A=✗ B=✗ | faits dans B : 0
+  [146/150] cat 1 | A=✓ B=✓ | faits dans B : 2
+  [147/150] cat 1 | A=✗ B=✗ | faits dans B : 0
+  [148/150] cat 2 | A=✗ B=✗ | faits dans B : 0
+  [149/150] cat 4 | A=✓ B=✓ | faits dans B : 1
+  [150/150] cat 4 | A=✓ B=✓ | faits dans B : 5
+
+Exactitude A (épisodique) : 47.3 % (71/150)  |  B (avec faits) : 46.7 %
+Désaccords : seul A juste 2 | seul B juste 1  (sur 150 questions)
+  catégorie 1 (N=31) : A 39 % | B 32 %
+  catégorie 2 (N=37) : A 14 % | B 14 %
+  catégorie 3 (N=13) : A 31 % | B 31 %
+  catégorie 4 (N=69) : A 72 % | B 74 %
+
+Rangs des tours-preuves (A = épisodique) — indépendant du répondeur :
+  toutes  N=150 | rappel@100 0.877 | hit@10 0.673 | meilleur rang médian 3
+  1       N= 32 | rappel@100 0.813 | hit@10 0.531 | meilleur rang médian 7
+  2       N= 37 | rappel@100 0.973 | hit@10 0.892 | meilleur rang médian 2
+  3       N= 11 | rappel@100 0.900 | hit@10 0.636 | meilleur rang médian 6
+  4       N= 70 | rappel@100 0.887 | hit@10 0.629 | meilleur rang médian 3
+Code importé : C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\src\mnemos (RECENCY_WEIGHT=0.0909)
+Rapport : bench\results\gpu\conso_locomo_nemotron.json

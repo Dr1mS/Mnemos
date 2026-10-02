@@ -1,0 +1,28 @@
+VRAM — déchargé : rien | libre 8026 Mio | requis ~0 Mio
+
+  [1/13] hard_employeur_01  | O=OK  | A=OK  rangs=[1, 6, 2] | B=NON rangs=[2, 7, 3] | 'Velora'
+  [2/13] hard_employeur_02  | O=OK  | A=OK  rangs=[1, 6, 2] | B=NON rangs=[3, 8, 4] | 'Halcyon'
+  [3/13] hard_employeur_03  | O=OK  | A=OK  rangs=[3, 6, 1] | B=NON rangs=[4, 7, 2] | 'Quillon'
+  [4/13] hard_employeur_04  | O=OK  | A=OK  rangs=[4, 6, 2] | B=NON rangs=[5, 7, 3] | 'Velora'
+  [5/13] hard_ville_01      | O=NON | A=OK  rangs=[1, 10, 3] | B=NON rangs=[3, 12, 5] | 'Limoges'
+  [6/13] hard_ville_02      | O=OK  | A=OK  rangs=[1, 13, 3] | B=OK  rangs=[3, 13, 5] | 'Lorient'
+  [7/13] hard_ville_03      | O=OK  | A=OK  rangs=[1, 8, 3] | B=NON rangs=[3, 10, 5] | 'Colmar'
+  [8/13] hard_ville_04      | O=OK  | A=OK  rangs=[1, 10, 3] | B=NON rangs=[2, 12, 4] | 'Troyes'
+  [9/13] hard_outil_01      | O=OK  | A=OK  rangs=[1, 10, 2] | B=NON rangs=[1, 10, 2] | 'Obsidian'
+  [10/13] hard_outil_02      | O=OK  | A=OK  rangs=[1, 12, 2] | B=OK  rangs=[1, 11, 2] | 'Joplin'
+  [11/13] hard_outil_03      | O=OK  | A=OK  rangs=[1, 9, 2] | B=NON rangs=[1, 8, 2] | 'Craft'
+  [12/13] hard_objectif_01   | O=OK  | A=OK  rangs=[4, 2, 1] | B=OK  rangs=[7, 4, 3] | 'le marathon de Berlin'
+  [13/13] hard_objectif_02   | O=OK  | A=OK  rangs=[4, 1, 2] | B=OK  rangs=[4, 1, 2] | 'Le 100 km de Millau'
+
+O — plafond répondeur (transcript complet) : 12/13
+A — épisodique seul : 13/13
+B — /search AML     : 4/13
+discordances : seul A juste 9 | seul B juste 0 | McNemar p=0.004
+faits insérés : 21 | fait actif présent dans 4/13 | fait périmé présent dans 6/13
+causes d'échec (B) : {'récence': 6, 'réponse': 2, 'hors plafond': 1, 'ok': 4}
+
+Le taux seul ne mesure que la réponse : à top_k=100 tout le contexte
+remonte. Lire les rangs avant de conclure quoi que ce soit — et lire O
+d'abord : un échec que O partage ne dit rien de la mémoire. (O n'est
+pas une borne stricte : un contexte trié peut battre le transcript.)
+Rapport : bench\results\gpu\conso_d1_nemotron.json
