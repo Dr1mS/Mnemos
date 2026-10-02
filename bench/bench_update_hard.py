@@ -485,6 +485,12 @@ def main() -> None:
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")  # console Windows cp1252
+    if sys.platform == "win32":
+        # 02/10 : une coupure réseau (WinError 64) a cassé le canal de réveil de la
+        # boucle Proactor ; elle ne le réarme pas après une erreur, et le bench est
+        # resté figé 30 min sans rien dire. La boucle Selector garde ce canal
+        # inscrit en permanence.
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     asyncio.run(main_async(args))
 
 
