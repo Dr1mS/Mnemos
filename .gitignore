@@ -26,3 +26,5 @@ backups/
 
 # Historiques PersonaMem téléchargés à la demande par bench/bench_personamem.py
 bench/data/personamem/chats/
+bench/data/locomo10.json
+bench/data/longmemeval/
