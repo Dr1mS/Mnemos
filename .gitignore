@@ -28,3 +28,4 @@ backups/
 bench/data/personamem/chats/
 bench/data/locomo10.json
 bench/data/longmemeval/
+bench/data/aml_pipeline/

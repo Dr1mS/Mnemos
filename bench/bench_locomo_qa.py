@@ -18,6 +18,7 @@ import asyncio
 import json
 import os
 import random
+import re
 import shutil
 import sys
 import tempfile
@@ -34,6 +35,7 @@ os.environ.setdefault("DECAY_RATE_DAILY", "0.0")
 
 import httpx
 
+from bench import aml_officiel
 from bench.bench_locomo import drain_consolidation, parse_locomo_datetime, setup_bench_app
 from bench.remote_llm import RemoteChat
 from mnemos.config import Settings
@@ -79,6 +81,11 @@ def _evidence_ranks(contents: list[str], ids: list[str]) -> list[int | None]:
     ]
 
 
+# Identifiant de tour que ce bench préfixe pour relever les rangs des preuves ;
+# retiré du texte montré au répondeur sous consignes officielles.
+_DIA = re.compile(r"^\[D\d+:\d+\]\s*")
+
+
 def _format_context(items: list[tuple[str, str]]) -> str:
     return "\n".join(f"{i}. [{date}] {content}" for i, (date, content) in enumerate(items, 1))
 
@@ -96,7 +103,13 @@ async def run_qa_bench(
     user_id: str = "locomo_qa",
     with_facts: bool = True,
     answer_backend: str = "ollama",
+    consignes: str = "mnemos",
 ) -> dict[str, Any]:
+    # Consignes officielles (bench/aml_officiel.py) : bras de production seul,
+    # rendu avec dates (A) et sans dates (S) ; pas de bras « faits ».
+    officiel = aml_officiel.charger("locomo-refined") if consignes == "officielles" else None
+    if officiel is not None and with_facts:
+        raise SystemExit("--consignes officielles mesure la production : ajouter --sans-faits")
     data = json.loads(Path("bench/data/locomo_sample.json").read_text(encoding="utf-8"))
     conv = data["conversation"]
     pool = [q for q in data["qa"] if q.get("category") != 5 and q.get("answer") is not None]
@@ -110,6 +123,13 @@ async def run_qa_bench(
 
     async def ask(prompt: str, fmt: str | None = None) -> str:
         return await repondeur.generate(prompt, answer_model, format=fmt, options=llm_opts)  # type: ignore[no-any-return]
+
+    # Pipelines officiels : max_tokens 256 pour la réponse comme pour le juge, qui
+    # écrit une phrase d'explication avant son label.
+    opts_officiels = {"temperature": 0.0, "num_ctx": 16384, "num_predict": 256}
+
+    async def ask_officiel(prompt: str) -> str:
+        return await repondeur.generate(prompt, answer_model, options=opts_officiels)  # type: ignore[no-any-return]
 
     # Vol d'essai : un runner Ollama en mauvais état fait retomber la saillance
     # sur ses valeurs par défaut sans rien arrêter (vu le 29/09). Mieux vaut ne
@@ -205,6 +225,28 @@ async def run_qa_bench(
                         "facts_in_context": len(fact_ranks),
                         "first_fact_rank": fact_ranks[0] if fact_ranks else None,
                     }
+                    if officiel is not None:
+                        # Consignes officielles : le contexte est la réponse de la route
+                        # /search, rendue par locuteur comme le gabarit de la plateforme,
+                        # avec (A) ou sans (S) created_at — on ignore lequel elle montre.
+                        souvenirs = [(str(it.get("created_at", "")), _DIA.sub("", it["content"]))
+                                     for it in items]
+                        locuteurs = [(nom, [s for s in souvenirs if s[1].startswith(f"{nom}:")])
+                                     for nom in (conv["speaker_a"], conv["speaker_b"])]
+                        for label, avec_dates in (("A", True), ("S", False)):
+                            answer = (await ask_officiel(aml_officiel.consigne_reponse(
+                                officiel, q["question"], locuteurs, avec_dates))).strip()
+                            sortie = await ask_officiel(aml_officiel.consigne_juge(
+                                officiel, q["question"], str(q["answer"]), answer))
+                            juge = aml_officiel.verdict(officiel, sortie)
+                            row[f"answer_{label}"] = answer
+                            row[f"correct_{label}"] = bool(juge)
+                            row[f"juge_illisible_{label}"] = juge is None
+                        records.append(row)
+                        print(f"  [{n}/{len(questions)}] cat {q['category']}"
+                              f" | avec dates {'✓' if row['correct_A'] else '✗'}"
+                              f" | sans dates {'✓' if row['correct_S'] else '✗'}", flush=True)
+                        continue
                     for label, ctx in (("A", ctx_a), ("B", ctx_b))[: 2 if with_facts else 1]:
                         answer = (await ask(ANSWER_PROMPT.format(
                             context=_format_context(ctx), question=q["question"],
@@ -226,10 +268,12 @@ async def run_qa_bench(
         shutil.rmtree(tmp, ignore_errors=True)
 
     n = len(records)
-    bras = ("A", "B") if with_facts else ("A",)
+    # Second bras : B (avec faits) sous nos consignes, S (sans dates) sous les officielles.
+    bras = ("A", "S") if officiel is not None else (("A", "B") if with_facts else ("A",))
+    second = bras[1] if len(bras) > 1 else None
     acc = {lab: sum(r[f"correct_{lab}"] for r in records) / n for lab in bras}
-    only_a = sum(r["correct_A"] and not r.get("correct_B", False) for r in records) if with_facts else None
-    only_b = sum(r.get("correct_B", False) and not r["correct_A"] for r in records) if with_facts else None
+    only_a = sum(r["correct_A"] and not r[f"correct_{second}"] for r in records) if second else None
+    only_b = sum(r[f"correct_{second}"] and not r["correct_A"] for r in records) if second else None
     by_cat: dict[int, dict[str, float]] = {}
     for c in sorted({r["category"] for r in records}):
         rows = [r for r in records if r["category"] == c]
@@ -261,6 +305,12 @@ async def run_qa_bench(
     result = {
         "config": {"questions": n, "seed": seed, "top_k": top_k, "answer_and_judge_model": answer_model,
                    "answer_backend": answer_backend, "consolidation": {**cons, **debit},
+                   "consignes": consignes,
+                   "aml_pipeline_commit": ((aml_officiel.RACINE / "COMMIT").read_text().strip()
+                                           if officiel is not None and (aml_officiel.RACINE / "COMMIT").exists()
+                                           else None),
+                   "juge_illisible": (sum(r.get(f"juge_illisible_{lab}", False) for r in records
+                                          for lab in bras) if officiel is not None else None),
                    "user_id": user_id, "with_facts": with_facts,
                    "embed_backend": os.environ.get("EMBED_BACKEND", "ollama"),
                    "extraction_model": "qwen2.5:3b", "facts_inserted": cons["facts_inserted"],
@@ -279,12 +329,16 @@ async def run_qa_bench(
     output.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
 
     n_a = sum(r["correct_A"] for r in records)
-    b_acc = f"  |  B (avec faits) : {acc['B'] * 100:.1f} %" if with_facts else "  (bras B non mesuré)"
-    print(f"\nExactitude A (épisodique) : {acc['A'] * 100:.1f} % ({n_a}/{n}){b_acc}")
-    if with_facts:
-        print(f"Désaccords : seul A juste {only_a} | seul B juste {only_b}  (sur {n} questions)")
+    nom_a = "avec dates" if officiel is not None else "épisodique"
+    nom_second = {"B": "avec faits", "S": "sans dates"}.get(second or "", "")
+    b_acc = (f"  |  {second} ({nom_second}) : {acc[second] * 100:.1f} %" if second
+             else "  (bras B non mesuré)")
+    print(f"\nConsignes : {consignes}")
+    print(f"Exactitude A ({nom_a}) : {acc['A'] * 100:.1f} % ({n_a}/{n}){b_acc}")
+    if second:
+        print(f"Désaccords : seul A juste {only_a} | seul {second} juste {only_b}  (sur {n} questions)")
     for c, m in by_cat.items():
-        b_cat = f" | B {m['B'] * 100:.0f} %" if with_facts else ""
+        b_cat = f" | {second} {m[second] * 100:.0f} %" if second else ""
         print(f"  catégorie {c} (N={m['count']}) : A {m['A'] * 100:.0f} %{b_cat}")
     print("\nRangs des tours-preuves (A = épisodique) — indépendant du répondeur :")
     for c, par in [("toutes", result["evidence_ranks"]["all"]), *rangs_par_cat.items()]:
@@ -312,6 +366,9 @@ def main() -> None:
     # par question, pour une configuration que la production n'expédie pas.
     parser.add_argument("--sans-faits", action="store_true",
                         help="mesurer seulement le bras A (épisodique), comme en production")
+    # Consignes du répondeur et du juge de la plateforme, lues depuis son dépôt public
+    # (bench/aml_officiel.py). Exige --sans-faits ; mesure avec et sans dates affichées.
+    parser.add_argument("--consignes", choices=("mnemos", "officielles"), default="mnemos")
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")  # console Windows cp1252
@@ -324,6 +381,7 @@ def main() -> None:
     asyncio.run(run_qa_bench(
         args.questions, args.seed, args.top_k, args.answer_model, args.output, args.user_id,
         with_facts=not args.sans_faits, answer_backend=args.answer_backend,
+        consignes=args.consignes,
     ))
 
 
