@@ -110,6 +110,28 @@ def garder_la_boucle(loop: asyncio.AbstractEventLoop) -> None:
     loop.set_exception_handler(gestionnaire)
 
 
+class Cache:
+    """Résultats écrits au fil de l'eau, une ligne JSON par conversation LoCoMo ou
+    question LongMemEval. Le 05/10 à 0 h 38, la pression mémoire de la machine a tué
+    le run après LoCoMo et 30 questions LongMemEval : tout était perdu, le rapport
+    n'étant écrit qu'à la fin. Relancer avec le même cache reprend où on en était."""
+
+    def __init__(self, chemin: Path) -> None:
+        self.chemin = chemin
+        self.faits: dict[str, list[dict[str, Any]]] = {}
+        if chemin.exists():
+            for ligne in chemin.read_text(encoding="utf-8").splitlines():
+                if ligne.strip():
+                    entree = json.loads(ligne)
+                    self.faits[entree["cle"]] = entree["lignes"]
+
+    def ajouter(self, cle: str, lignes: list[dict[str, Any]]) -> None:
+        self.faits[cle] = lignes
+        self.chemin.parent.mkdir(parents=True, exist_ok=True)
+        with self.chemin.open("a", encoding="utf-8") as f:
+            f.write(json.dumps({"cle": cle, "lignes": lignes}, ensure_ascii=False) + "\n")
+
+
 def _moitie_lme(question_id: str) -> str:
     h = int(hashlib.md5(question_id.encode()).hexdigest(), 16)
     return "dev" if h % 2 == 0 else "val"
@@ -138,11 +160,20 @@ async def _rangs(client: httpx.AsyncClient, user_id: str, question: str, top_k: 
     return [rang_par_preuve.get(p) for p in preuves]
 
 
-async def mesurer_locomo(client: httpx.AsyncClient, top_k: int,
-                         parallele: int) -> list[dict[str, Any]]:
+async def mesurer_locomo(client: httpx.AsyncClient, top_k: int, parallele: int,
+                         cache: Cache) -> list[dict[str, Any]]:
     data = json.loads(LOCOMO.read_text(encoding="utf-8"))
     verrou = asyncio.Semaphore(parallele)
-    par_conv = await asyncio.gather(*(_locomo_conv(client, c, top_k, verrou) for c in data))
+
+    async def une(c: dict[str, Any]) -> list[dict[str, Any]]:
+        cle = f"locomo:{c['sample_id']}"
+        if cle in cache.faits:
+            return cache.faits[cle]
+        lignes = await _locomo_conv(client, c, top_k, verrou)
+        cache.ajouter(cle, lignes)
+        return lignes
+
+    par_conv = await asyncio.gather(*(une(c) for c in data))
     return [x for lignes in par_conv for x in lignes]
 
 
@@ -179,7 +210,8 @@ async def _locomo_conv(client: httpx.AsyncClient, c: dict[str, Any], top_k: int,
 
 
 async def mesurer_longmemeval(client: httpx.AsyncClient, top_k: int, types: set[str],
-                              limite: int | None, parallele: int) -> list[dict[str, Any]]:
+                              limite: int | None, parallele: int,
+                              cache: Cache) -> list[dict[str, Any]]:
     data = json.loads(LONGMEMEVAL.read_text(encoding="utf-8"))
     choisies = [q for q in data if q["question_type"] in types]
     if limite:
@@ -191,8 +223,13 @@ async def mesurer_longmemeval(client: httpx.AsyncClient, top_k: int, types: set[
 
     async def une(q: dict[str, Any]) -> dict[str, Any] | None:
         nonlocal faites
+        cle = f"lme:{q['question_id']}"
+        if cle in cache.faits:
+            deja = cache.faits[cle]
+            return deja[0] if deja else None
         async with verrou:
             ligne = await _lme_question(client, q, top_k)
+        cache.ajouter(cle, [ligne] if ligne else [])
         faites += 1
         if faites % 10 == 0:
             print(f"  LongMemEval {faites}/{len(choisies)} ({time.perf_counter() - t0:.0f} s)", flush=True)
@@ -262,16 +299,19 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
     tmp = Path(tempfile.mkdtemp(prefix="mnemos_temporel_"))
     lignes: list[dict[str, Any]] = []
     garder_la_boucle(asyncio.get_running_loop())
+    cache = Cache(args.cache)
+    if cache.faits:
+        print(f"Reprise : {len(cache.faits)} entrées déjà dans {args.cache}", flush=True)
     try:
         app, _, _ = await setup_bench_app(tmp, "ollama", salience_workers=0)
         async with app.router.lifespan_context(app):
             transport = httpx.ASGITransport(app=app)
             async with httpx.AsyncClient(transport=transport, base_url="http://t", timeout=600) as client:
                 if "locomo" in args.jeux:
-                    lignes += await mesurer_locomo(client, args.top_k, args.parallele)
+                    lignes += await mesurer_locomo(client, args.top_k, args.parallele, cache)
                 if "longmemeval" in args.jeux:
                     lignes += await mesurer_longmemeval(client, args.top_k, set(args.types),
-                                                        args.limite, args.parallele)
+                                                        args.limite, args.parallele, cache)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -318,6 +358,8 @@ def main() -> None:
     # llama-server sert 16 requêtes à la fois ; une question à la fois en laissait 15 au repos.
     parser.add_argument("--parallele", type=int, default=6, help="questions ingérées en parallèle")
     parser.add_argument("--output", type=Path, default=Path("bench/results/gpu/temporal_recall.json"))
+    parser.add_argument("--cache", type=Path, default=Path("bench/results/gpu/temporal_recall.cache.jsonl"),
+                        help="résultats au fil de l'eau ; relancer avec le même fichier reprend le run")
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")  # console Windows cp1252
