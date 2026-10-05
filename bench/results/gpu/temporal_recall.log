@@ -1,0 +1,55 @@
+  LoCoMo conv-30 : 81 questions
+  LoCoMo conv-26 : 150 questions
+  LoCoMo conv-41 : 152 questions
+  LoCoMo conv-42 : 199 questions
+  LoCoMo conv-43 : 178 questions
+  LoCoMo conv-44 : 123 questions
+  LoCoMo conv-47 : 150 questions
+  LoCoMo conv-48 : 191 questions
+  LoCoMo conv-49 : 156 questions
+  LoCoMo conv-50 : 156 questions
+  LongMemEval 10/133 (1528 s)
+  LongMemEval 20/133 (2442 s)
+  LongMemEval 30/133 (3514 s)
+  LoCoMo conv-30 : 81 questions
+  LoCoMo conv-26 : 150 questions
+  LoCoMo conv-41 : 152 questions
+  LoCoMo conv-42 : 199 questions
+  LoCoMo conv-43 : 178 questions
+  LoCoMo conv-44 : 123 questions
+  LoCoMo conv-47 : 150 questions
+  LoCoMo conv-48 : 191 questions
+  LoCoMo conv-49 : 156 questions
+  LoCoMo conv-50 : 156 questions
+  LongMemEval 10/133 (1065 s)
+  LongMemEval 20/133 (1900 s)
+  LongMemEval 30/133 (2871 s)
+  LongMemEval 40/133 (3728 s)
+  LongMemEval 50/133 (4794 s)
+  LongMemEval 60/133 (5760 s)
+  LongMemEval 70/133 (6765 s)
+  LongMemEval 80/133 (7843 s)
+  LongMemEval 90/133 (8812 s)
+  LongMemEval 100/133 (9947 s)
+  LongMemEval 110/133 (10944 s)
+  LongMemEval 120/133 (12023 s)
+  LongMemEval 130/133 (13033 s)
+
+groupe                                          N toutes@10 toutes@100  une@10 présentes pire méd. multi multi@100
+locomo | 1 | dev                               32     0.062      0.562     0.5     0.773      49.0    29     0.552
+locomo | 1 | val                              250     0.124        0.5   0.612     0.725        29   248     0.496
+locomo | 1 | toutes                           282     0.117      0.507   0.599     0.729        35   277     0.502
+locomo | 2 | dev                               37     0.865      0.973   0.865     0.973       2.0     0      None
+locomo | 2 | val                              284     0.694      0.873   0.764     0.885       2.0    40     0.625
+locomo | 2 | toutes                           321     0.713      0.885   0.776     0.893       2.0    40     0.625
+locomo | 3 | dev                               11     0.182      0.727   0.545       0.8      37.5     8     0.625
+locomo | 3 | val                               81      0.21      0.543   0.395     0.556      19.0    39     0.308
+locomo | 3 | toutes                            92     0.207      0.565   0.413      0.58      23.5    47     0.362
+locomo | 4 | dev                               70     0.643        0.9   0.657     0.901         3     1       1.0
+locomo | 4 | val                              771     0.658      0.939   0.687     0.939       3.0    45     0.733
+locomo | 4 | toutes                           841     0.656      0.936   0.685     0.936         3    46     0.739
+longmemeval | temporal-reasoning | dev         52     0.769      0.981   0.942      0.99         5    37       1.0
+longmemeval | temporal-reasoning | val         80     0.675      0.988     0.9     0.994         5    56     0.982
+longmemeval | temporal-reasoning | toutes     132     0.712      0.985   0.917     0.992       5.0    93     0.989
+
+Code importé : C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\src\mnemos | Rapport : bench\results\gpu\temporal_recall.json
