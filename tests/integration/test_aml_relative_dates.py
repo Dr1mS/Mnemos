@@ -37,11 +37,12 @@ def _settings(tmp_path: Path, annoter: bool) -> Settings:
 
 async def _client(tmp_path: Path, annoter: bool) -> AsyncIterator[httpx.AsyncClient]:
     app, engines = await make_stub_app(tmp_path, settings=_settings(tmp_path, annoter))
-    async with app.router.lifespan_context(app):
-        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app),
-                                     base_url="http://test") as c:
-            c.app_state = app.state  # type: ignore[attr-defined]
-            yield c
+    async with (
+        app.router.lifespan_context(app),
+        httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as c,
+    ):
+        c.app_state = app.state  # type: ignore[attr-defined]
+        yield c
     for engine in engines:
         await engine.dispose()
 
@@ -86,8 +87,13 @@ async def test_sans_horodatage_de_la_source_rien_n_est_ajoute(annote: httpx.Asyn
     assert [c for _, c, _ in await _stocke(annote)] == [BRUT]
 
 
-async def test_reglage_desactive_par_defaut(brut: httpx.AsyncClient) -> None:
-    assert Settings(_env_file=None).RELATIVE_DATES_ANNOTATION is False  # type: ignore[call-arg]
+def test_reglage_active_par_defaut() -> None:
+    """Adopté le 05/10 sur la validation LoCoMo (voir config.py)."""
+    assert Settings(_env_file=None).RELATIVE_DATES_ANNOTATION is True  # type: ignore[call-arg]
+
+
+async def test_reglage_desactive_rien_n_est_ajoute(brut: httpx.AsyncClient) -> None:
+    """Le réglage reste un interrupteur : désactivé, le texte est stocké tel quel."""
     await _add(brut, "r1", [{"role": "user", "content": BRUT, "timestamp": LUNDI}])
     assert [c for _, c, _ in await _stocke(brut)] == [BRUT]
 
@@ -98,8 +104,9 @@ async def test_index_construit_sur_le_texte_brut(annote: httpx.AsyncClient) -> N
     assert contenu == ANNOTE
     store = annote.app_state.store  # type: ignore[attr-defined]
     async with store._sessions() as s:
-        bits = (await s.execute(text("SELECT sparse_bits FROM episodes_sparse WHERE episode_id = :i"),
-                                {"i": ep_id})).scalar_one()
+        bits = (await s.execute(
+            text("SELECT sparse_bits FROM episodes_sparse WHERE episode_id = :i"),
+            {"i": ep_id})).scalar_one()
         blob = (await s.execute(text("SELECT embedding FROM episodes_vec WHERE episode_id = :i"),
                                 {"i": ep_id})).scalar_one()
     assert bytes(bits) == sparse_encode(BRUT, cree)

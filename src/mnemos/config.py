@@ -60,9 +60,11 @@ class Settings(BaseSettings):
     EPISODIC_RETENTION_DAYS: int = 90
 
     # Dates relatives résolues à l'écriture sur la route AML (router/relative_dates.py) :
-    # « yesterday » → « yesterday (27 August 2023) ». Désactivé tant que la
-    # validation sur les conversations LoCoMo hors développement n'est pas faite.
-    RELATIVE_DATES_ANNOTATION: bool = False
+    # « yesterday » → « yesterday (27 August 2023) ». Activé le 05/10/2026 après
+    # validation sur 9 conversations LoCoMo hors développement, consignes
+    # officielles : questions de dates 108 → 166 / 282 avec Nemotron 3 Ultra
+    # (139 → 178 / 280 avec qwen2.5 7B), autres catégories inchangées.
+    RELATIVE_DATES_ANNOTATION: bool = True
 
     # Consolidation worker
     CONSOLIDATION_AUTO: bool = True
