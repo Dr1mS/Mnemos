@@ -11,7 +11,7 @@ colonne/index) et réversible.
 Backfill : `ADD COLUMN ... NOT NULL DEFAULT 'user'` remplit l'existant avec
 le tenant personnel — les épisodes déjà en base restent la mémoire de `user`.
 Rollback : DROP de l'index + de la colonne (SQLite ≥ 3.35 supporte DROP
-COLUMN). Note complète dans MNEMOS_API.md / la note de migration.
+COLUMN). Note complète dans docs/MNEMOS_API.md / la note de migration.
 """
 from __future__ import annotations
 

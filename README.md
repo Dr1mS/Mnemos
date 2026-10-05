@@ -25,7 +25,7 @@ evaluated code has not moved with `git diff 2f6539c..HEAD -- src/`, which is emp
 | **Storage** | SQLite + `sqlite-vec`, one transaction per Add; HTTP 200 is returned only after commit, so a memory is searchable immediately. |
 | **Isolation** | `user_id` is the only boundary. `session_id` groups episodes but never filters Search. |
 | **Retrieval** | Hybrid: `0.7·dense + 0.3·sparse + 0.1·recency`, deduplicated, ranked, at most `top_k`. Search **never generates answers**; `options` are accepted and ignored. |
-| **Disabled for this evaluation** | The LLM consolidation layer (salience scoring, fact extraction). Measured as no gain in retrieval or answer accuracy while halving throughput. See `AML_DEPLOYMENT_WINDOWS.md`. |
+| **Disabled for this evaluation** | The LLM consolidation layer (salience scoring, fact extraction). Measured as no gain in retrieval or answer accuracy while halving throughput. See `docs/AML_DEPLOYMENT_WINDOWS.md`. |
 
 ### Verify the contract yourself
 
@@ -57,7 +57,7 @@ embeddings stubbed out the storage path sustains 615 messages/s.
 
 ### Reproduce
 
-`AML_DEPLOYMENT_WINDOWS.md` is the full deployment guide (environment, scheduled tasks,
+`docs/AML_DEPLOYMENT_WINDOWS.md` is the full deployment guide (environment, scheduled tasks,
 reverse proxy). `MNEMOS_SPEC.md` is the design spec. Benchmarks and their raw results are
 in `bench/` and `bench/results/gpu/`. Tests: `pytest` — 252 collected, 242 passing with no
 network access at all; the 10 marked `requires_ollama` are skipped unless a local Ollama is
@@ -114,7 +114,7 @@ The golden rule, borrowed from neuroscience: **memories are never overwritten, t
 - 🗂️ **Versioned facts** — supersession on functional predicates, coexistence on multi, explicit retraction, full audit chain
 - 🧭 **FR/EN router** — lexical classification ("yesterday" → episodic, "what do you know about" → semantic, "how did my preference change" → history)
 - 🔌 **Native MCP** — 5 tools (`memory_query`, `memory_write`, `memory_forget`, `memory_facts`, `memory_consolidate`) for Antigravity CLI (`agy`), Claude Code & Claude Desktop
-- 🏛️ **Multi-tenant** — a `tenant` dimension isolates parallel memories (personal, an app, an NPC…) with strict end-to-end sealing. Optional everywhere, defaults to `user` — existing clients are untouched. Contract: **[MNEMOS_API.md](MNEMOS_API.md)**
+- 🏛️ **Multi-tenant** — a `tenant` dimension isolates parallel memories (personal, an app, an NPC…) with strict end-to-end sealing. Optional everywhere, defaults to `user` — existing clients are untouched. Contract: **[docs/MNEMOS_API.md](docs/MNEMOS_API.md)**
 - 🌌 **3D visualizer** — your memory as a living constellation: entities as stars, facts as glowing links, superseded facts as tethered ghosts, memories as dust that literally fades with decay
 - 🛡️ **Measured defense in depth** — salience filters emotional-but-impersonal content, the extractor rejects hypotheticals/past-tense/third-party statements (bench: 0 traps end-to-end on an adversarial corpus)
 - ❤️‍🩹 **Operational health** — `GET /v1/health` probes both DBs *and* the Ollama embedding endpoint (the outage that breaks read *and* write), naming the failing dependency — 2 s timeout, meant to be polled every tick
@@ -218,7 +218,7 @@ Full specification: **[MNEMOS_SPEC.md](MNEMOS_SPEC.md)** (rev 1.2, French) · mo
 | `mnemos consolidate / decay / worker` | `POST /v1/admin/consolidate` · `POST /v1/admin/decay` |
 | `mnemos stats / doctor / export / backup` | `GET /v1/health` · `POST /v1/sessions/{id}/reset` |
 
-Every endpoint takes an optional `tenant` (defaults to `user`). Optional auth via `X-API-Key` header. Atomic backups via `VACUUM INTO` (never raw-copy a WAL database). **Full HTTP contract: [MNEMOS_API.md](MNEMOS_API.md).**
+Every endpoint takes an optional `tenant` (defaults to `user`). Optional auth via `X-API-Key` header. Atomic backups via `VACUUM INTO` (never raw-copy a WAL database). **Full HTTP contract: [docs/MNEMOS_API.md](docs/MNEMOS_API.md).**
 
 ## ✅ Done criterion & tests
 
@@ -241,7 +241,7 @@ Importing an existing memory (JSONL episodes + distilled facts): `scripts/import
 - [x] Fact retraction — negation detection delegated to the consuming LLM via `memory_forget`
 - [x] Recovery of lost salience scorings on worker restart
 - [x] 3D visualizer — Memory Constellation (`/viz`)
-- [x] Multi-tenant — isolated parallel memories, canonical subject per tenant, tenant-scoped `/v1/health` (contract in `MNEMOS_API.md`)
+- [x] Multi-tenant — isolated parallel memories, canonical subject per tenant, tenant-scoped `/v1/health` (contract in `docs/MNEMOS_API.md`)
 - [ ] Tenant-aware salience (the tagger is still user-centric — a non-personal tenant under-scores)
 - [ ] Episodic fallback when semantic scores are low
 - [ ] Extraction mode for non-conversational content (summaries)
@@ -294,7 +294,7 @@ La règle d'or héritée de la neuro : **on n'écrase jamais un souvenir, on le 
 - 🗂️ **Faits versionnés** — supersession sur les prédicats fonctionnels, coexistence sur les multi, rétractation explicite, chaîne d'audit complète
 - 🧭 **Router FR/EN** — classification lexicale (« hier » → épisodique, « qu'est-ce que tu sais sur » → sémantique, « comment ma préférence a évolué » → historique)
 - 🔌 **MCP natif** — 5 tools (`memory_query`, `memory_write`, `memory_forget`, `memory_facts`, `memory_consolidate`) pour Antigravity CLI (`agy`), Claude Code & Claude Desktop
-- 🏛️ **Multi-tenant** — une dimension `tenant` isole des mémoires parallèles (perso, une app, un NPC…) avec étanchéité stricte end-to-end. Optionnel partout, défaut `user` — les clients existants ne changent pas. Contrat : **[MNEMOS_API.md](MNEMOS_API.md)**
+- 🏛️ **Multi-tenant** — une dimension `tenant` isole des mémoires parallèles (perso, une app, un NPC…) avec étanchéité stricte end-to-end. Optionnel partout, défaut `user` — les clients existants ne changent pas. Contrat : **[docs/MNEMOS_API.md](docs/MNEMOS_API.md)**
 - 🌌 **Visualiseur 3D** — votre mémoire en constellation vivante : entités-étoiles, faits-liens lumineux, faits supersédés en fantômes rattachés, souvenirs en poussière qui s'éteint littéralement avec le decay
 - 🛡️ **Défense en profondeur mesurée** — la salience filtre l'émotionnel-non-personnel, l'extracteur rejette hypothétiques/temps passé/tiers (bench : 0 piège end-to-end sur corpus adversarial)
 - ❤️‍🩹 **Santé opérationnelle** — `GET /v1/health` sonde les deux DB *et* l'endpoint d'embedding Ollama (la panne qui casse lecture *et* écriture), en nommant la dépendance fautive — timeout 2 s, pensé pour être appelé à chaque tick
@@ -346,7 +346,7 @@ Survol pour les tooltips, clic pour l'inspecteur (avec l'historique complet des 
 
 Identiques à la section anglaise ci-dessus — `mnemos --help` pour le détail des commandes, `python scripts/demo.py` pour le juge de paix (10/10 checks sur le profil CPU), et la roadmap est tenue à jour dans la version anglaise.
 
-**Multi-tenant** : chaque endpoint accepte un `tenant` optionnel (défaut `user`), avec isolation stricte. Contrat HTTP complet consommé par les intégrations : **[MNEMOS_API.md](MNEMOS_API.md)**. Smoke test end-to-end : `python scripts/smoke_tenant.py` (Ollama réel).
+**Multi-tenant** : chaque endpoint accepte un `tenant` optionnel (défaut `user`), avec isolation stricte. Contrat HTTP complet consommé par les intégrations : **[docs/MNEMOS_API.md](docs/MNEMOS_API.md)**. Smoke test end-to-end : `python scripts/smoke_tenant.py` (Ollama réel).
 
 Spécification complète : **[MNEMOS_SPEC.md](MNEMOS_SPEC.md)** (rev 1.2) · benchs des modèles : **[poc/RESULTS.md](poc/RESULTS.md)**
 
