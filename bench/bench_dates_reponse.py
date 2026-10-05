@@ -150,13 +150,20 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                             souvenirs = [(str(it.get("created_at", "")), it["content"]) for it in items]
                             locuteurs = [(nom, [s for s in souvenirs if s[1].startswith(f"{nom}:")])
                                          for nom in (conv["speaker_a"], conv["speaker_b"])]
-                            async with verrou:
-                                reponse = (await repondeur.generate(aml_officiel.consigne_reponse(
-                                    officiel, q["question"], locuteurs, True),
-                                    args.answer_model, options=opts)).strip()
-                                sortie = await repondeur.generate(aml_officiel.consigne_juge(
-                                    officiel, q["question"], str(q["answer"]), reponse),
-                                    args.answer_model, options=opts)
+                            # 05/10 : dix 429 de suite sur un appel ont fait tomber tout le
+                            # lot. Une question en échec est sautée, pas enregistrée : la
+                            # reprise suivante la refait.
+                            try:
+                                async with verrou:
+                                    reponse = (await repondeur.generate(aml_officiel.consigne_reponse(
+                                        officiel, q["question"], locuteurs, True),
+                                        args.answer_model, options=opts)).strip()
+                                    sortie = await repondeur.generate(aml_officiel.consigne_juge(
+                                        officiel, q["question"], str(q["answer"]), reponse),
+                                        args.answer_model, options=opts)
+                            except RuntimeError as exc:
+                                print(f"  [{cond}] sautée, à refaire : {cid} #{i} ({exc})", flush=True)
+                                return
                             juge = aml_officiel.verdict(officiel, sortie)
                             x = {"cle": f"{cond}|{cid}|{i}", "condition": cond, "conv": cid,
                                  "categorie": q["category"], "question": q["question"],
