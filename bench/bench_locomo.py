@@ -18,7 +18,7 @@ import shutil
 import sys
 import tempfile
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -40,7 +40,12 @@ from mnemos.tagger.salience import SalienceTagger, ScoringQueue
 
 
 def parse_locomo_datetime(dt_str: str | None) -> int:
-    """Convertit un datetime LoCoMo (ex: '1:56 pm on 8 May, 2023') en epoch ms."""
+    """Convertit un datetime LoCoMo (ex: '1:56 pm on 8 May, 2023') en epoch ms.
+
+    L'heure est lue telle quelle, en UTC. Jusqu'au 05/10/2026 elle était lue dans
+    le fuseau de la machine (Paris) : « 12:06 am on 11 November » devenait le 10
+    novembre à 23 h 06 UTC, et toute date tirée de ces sessions reculait d'un jour
+    (dates affichées au répondeur, dates relatives résolues)."""
     if not dt_str:
         return int(time.time() * 1000)
     match = re.search(
@@ -56,7 +61,7 @@ def parse_locomo_datetime(dt_str: str | None) -> int:
         h = 0
     try:
         dt = datetime.strptime(f"{year}-{month}-{int(day):02d} {h:02d}:{minute}:00", "%Y-%B-%d %H:%M:%S")
-        return int(dt.timestamp() * 1000)
+        return int(dt.replace(tzinfo=UTC).timestamp() * 1000)
     except Exception:
         return int(time.time() * 1000)
 
