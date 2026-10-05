@@ -46,6 +46,18 @@ from mnemos.config import Settings
 from mnemos.llm.ollama_client import OllamaClient
 
 LOCOMO = Path("bench/data/locomo10.json")
+# LoCoMo-Refined (github.com/mem-eval-suite/LoCoMo_refined), le jeu que passe la
+# plateforme : 337 questions revues, corrigés en LISTES de réponses acceptables.
+LOCOMO_RAFFINE = Path("bench/data/locomo_refined.json")
+
+
+def corrige(q: dict[str, Any]) -> str:
+    """Comme le pipeline officiel (`memory_text`) : une liste de corrigés
+    acceptables est montrée au juge un par ligne."""
+    a = q["answer"]
+    return "\n".join(str(x) for x in a) if isinstance(a, list) else str(a)
+
+
 DEV = "conv-26"
 CONDITIONS = ("sans", "avec")  # normaliseur désactivé / activé
 
@@ -92,7 +104,7 @@ async def _ingerer(client: httpx.AsyncClient, c: dict[str, Any]) -> None:
 
 async def run(args: argparse.Namespace) -> dict[str, Any]:
     garder_la_boucle(asyncio.get_running_loop())
-    data = json.loads(LOCOMO.read_text(encoding="utf-8"))
+    data = json.loads((LOCOMO_RAFFINE if args.jeu == "raffine" else LOCOMO).read_text(encoding="utf-8"))
     par_conv = {c["sample_id"]: c for c in data}
     convs = args.convs or [c["sample_id"] for c in data if c["sample_id"] != DEV]
     questions = choisir(data, convs, args.autres, args.graine)
@@ -171,7 +183,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                                         officiel, q["question"], locuteurs, True),
                                         args.answer_model, options=opts)).strip()
                                     sortie = await repondeur.generate(aml_officiel.consigne_juge(
-                                        officiel, q["question"], str(q["answer"]), reponse),
+                                        officiel, q["question"], corrige(q), reponse),
                                         args.answer_model, options=opts)
                             except Exception as exc:  # noqa: BLE001 — Nvidia (429/503) ou Ollama (500)
                                 print(f"  [{cond}] sautée, à refaire : {cid} #{i} ({exc})", flush=True)
@@ -179,7 +191,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                             juge = aml_officiel.verdict(officiel, sortie)
                             x = {"cle": f"{cond}|{cid}|{i}", "condition": cond, "conv": cid,
                                  "categorie": q["category"], "question": q["question"],
-                                 "corrige": str(q["answer"]), "reponse": reponse,
+                                 "corrige": corrige(q), "reponse": reponse,
                                  "juste": bool(juge), "juge_illisible": juge is None}
                             faits[x["cle"]] = x
                             args.cache.parent.mkdir(parents=True, exist_ok=True)
@@ -199,6 +211,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
     lignes = []
     resultat: dict[str, Any] = {"config": {
         "convs": convs, "autres": args.autres, "graine": args.graine, "top_k": args.top_k,
+        "jeu": args.jeu,
         "answer_model": args.answer_model, "answer_backend": args.answer_backend,
         "aml_pipeline_commit": ((aml_officiel.RACINE / "COMMIT").read_text().strip()
                                 if (aml_officiel.RACINE / "COMMIT").exists() else None),
@@ -235,6 +248,8 @@ def main() -> None:
                         help="conversations LoCoMo ; défaut : toutes sauf conv-26 (validation)")
     parser.add_argument("--autres", type=int, default=60, help="questions d'autres catégories")
     parser.add_argument("--graine", type=int, default=42)
+    parser.add_argument("--jeu", choices=("brut", "raffine"), default="brut",
+                        help="LoCoMo brut ou LoCoMo-Refined (corrigés de la plateforme)")
     parser.add_argument("--top-k", type=int, default=100)
     parser.add_argument("--answer-model", default="nvidia/nemotron-3-ultra-550b-a55b")
     parser.add_argument("--answer-backend", choices=("ollama", "nvidia", "mistral"), default="nvidia")
