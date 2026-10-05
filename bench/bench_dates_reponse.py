@@ -102,7 +102,19 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
     repondeur: Any = (OllamaClient(Settings(_env_file=None))  # type: ignore[call-arg]
                       if args.answer_backend == "ollama" else RemoteChat(args.answer_backend))
     opts = {"temperature": 0.0, "num_ctx": 16384, "num_predict": 256}
-    await repondeur.generate("Réponds OK.", args.answer_model, options={"num_predict": 4})
+    # Mise en route avec les MÊMES réglages que les questions : un num_ctx différent
+    # fait recharger le modèle par Ollama, et le 05/10 chaque rechargement a buté
+    # quelques secondes sur la connexion à son propre processus (500, « connectex »).
+    for essai in range(5):
+        try:
+            await repondeur.generate("Réponds OK.", args.answer_model,
+                                     options={**opts, "num_predict": 4})
+            break
+        except Exception:  # noqa: BLE001 — répondeur pas encore prêt
+            if essai == 4:
+                raise
+            print("  répondeur pas prêt, nouvel essai dans 20 s", flush=True)
+            await asyncio.sleep(20)
 
     faits: dict[str, dict[str, Any]] = {}
     if args.cache.exists():
@@ -161,7 +173,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                                     sortie = await repondeur.generate(aml_officiel.consigne_juge(
                                         officiel, q["question"], str(q["answer"]), reponse),
                                         args.answer_model, options=opts)
-                            except RuntimeError as exc:
+                            except Exception as exc:  # noqa: BLE001 — Nvidia (429/503) ou Ollama (500)
                                 print(f"  [{cond}] sautée, à refaire : {cid} #{i} ({exc})", flush=True)
                                 return
                             juge = aml_officiel.verdict(officiel, sortie)
