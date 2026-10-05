@@ -1,0 +1,90 @@
+[sans] ingestion 269 s, 344 questions
+  [sans] 20/344 (307 s)
+  [sans] 40/344 (341 s)
+  [sans] 60/344 (372 s)
+  [sans] 80/344 (403 s)
+  [sans] 100/344 (434 s)
+  [sans] 120/344 (467 s)
+  [sans] 140/344 (499 s)
+  [sans] 160/344 (530 s)
+  [sans] 180/344 (561 s)
+Traceback (most recent call last):
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\src\mnemos\llm\ollama_client.py", line 100, in _post
+    resp.raise_for_status()
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\bench\bench_dates_reponse.py", line 243, in <module>
+    main()
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\bench\bench_dates_reponse.py", line 239, in main
+    asyncio.run(run(args))
+  File "C:\Users\adri7\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\adri7\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adri7\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\bench\bench_dates_reponse.py", line 181, in run
+    await asyncio.gather(*(une(cid, i, q) for cid, i, q in restantes))
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\bench\bench_dates_reponse.py", line 158, in une
+    reponse = (await repondeur.generate(aml_officiel.consigne_reponse(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\src\mnemos\llm\ollama_client.py", line 150, in generate
+    data = await self._post("/api/generate", payload, timeout_s=GENERATE_TIMEOUT_S)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\src\mnemos\llm\ollama_client.py", line 113, in _post
+    raise OllamaError(
+mnemos.llm.ollama_client.OllamaError: échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+[2m2026-10-05 12:08:30[0m [[33m[1mwarning  [0m] [1mollama_retry                  [0m [36mattempt[0m=[35m1[0m [36mdelay_s[0m=[35m0.5[0m [36merror[0m=[35m"Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500"[0m [36mpath[0m=[35m/api/generate[0m
+[2m2026-10-05 12:08:38[0m [[33m[1mwarning  [0m] [1mollama_retry                  [0m [36mattempt[0m=[35m2[0m [36mdelay_s[0m=[35m1.0[0m [36merror[0m=[35m"Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500"[0m [36mpath[0m=[35m/api/generate[0m
+[2m2026-10-05 12:08:41[0m [[33m[1mwarning  [0m] [1mollama_retry                  [0m [36mattempt[0m=[35m3[0m [36mdelay_s[0m=[35m2.0[0m [36merror[0m=[35m"Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500"[0m [36mpath[0m=[35m/api/generate[0m
+  répondeur pas prêt, nouvel essai dans 20 s
+[2m2026-10-05 12:09:09[0m [[33m[1mwarning  [0m] [1mollama_retry                  [0m [36mattempt[0m=[35m1[0m [36mdelay_s[0m=[35m0.5[0m [36merror[0m=[35m"Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500"[0m [36mpath[0m=[35m/api/generate[0m
+Reprise : 186 réponses déjà dans bench\results\gpu\dates_reponse_7b.cache.jsonl
+[sans] ingestion 598 s, 158 questions
+  [sans] sautée, à refaire : conv-48 #38 (échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500)
+  [sans] 20/158 (696 s)
+  [sans] 40/158 (737 s)
+  [sans] 60/158 (782 s)
+  [sans] 80/158 (840 s)
+  [sans] 100/158 (885 s)
+  [sans] 120/158 (935 s)
+  [sans] 140/158 (976 s)
+[avec] ingestion 544 s, 344 questions
+  [avec] sautée, à refaire : conv-48 #54 (échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500)
+  [avec] sautée, à refaire : conv-50 #61 (échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500)
+  [avec] sautée, à refaire : conv-30 #7 (échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500)
+  [avec] 20/344 (726 s)
+  [avec] 40/344 (762 s)
+  [avec] 60/344 (795 s)
+  [avec] 80/344 (828 s)
+  [avec] 100/344 (859 s)
+  [avec] 120/344 (890 s)
+  [avec] 140/344 (922 s)
+  [avec] 160/344 (954 s)
+  [avec] 180/344 (985 s)
+  [avec] 200/344 (1018 s)
+  [avec] 220/344 (1048 s)
+  [avec] 240/344 (1079 s)
+  [avec] 260/344 (1111 s)
+  [avec] 280/344 (1145 s)
+  [avec] 300/344 (1178 s)
+  [avec] 320/344 (1209 s)
+  [avec] 340/344 (1242 s)
+
+dates (cat. 2)       N=280 | sans 139 | avec 178 | perdues 14 gagnées 53 | McNemar p = 0.000
+autres catégories    N= 60 | sans  40 | avec  38 | perdues  2 gagnées  0 | McNemar p = 0.500
+juge illisible : 0 | Rapport : bench\results\gpu\dates_reponse_7b.json
