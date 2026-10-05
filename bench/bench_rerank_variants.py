@@ -375,7 +375,7 @@ async def main_async(out: Path) -> dict[str, Any]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Reclassement hors ligne des variantes de score")
-    parser.add_argument("--output", type=Path, default=Path("bench/results/gpu/rerank_variants.json"))
+    parser.add_argument("--output", type=Path, default=Path("bench/results/classement/rerank_variants.json"))
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")

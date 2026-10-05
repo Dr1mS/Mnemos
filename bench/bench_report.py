@@ -457,7 +457,7 @@ def run(
     mnemos_only: bool = typer.Option(False, "--mnemos-only", help="Exécuter uniquement le backend Mnemos"),
     num_instances: int = typer.Option(14, "--num-instances", help="Nombre d'instances par épreuve"),
     before_mnemos_file: Path = typer.Option(
-        Path("bench/results/mnemos_before_metrics.json"),
+        Path("bench/results/cycle1/mnemos_before_metrics.json"),
         "--before-mnemos-file",
         help="Chemin vers le fichier JSON des métriques Mnemos avant correctif",
     ),

@@ -239,7 +239,7 @@ def main() -> None:
     parser.add_argument("--answer-model", default="qwen3.5:9b")
     parser.add_argument("--num-ctx", type=int, default=24576, help="fenêtre du modèle de réponse")
     parser.add_argument("--llm-model", default="", help="vide = épisodique seul ; sinon saillance + extraction")
-    parser.add_argument("--output", type=Path, default=Path("bench/results/gpu/personamem_qa.json"))
+    parser.add_argument("--output", type=Path, default=Path("bench/results/oubli/personamem_qa.json"))
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")  # console Windows cp1252

@@ -1,0 +1,82 @@
+  [1/70] persona 495 : 1 questions au total
+  [2/70] persona 282 : 2 questions au total
+  [3/70] persona 585 : 3 questions au total
+  [4/70] persona 916 : 6 questions au total
+  [5/70] persona 154 : 8 questions au total
+  [6/70] persona 180 : 12 questions au total
+  [7/70] persona 770 : 14 questions au total
+  [8/70] persona 202 : 18 questions au total
+  [9/70] persona 547 : 20 questions au total
+  [10/70] persona 83 : 24 questions au total
+  [11/70] persona 164 : 26 questions au total
+  [12/70] persona 736 : 27 questions au total
+  [13/70] persona 369 : 29 questions au total
+  [14/70] persona 143 : 30 questions au total
+  [15/70] persona 194 : 35 questions au total
+  [16/70] persona 638 : 38 questions au total
+  [17/70] persona 618 : 42 questions au total
+  [18/70] persona 178 : 45 questions au total
+  [19/70] persona 4 : 48 questions au total
+  [20/70] persona 2 : 50 questions au total
+  [21/70] persona 786 : 53 questions au total
+  [22/70] persona 624 : 54 questions au total
+  [23/70] persona 165 : 55 questions au total
+  [24/70] persona 803 : 61 questions au total
+  [25/70] persona 240 : 63 questions au total
+  [26/70] persona 38 : 65 questions au total
+  [27/70] persona 888 : 68 questions au total
+  [28/70] persona 885 : 72 questions au total
+  [29/70] persona 169 : 74 questions au total
+  [30/70] persona 82 : 77 questions au total
+  [31/70] persona 832 : 79 questions au total
+  [32/70] persona 587 : 82 questions au total
+  [33/70] persona 155 : 84 questions au total
+  [34/70] persona 378 : 85 questions au total
+  [35/70] persona 151 : 88 questions au total
+  [36/70] persona 794 : 91 questions au total
+  [37/70] persona 252 : 92 questions au total
+  [38/70] persona 455 : 97 questions au total
+  [39/70] persona 619 : 100 questions au total
+  [40/70] persona 271 : 104 questions au total
+  [41/70] persona 775 : 106 questions au total
+  [42/70] persona 233 : 110 questions au total
+  [43/70] persona 81 : 112 questions au total
+  [44/70] persona 475 : 116 questions au total
+  [45/70] persona 797 : 118 questions au total
+  [46/70] persona 954 : 120 questions au total
+  [47/70] persona 33 : 125 questions au total
+  [48/70] persona 214 : 128 questions au total
+  [49/70] persona 828 : 130 questions au total
+  [50/70] persona 9 : 134 questions au total
+  [51/70] persona 338 : 135 questions au total
+  [52/70] persona 557 : 139 questions au total
+  [53/70] persona 205 : 144 questions au total
+  [54/70] persona 782 : 146 questions au total
+  [55/70] persona 992 : 147 questions au total
+  [56/70] persona 17 : 148 questions au total
+  [57/70] persona 80 : 154 questions au total
+  [58/70] persona 166 : 158 questions au total
+  [59/70] persona 873 : 162 questions au total
+  [60/70] persona 358 : 168 questions au total
+  [61/70] persona 724 : 170 questions au total
+  [62/70] persona 952 : 172 questions au total
+  [63/70] persona 766 : 176 questions au total
+  [64/70] persona 628 : 178 questions au total
+  [65/70] persona 482 : 180 questions au total
+  [66/70] persona 683 : 182 questions au total
+  [67/70] persona 666 : 186 questions au total
+  [68/70] persona 541 : 188 questions au total
+  [69/70] persona 467 : 190 questions au total
+  [70/70] persona 406 : 193 questions au total
+
+type                                n preuve@100 +options      A      O
+TOUS                              193      0.865    0.891  0.404  0.368
+anti_stereotypical_pref            30      0.933    0.967  0.467    0.4
+ask_to_forget                      47        1.0      1.0  0.213   0.34
+health_and_medical_conditions      25        1.0     0.92   0.48   0.32
+neutral_preferences                38      0.842    0.974  0.447  0.447
+sensitive_info                     17        0.0      0.0  0.353  0.294
+stereotypical_pref                 19      0.947      1.0  0.632  0.474
+therapy_background                 17        1.0      1.0  0.412  0.235
+longueur médiane de l'extrait-preuve (mots) : {'manquees': 182, 'trouvees': 129}
+Rapport : bench\results\gpu\carte_personamem.json

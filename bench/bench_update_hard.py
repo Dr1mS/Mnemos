@@ -481,7 +481,7 @@ def main() -> None:
     parser.add_argument("--embed-backend", choices=("llamacpp", "ollama"), default="llamacpp")
     parser.add_argument("--user-id", default="update_hard")
     parser.add_argument("--output", type=Path,
-                        default=Path("bench/results/gpu/update_hard.json"))
+                        default=Path("bench/results/classement/update_hard.json"))
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")  # console Windows cp1252

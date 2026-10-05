@@ -30,3 +30,6 @@ bench/data/locomo10.json
 bench/data/locomo_refined.json
 bench/data/longmemeval/
 bench/data/aml_pipeline/
+
+# Caches de reprise des benchs (résultats au fil de l'eau) : locaux, jamais commités
+bench/results/**/*.cache.jsonl

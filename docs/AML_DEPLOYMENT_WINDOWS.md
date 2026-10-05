@@ -97,7 +97,7 @@ LLM_THINK=false
 
 # Mode épisodique pour la compétition : aucun LLM pendant l'évaluation, seul bge-m3.
 # Mesuré : le LLM de fond divise le débit par ~2 sans gain en récupération ni en
-# réponse (cf. bench/results/gpu/). Pour réactiver la consolidation :
+# réponse (cf. bench/results/consolidation/). Pour réactiver la consolidation :
 # CONSOLIDATION_AUTO=true et retirer SALIENCE_QUEUE_WORKERS.
 CONSOLIDATION_AUTO=false
 SALIENCE_QUEUE_WORKERS=0

@@ -411,7 +411,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Multi-sauts : leviers de sélection")
     parser.add_argument("--personas", type=int, default=PM_PERSONAS)
     parser.add_argument("--locomo", type=int, default=10, help="essai rapide : N premières conversations")
-    parser.add_argument("--output", type=Path, default=Path("bench/results/gpu/multisauts_leviers.json"))
+    parser.add_argument("--output", type=Path, default=Path("bench/results/multisauts/multisauts_leviers.json"))
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")

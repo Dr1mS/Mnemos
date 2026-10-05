@@ -183,7 +183,7 @@ def main() -> None:
     parser.add_argument("--per-persona", type=int, default=2)
     parser.add_argument("--top-k", type=int, default=100)
     parser.add_argument("--answer-model", default="qwen3.5:9b")
-    parser.add_argument("--output", type=Path, default=Path("bench/results/gpu/abstention_h.json"))
+    parser.add_argument("--output", type=Path, default=Path("bench/results/categories/abstention_h.json"))
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")  # console Windows cp1252

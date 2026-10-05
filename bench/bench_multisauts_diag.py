@@ -159,7 +159,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Multi-sauts : diagnostic des preuves ratées")
     parser.add_argument("--categorie", type=int, default=1, help="1 = multi-sauts dans LoCoMo")
     parser.add_argument("--k-complet", type=int, default=1500, help="classement complet (toute la conversation)")
-    parser.add_argument("--output", type=Path, default=Path("bench/results/gpu/multisauts_diag.json"))
+    parser.add_argument("--output", type=Path, default=Path("bench/results/multisauts/multisauts_diag.json"))
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")

@@ -67,7 +67,7 @@ def _mesure(exemples: list[tuple[str, bool, str]]) -> dict[str, Any]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Détecteur d'oubli : précision et rappel")
-    parser.add_argument("--output", type=Path, default=Path("bench/results/forget_detect.json"))
+    parser.add_argument("--output", type=Path, default=Path("bench/results/oubli/forget_detect.json"))
     parser.add_argument("--validation", action="store_true",
                         help="mesurer aussi la moitié de validation — seulement détecteur figé")
     args = parser.parse_args()

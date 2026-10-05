@@ -204,7 +204,7 @@ async def run_personamem_bench(
     llm_model: str = "qwen2.5:3b",
     with_consolidation: bool = False,
     salience_workers: int = 2,
-    output_report: Path = Path("bench/results/personamem_report.md"),
+    output_report: Path = Path("bench/results/cycle1/personamem_report.md"),
 ) -> dict[str, Any]:
     val_csv_path = DATA_DIR / "val.csv"
     await download_file_if_missing(VAL_CSV_URL, val_csv_path)
@@ -467,7 +467,7 @@ def main() -> None:
     parser.add_argument("--llm-model", default="qwen2.5:3b", help="Modèle de saillance & extraction")
     parser.add_argument("--with-consolidation", action="store_true", help="Saillance LLM + extraction de faits avant la recherche")
     parser.add_argument("--salience-workers", type=int, default=2, help="Workers de saillance (avec --with-consolidation)")
-    parser.add_argument("--output", type=Path, default=Path("bench/results/personamem_report.md"))
+    parser.add_argument("--output", type=Path, default=Path("bench/results/cycle1/personamem_report.md"))
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")  # console Windows cp1252 vs emojis

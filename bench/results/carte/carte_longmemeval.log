@@ -1,0 +1,70 @@
+  [1/60] knowledge-update: A=True O=True preuves@100=True
+  [2/60] knowledge-update: A=True O=False preuves@100=True
+  [3/60] knowledge-update: A=True O=True preuves@100=True
+  [4/60] knowledge-update: A=True O=True preuves@100=True
+  [5/60] knowledge-update: A=True O=True preuves@100=True
+  [6/60] knowledge-update: A=True O=True preuves@100=True
+  [7/60] knowledge-update: A=True O=True preuves@100=True
+  [8/60] knowledge-update: A=True O=True preuves@100=True
+  [9/60] knowledge-update: A=True O=True preuves@100=True
+  [10/60] knowledge-update: A=False O=True preuves@100=True
+  [11/60] multi-session: A=True O=True preuves@100=True
+  [12/60] multi-session: A=True O=True preuves@100=True
+  [13/60] multi-session: A=False O=False preuves@100=True
+  [14/60] multi-session: A=True O=True preuves@100=True
+  [15/60] multi-session: A=False O=False preuves@100=True
+  [16/60] multi-session: A=False O=False preuves@100=True
+  [17/60] multi-session: A=True O=True preuves@100=False
+  [18/60] multi-session: A=True O=True preuves@100=True
+  [19/60] multi-session: A=False O=False preuves@100=True
+  [20/60] multi-session: A=True O=False preuves@100=True
+  [21/60] single-session-assistant: A=True O=True preuves@100=True
+  [22/60] single-session-assistant: A=True O=True preuves@100=True
+  [23/60] single-session-assistant: A=True O=True preuves@100=True
+  [24/60] single-session-assistant: A=True O=True preuves@100=True
+  [25/60] single-session-assistant: A=True O=True preuves@100=True
+  [26/60] single-session-assistant: A=True O=True preuves@100=True
+  [27/60] single-session-assistant: A=True O=True preuves@100=True
+  [28/60] single-session-assistant: A=True O=True preuves@100=True
+  [29/60] single-session-assistant: A=True O=True preuves@100=True
+  [30/60] single-session-assistant: A=True O=True preuves@100=True
+  [31/60] single-session-preference: A=False O=True preuves@100=True
+  [32/60] single-session-preference: A=True O=True preuves@100=True
+  [33/60] single-session-preference: A=False O=False preuves@100=True
+  [34/60] single-session-preference: A=True O=True preuves@100=True
+  [35/60] single-session-preference: A=True O=True preuves@100=False
+  [36/60] single-session-preference: A=False O=False preuves@100=True
+  [37/60] single-session-preference: A=True O=True preuves@100=True
+  [38/60] single-session-preference: A=False O=False preuves@100=True
+  [39/60] single-session-preference: A=False O=False preuves@100=True
+  [40/60] single-session-preference: A=False O=False preuves@100=True
+  [41/60] single-session-user: A=True O=True preuves@100=True
+  [42/60] single-session-user: A=True O=True preuves@100=True
+  [43/60] single-session-user: A=True O=True preuves@100=True
+  [44/60] single-session-user: A=True O=True preuves@100=True
+  [45/60] single-session-user: A=True O=True preuves@100=True
+  [46/60] single-session-user: A=True O=True preuves@100=True
+  [47/60] single-session-user: A=True O=True preuves@100=True
+  [48/60] single-session-user: A=True O=True preuves@100=True
+  [49/60] single-session-user: A=True O=True preuves@100=True
+  [50/60] single-session-user: A=True O=True preuves@100=True
+  [51/60] temporal-reasoning: A=False O=False preuves@100=True
+  [52/60] temporal-reasoning: A=False O=False preuves@100=True
+  [53/60] temporal-reasoning: A=False O=False preuves@100=True
+  [54/60] temporal-reasoning: A=False O=True preuves@100=True
+  [55/60] temporal-reasoning: A=True O=True preuves@100=True
+  [56/60] temporal-reasoning: A=False O=False preuves@100=True
+  [57/60] temporal-reasoning: A=False O=True preuves@100=True
+  [58/60] temporal-reasoning: A=False O=False preuves@100=True
+  [59/60] temporal-reasoning: A=False O=False preuves@100=True
+  [60/60] temporal-reasoning: A=True O=True preuves@100=True
+
+type                            n preuves@100      A      O
+TOUS                           60       0.967  0.683  0.717
+knowledge-update               10       1.000  0.900  0.900
+multi-session                  10       0.900  0.600  0.500
+single-session-assistant       10       1.000  1.000  1.000
+single-session-preference      10       0.900  0.400  0.500
+single-session-user            10       1.000  1.000  1.000
+temporal-reasoning             10       1.000  0.200  0.400
+Rapport : bench\results\gpu\carte_longmemeval.json

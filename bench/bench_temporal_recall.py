@@ -357,8 +357,8 @@ def main() -> None:
     parser.add_argument("--top-k", type=int, default=100)
     # llama-server sert 16 requêtes à la fois ; une question à la fois en laissait 15 au repos.
     parser.add_argument("--parallele", type=int, default=6, help="questions ingérées en parallèle")
-    parser.add_argument("--output", type=Path, default=Path("bench/results/gpu/temporal_recall.json"))
-    parser.add_argument("--cache", type=Path, default=Path("bench/results/gpu/temporal_recall.cache.jsonl"),
+    parser.add_argument("--output", type=Path, default=Path("bench/results/dates/temporal_recall.json"))
+    parser.add_argument("--cache", type=Path, default=Path("bench/results/dates/temporal_recall.cache.jsonl"),
                         help="résultats au fil de l'eau ; relancer avec le même fichier reprend le run")
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):

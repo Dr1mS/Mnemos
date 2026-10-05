@@ -292,7 +292,7 @@ def main() -> None:
     parser.add_argument("--personas", type=int, default=100)
     parser.add_argument("--validation", action="store_true",
                         help="évaluer aussi la moitié de validation — seulement la règle choisie")
-    parser.add_argument("--output", type=Path, default=Path("bench/results/gpu/forget_targeting.json"))
+    parser.add_argument("--output", type=Path, default=Path("bench/results/oubli/forget_targeting.json"))
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")

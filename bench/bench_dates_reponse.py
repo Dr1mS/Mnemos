@@ -255,8 +255,8 @@ def main() -> None:
     parser.add_argument("--answer-backend", choices=("ollama", "nvidia", "mistral"), default="nvidia")
     parser.add_argument("--parallele", type=int, default=3, help="appels au répondeur en parallèle")
     parser.add_argument("--limite", type=int, default=None, help="essai rapide : N premières questions")
-    parser.add_argument("--output", type=Path, default=Path("bench/results/gpu/dates_reponse.json"))
-    parser.add_argument("--cache", type=Path, default=Path("bench/results/gpu/dates_reponse.cache.jsonl"))
+    parser.add_argument("--output", type=Path, default=Path("bench/results/dates/dates_reponse.json"))
+    parser.add_argument("--cache", type=Path, default=Path("bench/results/dates/dates_reponse.cache.jsonl"))
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")

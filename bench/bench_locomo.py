@@ -501,7 +501,7 @@ def main() -> None:
     parser.add_argument("--grounded-only", action="store_true", help="Filtre les questions d'évaluation aux sessions ingérées")
     parser.add_argument("--limit-sessions", type=int, default=None)
     parser.add_argument("--limit-queries", type=int, default=None)
-    parser.add_argument("--output", type=Path, default=Path("bench/results/locomo_report.md"))
+    parser.add_argument("--output", type=Path, default=Path("bench/results/cycle1/locomo_report.md"))
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")  # console Windows cp1252 vs emojis

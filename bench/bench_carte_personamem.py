@@ -208,8 +208,8 @@ def main() -> None:
     parser.add_argument("--graine", type=int, default=7)
     parser.add_argument("--answer-model", default="nvidia/nemotron-3-ultra-550b-a55b")
     parser.add_argument("--answer-backend", choices=("ollama", "nvidia", "mistral"), default="nvidia")
-    parser.add_argument("--output", type=Path, default=Path("bench/results/gpu/carte_personamem.json"))
-    parser.add_argument("--cache", type=Path, default=Path("bench/results/gpu/carte_personamem.cache.jsonl"))
+    parser.add_argument("--output", type=Path, default=Path("bench/results/carte/carte_personamem.json"))
+    parser.add_argument("--cache", type=Path, default=Path("bench/results/carte/carte_personamem.cache.jsonl"))
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")

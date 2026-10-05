@@ -257,8 +257,8 @@ def main() -> None:
     parser.add_argument("--answer-backend", choices=("ollama", "nvidia", "mistral"), default="ollama",
                         help="ollama = local ; nvidia / mistral = API distante (bench/remote_llm.py)")
     parser.add_argument("--num-ctx", type=int, default=24576)
-    parser.add_argument("--output", type=Path, default=Path("bench/results/gpu/forget_variants.json"))
-    parser.add_argument("--rapport", type=Path, default=Path("bench/results/gpu/forget_variants.md"))
+    parser.add_argument("--output", type=Path, default=Path("bench/results/oubli/forget_variants.json"))
+    parser.add_argument("--rapport", type=Path, default=Path("bench/results/oubli/forget_variants.md"))
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")

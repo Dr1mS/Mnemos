@@ -59,9 +59,10 @@ embeddings stubbed out the storage path sustains 615 messages/s.
 
 `docs/AML_DEPLOYMENT_WINDOWS.md` is the full deployment guide (environment, scheduled tasks,
 reverse proxy). `MNEMOS_SPEC.md` is the design spec. Benchmarks and their raw results are
-in `bench/` and `bench/results/gpu/`. Tests: `pytest` — 252 collected, 242 passing with no
-network access at all; the 10 marked `requires_ollama` are skipped unless a local Ollama is
-running, and they cover the consolidation path that this evaluation does not use.
+in `bench/` and `bench/results/` (one folder per topic, indexed in `bench/results/README.md`).
+Tests: `pytest` — 388 collected. Without network access, the 10 marked `requires_ollama`
+are skipped: they need a local Ollama and cover the consolidation path that this evaluation
+does not use.
 
 ### Third-party work
 

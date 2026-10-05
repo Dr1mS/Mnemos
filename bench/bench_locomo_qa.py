@@ -358,7 +358,7 @@ def main() -> None:
     parser.add_argument("--answer-model", default="qwen3.5:9b")
     parser.add_argument("--answer-backend", choices=("ollama", "nvidia", "mistral"), default="ollama",
                         help="ollama = local ; nvidia / mistral = API distante (LoCoMo est public)")
-    parser.add_argument("--output", type=Path, default=Path("bench/results/gpu/locomo_qa.json"))
+    parser.add_argument("--output", type=Path, default=Path("bench/results/classement/locomo_qa.json"))
     # Le user_id sert de sujet des faits extraits (canonical_subject) : un identifiant
     # opaque comme ceux d'AML ("eval:run:…") pollue les faits et leur embedding.
     parser.add_argument("--user-id", default="locomo_qa")
