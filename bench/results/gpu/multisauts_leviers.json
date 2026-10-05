@@ -1,0 +1,966 @@
+{
+  "fidelite_ecarts": 34,
+  "requetes": 1709,
+  "variantes": {
+    "déployée": {
+      "d1 | d1 | toutes": {
+        "n": 13,
+        "actif_top3": 13,
+        "ancien_devant": 9
+      },
+      "locomo | cat1 | reglage": {
+        "n": 142,
+        "toutes@100": 0.535,
+        "preuves@100": 0.739,
+        "hit@10": 0.556
+      },
+      "locomo | cat1 | validation": {
+        "n": 140,
+        "toutes@100": 0.486,
+        "preuves@100": 0.724,
+        "hit@10": 0.643
+      },
+      "locomo | cat2 | reglage": {
+        "n": 156,
+        "toutes@100": 0.929,
+        "preuves@100": 0.93,
+        "hit@10": 0.821
+      },
+      "locomo | cat2 | validation": {
+        "n": 164,
+        "toutes@100": 0.848,
+        "preuves@100": 0.867,
+        "hit@10": 0.744
+      },
+      "locomo | cat3 | reglage": {
+        "n": 44,
+        "toutes@100": 0.636,
+        "preuves@100": 0.659,
+        "hit@10": 0.409
+      },
+      "locomo | cat3 | validation": {
+        "n": 45,
+        "toutes@100": 0.533,
+        "preuves@100": 0.536,
+        "hit@10": 0.444
+      },
+      "locomo | cat4 | reglage": {
+        "n": 418,
+        "toutes@100": 0.926,
+        "preuves@100": 0.929,
+        "hit@10": 0.672
+      },
+      "locomo | cat4 | validation": {
+        "n": 423,
+        "toutes@100": 0.948,
+        "preuves@100": 0.946,
+        "hit@10": 0.697
+      },
+      "pm | pm | toutes": {
+        "n": 164,
+        "presente@100": 0.86,
+        "hit@10": 0.512
+      }
+    },
+    "vivier 400": {
+      "d1 | d1 | toutes": {
+        "n": 13,
+        "actif_top3": 13,
+        "ancien_devant": 9
+      },
+      "locomo | cat1 | reglage": {
+        "n": 142,
+        "toutes@100": 0.486,
+        "preuves@100": 0.71,
+        "hit@10": 0.542
+      },
+      "locomo | cat1 | validation": {
+        "n": 140,
+        "toutes@100": 0.457,
+        "preuves@100": 0.714,
+        "hit@10": 0.636
+      },
+      "locomo | cat2 | reglage": {
+        "n": 156,
+        "toutes@100": 0.929,
+        "preuves@100": 0.936,
+        "hit@10": 0.808
+      },
+      "locomo | cat2 | validation": {
+        "n": 164,
+        "toutes@100": 0.848,
+        "preuves@100": 0.867,
+        "hit@10": 0.738
+      },
+      "locomo | cat3 | reglage": {
+        "n": 44,
+        "toutes@100": 0.659,
+        "preuves@100": 0.682,
+        "hit@10": 0.386
+      },
+      "locomo | cat3 | validation": {
+        "n": 45,
+        "toutes@100": 0.533,
+        "preuves@100": 0.554,
+        "hit@10": 0.422
+      },
+      "locomo | cat4 | reglage": {
+        "n": 418,
+        "toutes@100": 0.914,
+        "preuves@100": 0.917,
+        "hit@10": 0.672
+      },
+      "locomo | cat4 | validation": {
+        "n": 423,
+        "toutes@100": 0.941,
+        "preuves@100": 0.939,
+        "hit@10": 0.69
+      },
+      "pm | pm | toutes": {
+        "n": 164,
+        "presente@100": 0.86,
+        "hit@10": 0.512
+      }
+    },
+    "vivier 600": {
+      "d1 | d1 | toutes": {
+        "n": 13,
+        "actif_top3": 13,
+        "ancien_devant": 9
+      },
+      "locomo | cat1 | reglage": {
+        "n": 142,
+        "toutes@100": 0.486,
+        "preuves@100": 0.708,
+        "hit@10": 0.542
+      },
+      "locomo | cat1 | validation": {
+        "n": 140,
+        "toutes@100": 0.457,
+        "preuves@100": 0.714,
+        "hit@10": 0.636
+      },
+      "locomo | cat2 | reglage": {
+        "n": 156,
+        "toutes@100": 0.929,
+        "preuves@100": 0.936,
+        "hit@10": 0.808
+      },
+      "locomo | cat2 | validation": {
+        "n": 164,
+        "toutes@100": 0.848,
+        "preuves@100": 0.867,
+        "hit@10": 0.738
+      },
+      "locomo | cat3 | reglage": {
+        "n": 44,
+        "toutes@100": 0.659,
+        "preuves@100": 0.682,
+        "hit@10": 0.386
+      },
+      "locomo | cat3 | validation": {
+        "n": 45,
+        "toutes@100": 0.533,
+        "preuves@100": 0.554,
+        "hit@10": 0.422
+      },
+      "locomo | cat4 | reglage": {
+        "n": 418,
+        "toutes@100": 0.911,
+        "preuves@100": 0.913,
+        "hit@10": 0.672
+      },
+      "locomo | cat4 | validation": {
+        "n": 423,
+        "toutes@100": 0.941,
+        "preuves@100": 0.939,
+        "hit@10": 0.69
+      },
+      "pm | pm | toutes": {
+        "n": 164,
+        "presente@100": 0.86,
+        "hit@10": 0.512
+      }
+    },
+    "noms +0,05": {
+      "d1 | d1 | toutes": {
+        "n": 13,
+        "actif_top3": 13,
+        "ancien_devant": 9
+      },
+      "locomo | cat1 | reglage": {
+        "n": 142,
+        "toutes@100": 0.535,
+        "preuves@100": 0.739,
+        "hit@10": 0.556
+      },
+      "locomo | cat1 | validation": {
+        "n": 140,
+        "toutes@100": 0.486,
+        "preuves@100": 0.724,
+        "hit@10": 0.643
+      },
+      "locomo | cat2 | reglage": {
+        "n": 156,
+        "toutes@100": 0.929,
+        "preuves@100": 0.93,
+        "hit@10": 0.821
+      },
+      "locomo | cat2 | validation": {
+        "n": 164,
+        "toutes@100": 0.841,
+        "preuves@100": 0.862,
+        "hit@10": 0.744
+      },
+      "locomo | cat3 | reglage": {
+        "n": 44,
+        "toutes@100": 0.636,
+        "preuves@100": 0.659,
+        "hit@10": 0.432
+      },
+      "locomo | cat3 | validation": {
+        "n": 45,
+        "toutes@100": 0.533,
+        "preuves@100": 0.545,
+        "hit@10": 0.467
+      },
+      "locomo | cat4 | reglage": {
+        "n": 418,
+        "toutes@100": 0.923,
+        "preuves@100": 0.926,
+        "hit@10": 0.663
+      },
+      "locomo | cat4 | validation": {
+        "n": 423,
+        "toutes@100": 0.943,
+        "preuves@100": 0.941,
+        "hit@10": 0.697
+      },
+      "pm | pm | toutes": {
+        "n": 164,
+        "presente@100": 0.866,
+        "hit@10": 0.506
+      }
+    },
+    "noms +0,10": {
+      "d1 | d1 | toutes": {
+        "n": 13,
+        "actif_top3": 13,
+        "ancien_devant": 9
+      },
+      "locomo | cat1 | reglage": {
+        "n": 142,
+        "toutes@100": 0.535,
+        "preuves@100": 0.739,
+        "hit@10": 0.556
+      },
+      "locomo | cat1 | validation": {
+        "n": 140,
+        "toutes@100": 0.486,
+        "preuves@100": 0.726,
+        "hit@10": 0.643
+      },
+      "locomo | cat2 | reglage": {
+        "n": 156,
+        "toutes@100": 0.929,
+        "preuves@100": 0.93,
+        "hit@10": 0.821
+      },
+      "locomo | cat2 | validation": {
+        "n": 164,
+        "toutes@100": 0.841,
+        "preuves@100": 0.862,
+        "hit@10": 0.732
+      },
+      "locomo | cat3 | reglage": {
+        "n": 44,
+        "toutes@100": 0.636,
+        "preuves@100": 0.659,
+        "hit@10": 0.432
+      },
+      "locomo | cat3 | validation": {
+        "n": 45,
+        "toutes@100": 0.533,
+        "preuves@100": 0.545,
+        "hit@10": 0.467
+      },
+      "locomo | cat4 | reglage": {
+        "n": 418,
+        "toutes@100": 0.923,
+        "preuves@100": 0.926,
+        "hit@10": 0.656
+      },
+      "locomo | cat4 | validation": {
+        "n": 423,
+        "toutes@100": 0.941,
+        "preuves@100": 0.939,
+        "hit@10": 0.695
+      },
+      "pm | pm | toutes": {
+        "n": 164,
+        "presente@100": 0.866,
+        "hit@10": 0.5
+      }
+    },
+    "noms +0,20": {
+      "d1 | d1 | toutes": {
+        "n": 13,
+        "actif_top3": 13,
+        "ancien_devant": 9
+      },
+      "locomo | cat1 | reglage": {
+        "n": 142,
+        "toutes@100": 0.535,
+        "preuves@100": 0.739,
+        "hit@10": 0.556
+      },
+      "locomo | cat1 | validation": {
+        "n": 140,
+        "toutes@100": 0.486,
+        "preuves@100": 0.726,
+        "hit@10": 0.643
+      },
+      "locomo | cat2 | reglage": {
+        "n": 156,
+        "toutes@100": 0.929,
+        "preuves@100": 0.93,
+        "hit@10": 0.821
+      },
+      "locomo | cat2 | validation": {
+        "n": 164,
+        "toutes@100": 0.835,
+        "preuves@100": 0.857,
+        "hit@10": 0.732
+      },
+      "locomo | cat3 | reglage": {
+        "n": 44,
+        "toutes@100": 0.636,
+        "preuves@100": 0.659,
+        "hit@10": 0.432
+      },
+      "locomo | cat3 | validation": {
+        "n": 45,
+        "toutes@100": 0.533,
+        "preuves@100": 0.545,
+        "hit@10": 0.467
+      },
+      "locomo | cat4 | reglage": {
+        "n": 418,
+        "toutes@100": 0.914,
+        "preuves@100": 0.917,
+        "hit@10": 0.656
+      },
+      "locomo | cat4 | validation": {
+        "n": 423,
+        "toutes@100": 0.939,
+        "preuves@100": 0.937,
+        "hit@10": 0.695
+      },
+      "pm | pm | toutes": {
+        "n": 164,
+        "presente@100": 0.866,
+        "hit@10": 0.488
+      }
+    },
+    "voisins top 5": {
+      "d1 | d1 | toutes": {
+        "n": 13,
+        "actif_top3": 2,
+        "ancien_devant": 10
+      },
+      "locomo | cat1 | reglage": {
+        "n": 142,
+        "toutes@100": 0.542,
+        "preuves@100": 0.739,
+        "hit@10": 0.437
+      },
+      "locomo | cat1 | validation": {
+        "n": 140,
+        "toutes@100": 0.507,
+        "preuves@100": 0.746,
+        "hit@10": 0.557
+      },
+      "locomo | cat2 | reglage": {
+        "n": 156,
+        "toutes@100": 0.981,
+        "preuves@100": 0.982,
+        "hit@10": 0.788
+      },
+      "locomo | cat2 | validation": {
+        "n": 164,
+        "toutes@100": 0.896,
+        "preuves@100": 0.916,
+        "hit@10": 0.671
+      },
+      "locomo | cat3 | reglage": {
+        "n": 44,
+        "toutes@100": 0.682,
+        "preuves@100": 0.694,
+        "hit@10": 0.409
+      },
+      "locomo | cat3 | validation": {
+        "n": 45,
+        "toutes@100": 0.556,
+        "preuves@100": 0.554,
+        "hit@10": 0.333
+      },
+      "locomo | cat4 | reglage": {
+        "n": 418,
+        "toutes@100": 0.962,
+        "preuves@100": 0.963,
+        "hit@10": 0.715
+      },
+      "locomo | cat4 | validation": {
+        "n": 423,
+        "toutes@100": 0.967,
+        "preuves@100": 0.97,
+        "hit@10": 0.728
+      },
+      "pm | pm | toutes": {
+        "n": 164,
+        "presente@100": 0.872,
+        "hit@10": 0.317
+      }
+    },
+    "voisins top 10": {
+      "d1 | d1 | toutes": {
+        "n": 13,
+        "actif_top3": 2,
+        "ancien_devant": 10
+      },
+      "locomo | cat1 | reglage": {
+        "n": 142,
+        "toutes@100": 0.549,
+        "preuves@100": 0.746,
+        "hit@10": 0.437
+      },
+      "locomo | cat1 | validation": {
+        "n": 140,
+        "toutes@100": 0.507,
+        "preuves@100": 0.75,
+        "hit@10": 0.557
+      },
+      "locomo | cat2 | reglage": {
+        "n": 156,
+        "toutes@100": 0.987,
+        "preuves@100": 0.988,
+        "hit@10": 0.788
+      },
+      "locomo | cat2 | validation": {
+        "n": 164,
+        "toutes@100": 0.896,
+        "preuves@100": 0.916,
+        "hit@10": 0.671
+      },
+      "locomo | cat3 | reglage": {
+        "n": 44,
+        "toutes@100": 0.591,
+        "preuves@100": 0.671,
+        "hit@10": 0.409
+      },
+      "locomo | cat3 | validation": {
+        "n": 45,
+        "toutes@100": 0.6,
+        "preuves@100": 0.58,
+        "hit@10": 0.333
+      },
+      "locomo | cat4 | reglage": {
+        "n": 418,
+        "toutes@100": 0.962,
+        "preuves@100": 0.961,
+        "hit@10": 0.715
+      },
+      "locomo | cat4 | validation": {
+        "n": 423,
+        "toutes@100": 0.962,
+        "preuves@100": 0.965,
+        "hit@10": 0.728
+      },
+      "pm | pm | toutes": {
+        "n": 164,
+        "presente@100": 0.872,
+        "hit@10": 0.317
+      }
+    },
+    "MMR 0,85": {
+      "d1 | d1 | toutes": {
+        "n": 13,
+        "actif_top3": 12,
+        "ancien_devant": 10
+      },
+      "locomo | cat1 | reglage": {
+        "n": 142,
+        "toutes@100": 0.542,
+        "preuves@100": 0.739,
+        "hit@10": 0.556
+      },
+      "locomo | cat1 | validation": {
+        "n": 140,
+        "toutes@100": 0.5,
+        "preuves@100": 0.731,
+        "hit@10": 0.614
+      },
+      "locomo | cat2 | reglage": {
+        "n": 156,
+        "toutes@100": 0.936,
+        "preuves@100": 0.936,
+        "hit@10": 0.814
+      },
+      "locomo | cat2 | validation": {
+        "n": 164,
+        "toutes@100": 0.86,
+        "preuves@100": 0.882,
+        "hit@10": 0.713
+      },
+      "locomo | cat3 | reglage": {
+        "n": 44,
+        "toutes@100": 0.636,
+        "preuves@100": 0.659,
+        "hit@10": 0.455
+      },
+      "locomo | cat3 | validation": {
+        "n": 45,
+        "toutes@100": 0.533,
+        "preuves@100": 0.509,
+        "hit@10": 0.4
+      },
+      "locomo | cat4 | reglage": {
+        "n": 418,
+        "toutes@100": 0.926,
+        "preuves@100": 0.926,
+        "hit@10": 0.677
+      },
+      "locomo | cat4 | validation": {
+        "n": 423,
+        "toutes@100": 0.941,
+        "preuves@100": 0.941,
+        "hit@10": 0.7
+      },
+      "pm | pm | toutes": {
+        "n": 164,
+        "presente@100": 0.872,
+        "hit@10": 0.506
+      }
+    },
+    "MMR 0,7": {
+      "d1 | d1 | toutes": {
+        "n": 13,
+        "actif_top3": 12,
+        "ancien_devant": 10
+      },
+      "locomo | cat1 | reglage": {
+        "n": 142,
+        "toutes@100": 0.507,
+        "preuves@100": 0.725,
+        "hit@10": 0.528
+      },
+      "locomo | cat1 | validation": {
+        "n": 140,
+        "toutes@100": 0.486,
+        "preuves@100": 0.709,
+        "hit@10": 0.629
+      },
+      "locomo | cat2 | reglage": {
+        "n": 156,
+        "toutes@100": 0.936,
+        "preuves@100": 0.936,
+        "hit@10": 0.808
+      },
+      "locomo | cat2 | validation": {
+        "n": 164,
+        "toutes@100": 0.86,
+        "preuves@100": 0.882,
+        "hit@10": 0.689
+      },
+      "locomo | cat3 | reglage": {
+        "n": 44,
+        "toutes@100": 0.568,
+        "preuves@100": 0.624,
+        "hit@10": 0.432
+      },
+      "locomo | cat3 | validation": {
+        "n": 45,
+        "toutes@100": 0.556,
+        "preuves@100": 0.527,
+        "hit@10": 0.422
+      },
+      "locomo | cat4 | reglage": {
+        "n": 418,
+        "toutes@100": 0.928,
+        "preuves@100": 0.929,
+        "hit@10": 0.66
+      },
+      "locomo | cat4 | validation": {
+        "n": 423,
+        "toutes@100": 0.941,
+        "preuves@100": 0.941,
+        "hit@10": 0.674
+      },
+      "pm | pm | toutes": {
+        "n": 164,
+        "presente@100": 0.878,
+        "hit@10": 0.494
+      }
+    },
+    "vivier 600 + noms +0,10": {
+      "d1 | d1 | toutes": {
+        "n": 13,
+        "actif_top3": 13,
+        "ancien_devant": 9
+      },
+      "locomo | cat1 | reglage": {
+        "n": 142,
+        "toutes@100": 0.486,
+        "preuves@100": 0.708,
+        "hit@10": 0.542
+      },
+      "locomo | cat1 | validation": {
+        "n": 140,
+        "toutes@100": 0.464,
+        "preuves@100": 0.718,
+        "hit@10": 0.636
+      },
+      "locomo | cat2 | reglage": {
+        "n": 156,
+        "toutes@100": 0.929,
+        "preuves@100": 0.936,
+        "hit@10": 0.808
+      },
+      "locomo | cat2 | validation": {
+        "n": 164,
+        "toutes@100": 0.848,
+        "preuves@100": 0.867,
+        "hit@10": 0.726
+      },
+      "locomo | cat3 | reglage": {
+        "n": 44,
+        "toutes@100": 0.659,
+        "preuves@100": 0.682,
+        "hit@10": 0.409
+      },
+      "locomo | cat3 | validation": {
+        "n": 45,
+        "toutes@100": 0.533,
+        "preuves@100": 0.554,
+        "hit@10": 0.444
+      },
+      "locomo | cat4 | reglage": {
+        "n": 418,
+        "toutes@100": 0.911,
+        "preuves@100": 0.913,
+        "hit@10": 0.656
+      },
+      "locomo | cat4 | validation": {
+        "n": 423,
+        "toutes@100": 0.929,
+        "preuves@100": 0.928,
+        "hit@10": 0.688
+      },
+      "pm | pm | toutes": {
+        "n": 164,
+        "presente@100": 0.86,
+        "hit@10": 0.494
+      }
+    },
+    "vivier 600 + noms +0,10 + voisins 5": {
+      "d1 | d1 | toutes": {
+        "n": 13,
+        "actif_top3": 2,
+        "ancien_devant": 10
+      },
+      "locomo | cat1 | reglage": {
+        "n": 142,
+        "toutes@100": 0.507,
+        "preuves@100": 0.717,
+        "hit@10": 0.437
+      },
+      "locomo | cat1 | validation": {
+        "n": 140,
+        "toutes@100": 0.5,
+        "preuves@100": 0.739,
+        "hit@10": 0.543
+      },
+      "locomo | cat2 | reglage": {
+        "n": 156,
+        "toutes@100": 0.974,
+        "preuves@100": 0.977,
+        "hit@10": 0.782
+      },
+      "locomo | cat2 | validation": {
+        "n": 164,
+        "toutes@100": 0.896,
+        "preuves@100": 0.916,
+        "hit@10": 0.671
+      },
+      "locomo | cat3 | reglage": {
+        "n": 44,
+        "toutes@100": 0.636,
+        "preuves@100": 0.647,
+        "hit@10": 0.432
+      },
+      "locomo | cat3 | validation": {
+        "n": 45,
+        "toutes@100": 0.533,
+        "preuves@100": 0.536,
+        "hit@10": 0.356
+      },
+      "locomo | cat4 | reglage": {
+        "n": 418,
+        "toutes@100": 0.957,
+        "preuves@100": 0.956,
+        "hit@10": 0.696
+      },
+      "locomo | cat4 | validation": {
+        "n": 423,
+        "toutes@100": 0.948,
+        "preuves@100": 0.95,
+        "hit@10": 0.709
+      },
+      "pm | pm | toutes": {
+        "n": 164,
+        "presente@100": 0.86,
+        "hit@10": 0.305
+      }
+    },
+    "voisins des 10 premiers, en fin": {
+      "d1 | d1 | toutes": {
+        "n": 13,
+        "actif_top3": 13,
+        "ancien_devant": 9
+      },
+      "locomo | cat1 | reglage": {
+        "n": 142,
+        "toutes@100": 0.549,
+        "preuves@100": 0.742,
+        "hit@10": 0.556
+      },
+      "locomo | cat1 | validation": {
+        "n": 140,
+        "toutes@100": 0.479,
+        "preuves@100": 0.733,
+        "hit@10": 0.643
+      },
+      "locomo | cat2 | reglage": {
+        "n": 156,
+        "toutes@100": 0.987,
+        "preuves@100": 0.988,
+        "hit@10": 0.821
+      },
+      "locomo | cat2 | validation": {
+        "n": 164,
+        "toutes@100": 0.884,
+        "preuves@100": 0.906,
+        "hit@10": 0.744
+      },
+      "locomo | cat3 | reglage": {
+        "n": 44,
+        "toutes@100": 0.614,
+        "preuves@100": 0.682,
+        "hit@10": 0.409
+      },
+      "locomo | cat3 | validation": {
+        "n": 45,
+        "toutes@100": 0.556,
+        "preuves@100": 0.545,
+        "hit@10": 0.444
+      },
+      "locomo | cat4 | reglage": {
+        "n": 418,
+        "toutes@100": 0.952,
+        "preuves@100": 0.952,
+        "hit@10": 0.672
+      },
+      "locomo | cat4 | validation": {
+        "n": 423,
+        "toutes@100": 0.946,
+        "preuves@100": 0.95,
+        "hit@10": 0.697
+      },
+      "pm | pm | toutes": {
+        "n": 164,
+        "presente@100": 0.872,
+        "hit@10": 0.512
+      }
+    },
+    "voisins des 20 premiers, en fin": {
+      "d1 | d1 | toutes": {
+        "n": 13,
+        "actif_top3": 13,
+        "ancien_devant": 9
+      },
+      "locomo | cat1 | reglage": {
+        "n": 142,
+        "toutes@100": 0.542,
+        "preuves@100": 0.729,
+        "hit@10": 0.556
+      },
+      "locomo | cat1 | validation": {
+        "n": 140,
+        "toutes@100": 0.493,
+        "preuves@100": 0.731,
+        "hit@10": 0.643
+      },
+      "locomo | cat2 | reglage": {
+        "n": 156,
+        "toutes@100": 0.987,
+        "preuves@100": 0.988,
+        "hit@10": 0.821
+      },
+      "locomo | cat2 | validation": {
+        "n": 164,
+        "toutes@100": 0.89,
+        "preuves@100": 0.906,
+        "hit@10": 0.744
+      },
+      "locomo | cat3 | reglage": {
+        "n": 44,
+        "toutes@100": 0.591,
+        "preuves@100": 0.671,
+        "hit@10": 0.409
+      },
+      "locomo | cat3 | validation": {
+        "n": 45,
+        "toutes@100": 0.578,
+        "preuves@100": 0.562,
+        "hit@10": 0.444
+      },
+      "locomo | cat4 | reglage": {
+        "n": 418,
+        "toutes@100": 0.947,
+        "preuves@100": 0.947,
+        "hit@10": 0.672
+      },
+      "locomo | cat4 | validation": {
+        "n": 423,
+        "toutes@100": 0.948,
+        "preuves@100": 0.952,
+        "hit@10": 0.697
+      },
+      "pm | pm | toutes": {
+        "n": 164,
+        "presente@100": 0.872,
+        "hit@10": 0.512
+      }
+    },
+    "MMR 0,5": {
+      "d1 | d1 | toutes": {
+        "n": 13,
+        "actif_top3": 7,
+        "ancien_devant": 11
+      },
+      "locomo | cat1 | reglage": {
+        "n": 142,
+        "toutes@100": 0.444,
+        "preuves@100": 0.7,
+        "hit@10": 0.486
+      },
+      "locomo | cat1 | validation": {
+        "n": 140,
+        "toutes@100": 0.429,
+        "preuves@100": 0.658,
+        "hit@10": 0.529
+      },
+      "locomo | cat2 | reglage": {
+        "n": 156,
+        "toutes@100": 0.923,
+        "preuves@100": 0.918,
+        "hit@10": 0.692
+      },
+      "locomo | cat2 | validation": {
+        "n": 164,
+        "toutes@100": 0.829,
+        "preuves@100": 0.842,
+        "hit@10": 0.616
+      },
+      "locomo | cat3 | reglage": {
+        "n": 44,
+        "toutes@100": 0.477,
+        "preuves@100": 0.541,
+        "hit@10": 0.364
+      },
+      "locomo | cat3 | validation": {
+        "n": 45,
+        "toutes@100": 0.533,
+        "preuves@100": 0.464,
+        "hit@10": 0.378
+      },
+      "locomo | cat4 | reglage": {
+        "n": 418,
+        "toutes@100": 0.914,
+        "preuves@100": 0.915,
+        "hit@10": 0.596
+      },
+      "locomo | cat4 | validation": {
+        "n": 423,
+        "toutes@100": 0.901,
+        "preuves@100": 0.904,
+        "hit@10": 0.589
+      },
+      "pm | pm | toutes": {
+        "n": 164,
+        "presente@100": 0.86,
+        "hit@10": 0.409
+      }
+    },
+    "MMR 0,7 + voisins des 10, en fin": {
+      "d1 | d1 | toutes": {
+        "n": 13,
+        "actif_top3": 12,
+        "ancien_devant": 10
+      },
+      "locomo | cat1 | reglage": {
+        "n": 142,
+        "toutes@100": 0.528,
+        "preuves@100": 0.729,
+        "hit@10": 0.528
+      },
+      "locomo | cat1 | validation": {
+        "n": 140,
+        "toutes@100": 0.471,
+        "preuves@100": 0.72,
+        "hit@10": 0.629
+      },
+      "locomo | cat2 | reglage": {
+        "n": 156,
+        "toutes@100": 0.962,
+        "preuves@100": 0.965,
+        "hit@10": 0.808
+      },
+      "locomo | cat2 | validation": {
+        "n": 164,
+        "toutes@100": 0.915,
+        "preuves@100": 0.921,
+        "hit@10": 0.689
+      },
+      "locomo | cat3 | reglage": {
+        "n": 44,
+        "toutes@100": 0.523,
+        "preuves@100": 0.576,
+        "hit@10": 0.432
+      },
+      "locomo | cat3 | validation": {
+        "n": 45,
+        "toutes@100": 0.578,
+        "preuves@100": 0.518,
+        "hit@10": 0.422
+      },
+      "locomo | cat4 | reglage": {
+        "n": 418,
+        "toutes@100": 0.959,
+        "preuves@100": 0.956,
+        "hit@10": 0.66
+      },
+      "locomo | cat4 | validation": {
+        "n": 423,
+        "toutes@100": 0.95,
+        "preuves@100": 0.95,
+        "hit@10": 0.674
+      },
+      "pm | pm | toutes": {
+        "n": 164,
+        "presente@100": 0.854,
+        "hit@10": 0.494
+      }
+    }
+  }
+}
