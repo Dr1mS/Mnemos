@@ -122,6 +122,10 @@ l'expression :
 |---|---|---|
 | Nemotron 3 Ultra | 108 → **166** / 282 (9 perdues, 67 gagnées) | 41 → 41 / 60 |
 | qwen2.5 7B | 139 → **178** / 280 (14 perdues, 53 gagnées) | 40 → 38 / 60 (bruit du juge) |
+| qwen2.5 7B, **LoCoMo-Refined** (corrigés de la plateforme) | 126 → **166** / 252 (14 perdues, 54 gagnées) | 48 → 48 / 60 |
+
+LoCoMo-Refined est la version que passe la plateforme : 337 questions revues, et des corrigés en
+listes de réponses acceptables.
 
 **Le désactiver** : `RELATIVE_DATES_ANNOTATION=false` dans `.env`.
 

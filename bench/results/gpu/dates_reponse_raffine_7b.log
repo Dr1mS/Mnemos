@@ -1,0 +1,59 @@
+[sans] ingestion 446 s, 323 questions
+  [sans] sautée, à refaire : conv-30 #6 (échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500)
+  [sans] sautée, à refaire : conv-30 #13 (échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500)
+  [sans] sautée, à refaire : conv-30 #7 (échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500)
+  [sans] sautée, à refaire : conv-30 #14 (échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500)
+  [sans] 20/323 (637 s)
+  [sans] sautée, à refaire : conv-42 #16 (échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500)
+  [sans] sautée, à refaire : conv-42 #11 (échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500)
+  [sans] sautée, à refaire : conv-42 #5 (échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500)
+  [sans] sautée, à refaire : conv-42 #20 (échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500)
+  [sans] sautée, à refaire : conv-42 #28 (échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500)
+  [sans] 40/323 (835 s)
+  [sans] 60/323 (869 s)
+  [sans] 80/323 (903 s)
+  [sans] 100/323 (937 s)
+  [sans] 120/323 (971 s)
+  [sans] 140/323 (1004 s)
+  [sans] 160/323 (1036 s)
+  [sans] 180/323 (1067 s)
+  [sans] 200/323 (1100 s)
+  [sans] 220/323 (1134 s)
+  [sans] 240/323 (1170 s)
+  [sans] 260/323 (1204 s)
+  [sans] 280/323 (1238 s)
+  [sans] 300/323 (1271 s)
+[avec] ingestion 319 s, 323 questions
+  [avec] 20/323 (355 s)
+  [avec] 40/323 (392 s)
+  [avec] 60/323 (425 s)
+  [avec] 80/323 (459 s)
+  [avec] 100/323 (493 s)
+  [avec] 120/323 (528 s)
+  [avec] 140/323 (561 s)
+  [avec] sautée, à refaire : conv-47 #30 (échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500)
+  [avec] sautée, à refaire : conv-44 #47 (échec après 4 tentatives sur /api/generate : Server error '500 Internal Server Error' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500)
+  [avec] 160/323 (717 s)
+  [avec] 180/323 (754 s)
+  [avec] 200/323 (814 s)
+  [avec] 220/323 (896 s)
+  [avec] 240/323 (947 s)
+  [avec] 260/323 (996 s)
+  [avec] 280/323 (1046 s)
+  [avec] 300/323 (1097 s)
+  [avec] 320/323 (1148 s)
+
+dates (cat. 2)       N=252 | sans 126 | avec 166 | perdues 14 gagnées 54 | McNemar p = 0.000
+autres catégories    N= 60 | sans  48 | avec  48 | perdues  2 gagnées  2 | McNemar p = 1.000
+juge illisible : 0 | Rapport : bench\results\gpu\dates_reponse_raffine_7b.json
