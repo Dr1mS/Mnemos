@@ -1,0 +1,19 @@
+  conv-26 : 75 preuves
+  conv-30 : 31 preuves
+  conv-41 : 78 preuves
+  conv-42 : 131 preuves
+  conv-43 : 99 preuves
+  conv-44 : 93 preuves
+  conv-47 : 56 preuves
+  conv-48 : 72 preuves
+  conv-49 : 160 preuves
+  conv-50 : 87 preuves
+
+Preuves : 882 | ratées (hors top 100) : 237 (27%)
+  rang complet des ratées : {'201-400': 102, '101-150': 57, '151-200': 57, '> 400': 21}
+  ratées sans aucun mot plein commun avec la question : 216/237 (retrouvées : 283/645)
+  ratées voisines (±2 répliques) d'un épisode du top 10 : 47
+  ratées dont la session est déjà dans le top 100 : 233
+  ratées où la question nomme un locuteur : 237, dont prononcées par lui : 219
+  (vivier dense de /search à top_k=100 : 200 candidats)
+Rapport : bench\results\gpu\multisauts_diag.json
