@@ -32,14 +32,16 @@ from typing import Any
 RACINE = Path(__file__).resolve().parent / "data" / "aml_pipeline"
 
 
-def charger(jeu: str = "locomo-refined") -> ModuleType:
-    """Importe `data/<jeu>/pipeline.py` du dépôt public, sans clé d'API."""
-    chemin = RACINE / "data" / jeu / "pipeline.py"
+def charger(jeu: str = "locomo-refined", fichier: str = "pipeline.py") -> ModuleType:
+    """Importe `data/<jeu>/<fichier>` du dépôt public, sans clé d'API
+    (PersonaMem en a deux : `pipeline_v1.py`, `pipeline_v2.py`)."""
+    chemin = RACINE / "data" / jeu / fichier
     if not chemin.exists():
         raise SystemExit(f"{chemin} absent : voir la commande de téléchargement dans {__file__}")
     for var in ("ANSWER_API_KEY", "JUDGE_API_KEY"):
         os.environ.setdefault(var, "")  # le module les lit à l'import, sans s'en servir ici
-    spec = importlib.util.spec_from_file_location(f"aml_pipeline_{jeu.replace('-', '_')}", chemin)
+    nom = f"aml_pipeline_{jeu.replace('-', '_')}_{fichier.removesuffix('.py')}"
+    spec = importlib.util.spec_from_file_location(nom, chemin)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
