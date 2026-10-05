@@ -1,0 +1,65 @@
+[sans] ingestion 279 s, 344 questions
+  [sans] 20/344 (724 s)
+  [sans] 40/344 (1275 s)
+  [sans] 60/344 (1820 s)
+  [sans] 80/344 (2353 s)
+  [sans] 100/344 (3055 s)
+Traceback (most recent call last):
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\bench\bench_dates_reponse.py", line 236, in <module>
+    main()
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\bench\bench_dates_reponse.py", line 232, in main
+    asyncio.run(run(args))
+  File "C:\Users\adri7\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\adri7\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adri7\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\bench\bench_dates_reponse.py", line 174, in run
+    await asyncio.gather(*(une(cid, i, q) for cid, i, q in restantes))
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\bench\bench_dates_reponse.py", line 154, in une
+    reponse = (await repondeur.generate(aml_officiel.consigne_reponse(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adri7\Desktop\Code\CLAUDE\Mnemos_AML\bench\remote_llm.py", line 118, in generate
+    raise RuntimeError(f"{self.provider}/{model} : échec après {_REPRISES} essais ({derniere_erreur})")
+RuntimeError: nvidia/nvidia/nemotron-3-ultra-550b-a55b : échec après 10 essais (HTTP 429 {"status":429,"title":"Too Many Requests"})
+Reprise : 110 réponses déjà dans bench\results\gpu\dates_reponse.cache.jsonl
+[sans] ingestion 503 s, 234 questions
+  [sans] 20/234 (1172 s)
+  [sans] 40/234 (1655 s)
+  [sans] 60/234 (2230 s)
+  [sans] 80/234 (2948 s)
+  [sans] 100/234 (3673 s)
+  [sans] 120/234 (4319 s)
+  [sans] 140/234 (4947 s)
+  [sans] 160/234 (5754 s)
+  [sans] 180/234 (6710 s)
+  [sans] 200/234 (7790 s)
+  [sans] 220/234 (8947 s)
+[avec] ingestion 270 s, 344 questions
+  [avec] sautée, à refaire : conv-30 #0 (nvidia/nvidia/nemotron-3-ultra-550b-a55b : échec après 10 essais (HTTP 503 {"error":{"message":"Service temporarily overloaded","type":"Service Unavailable","code":503}}))
+  [avec] 20/344 (4426 s)
+  [avec] 40/344 (5185 s)
+  [avec] 60/344 (6164 s)
+  [avec] 80/344 (6973 s)
+  [avec] 100/344 (7701 s)
+  [avec] 120/344 (8308 s)
+  [avec] 140/344 (9218 s)
+  [avec] 160/344 (10637 s)
+  [avec] 180/344 (11759 s)
+  [avec] 200/344 (14230 s)
+  [avec] sautée, à refaire : conv-48 #2 (nvidia/nvidia/nemotron-3-ultra-550b-a55b : échec après 10 essais (HTTP 503 {"error":{"message":"Service temporarily overloaded","type":"Service Unavailable","code":503}}))
+  [avec] 220/344 (18410 s)
+  [avec] 240/344 (19820 s)
+  [avec] 260/344 (20690 s)
+  [avec] 280/344 (22420 s)
+  [avec] 300/344 (23397 s)
+  [avec] 320/344 (24144 s)
+  [avec] 340/344 (24986 s)
+
+dates (cat. 2)       N=282 | sans 108 | avec 166 | perdues  9 gagnées 67 | McNemar p = 0.000
+autres catégories    N= 60 | sans  41 | avec  41 | perdues  0 gagnées  0 | McNemar p = 1.000
+juge illisible : 0 | Rapport : bench\results\gpu\dates_reponse.json
