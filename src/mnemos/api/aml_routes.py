@@ -25,15 +25,18 @@ from mnemos.api.aml_schemas import (
     AMLSearchResponse,
 )
 from mnemos.api.deps import (
+    get_app_settings,
     get_queue,
     get_semantic,
     get_store,
     get_wm,
     require_api_key,
 )
+from mnemos.config import Settings
 from mnemos.llm.ollama_client import is_probe_transient
 from mnemos.logging import get_logger
 from mnemos.router.forget import forget_requests_in_batch
+from mnemos.router.relative_dates import annotate_relative_dates
 from mnemos.stores.episodic import (
     BatchEpisodeItem,
     DuplicateRequest,
@@ -58,6 +61,7 @@ StoreDep = Annotated[EpisodicStore, Depends(get_store)]
 SemanticDep = Annotated[SemanticStore, Depends(get_semantic)]
 WMDep = Annotated[WorkingMemoryRegistry, Depends(get_wm)]
 QueueDep = Annotated[ScoringQueue, Depends(get_queue)]
+SettingsDep = Annotated[Settings, Depends(get_app_settings)]
 
 
 def _ts_to_iso(ts_ms: int) -> str:
@@ -89,6 +93,7 @@ async def aml_add(
     store: StoreDep,
     wm: WMDep,
     queue: QueueDep,
+    settings: SettingsDep,
 ) -> AMLAddResponse:
     """Ingestion synchrone de mémoires selon le contrat AML.
 
@@ -117,16 +122,22 @@ async def aml_add(
     history: list[str] = [e.content for e in recent_episodes]
 
     # Préparation du lot d'épisodes
-    items = [
-        BatchEpisodeItem(
-            content=_extract_text(msg.content),
+    # Dates relatives : seulement si le message porte l'horodatage de la SOURCE.
+    # Sans lui, l'ancre serait l'heure de réception et la date ajoutée serait fausse.
+    annoter = settings.RELATIVE_DATES_ANNOTATION
+    items = []
+    for msg in payload.messages:
+        brut = _extract_text(msg.content)
+        stocke = (annotate_relative_dates(brut, msg.timestamp)
+                  if annoter and msg.timestamp is not None else brut)
+        items.append(BatchEpisodeItem(
+            content=stocke,
             role=msg.role,
             session_id=session_id,
             tenant=tenant,
             created_at=msg.timestamp,
-        )
-        for msg in payload.messages
-    ]
+            index_text=brut if stocke != brut else None,
+        ))
 
     # Oubli (catégorie D3). Le contrat n'a pas d'opération de suppression :
     # « please forget that I… » arrive comme un message ordinaire. Il est
@@ -136,7 +147,7 @@ async def aml_add(
     # affirmaient la préférence (voir `EpisodicStore._echos_a_oublier`).
     consignes = [
         ForgetRequest(target=cible, position=pos)
-        for pos, cible in forget_requests_in_batch([(it.role, it.content) for it in items])
+        for pos, cible in forget_requests_in_batch([(it.role, it.texte_indexe) for it in items])
     ]
     if consignes:
         logger.info("aml_add_oubli", tenant=tenant, consignes=len(consignes))

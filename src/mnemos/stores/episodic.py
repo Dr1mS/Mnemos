@@ -138,6 +138,15 @@ class BatchEpisodeItem:
     salience_scores: SalienceScores | None = None
     tenant: str = DEFAULT_TENANT
     created_at: int | None = None
+    # Texte indexé (embedding dense et bits lexicaux), quand il diffère du texte
+    # stocké. Les dates relatives résolues (`router/relative_dates.py`) enrichissent
+    # `content`, mais l'index reste celui du message brut : le classement mesuré
+    # et le seuil de cosinus de l'oubli, calibrés sur le brut, restent valables.
+    index_text: str | None = None
+
+    @property
+    def texte_indexe(self) -> str:
+        return self.index_text if self.index_text is not None else self.content
 
 
 @dataclass(frozen=True)
@@ -213,7 +222,7 @@ class EpisodicStore:
         tenant_ = items[0].tenant if items else (tenant or DEFAULT_TENANT)
 
         # Les cibles d'oubli voyagent dans le même appel d'embedding que le lot.
-        texts = [it.content for it in items]
+        texts = [it.texte_indexe for it in items]
         vecteurs = await self._embedder.embed_batch(texts + [f.target for f in forget])
         dense_vectors, cibles = vecteurs[: len(texts)], vecteurs[len(texts):]
         exclus, a_effacer = await self._echos_a_oublier(
@@ -227,7 +236,7 @@ class EpisodicStore:
             if j in exclus:
                 continue
             now = it.created_at if it.created_at is not None else now_default
-            sparse = sparse_encode(it.content, now)
+            sparse = sparse_encode(it.texte_indexe, now)
             ep = Episode(
                 id=str(ULID()),
                 tenant=it.tenant,

@@ -59,6 +59,11 @@ class Settings(BaseSettings):
     CONSOLIDATION_DELAY_HOURS: float = 1
     EPISODIC_RETENTION_DAYS: int = 90
 
+    # Dates relatives résolues à l'écriture sur la route AML (router/relative_dates.py) :
+    # « yesterday » → « yesterday (27 August 2023) ». Désactivé tant que la
+    # validation sur les conversations LoCoMo hors développement n'est pas faite.
+    RELATIVE_DATES_ANNOTATION: bool = False
+
     # Consolidation worker
     CONSOLIDATION_AUTO: bool = True
     CONSOLIDATION_INTERVAL_SECONDS: float = 5.0
