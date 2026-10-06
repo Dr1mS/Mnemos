@@ -104,4 +104,20 @@
     tous/100/2      1/18              1.48 {'moyenne': 1.48, 'mediane': 2.0, 'max': 2}      124/146                    0
     tous/100/3      2/18              1.91 {'moyenne': 1.83, 'mediane': 2.0, 'max': 3}      124/146                    0
     tous/100/5      2/18              2.32 {'moyenne': 2.05, 'mediane': 2.0, 'max': 5}      124/146                    0
+  suivant/10/1     12/18              0.59 {'moyenne': 0.59, 'mediane': 1.0, 'max': 1}       86/146                    0
+  suivant/10/2     13/18              0.73 {'moyenne': 0.86, 'mediane': 1.0, 'max': 2}       86/146                    0
+  suivant/10/3     13/18              0.75 {'moyenne': 0.99, 'mediane': 1.0, 'max': 3}       86/146                    0
+  suivant/10/5     13/18               0.8 {'moyenne': 1.08, 'mediane': 1.0, 'max': 5}       86/146                    0
+  suivant/20/1     12/18               0.7 {'moyenne': 0.77, 'mediane': 1.0, 'max': 1}      112/146                    0
+  suivant/20/2     14/18              1.14 {'moyenne': 1.29, 'mediane': 2.0, 'max': 2}      112/146                    0
+  suivant/20/3     14/18              1.43 {'moyenne': 1.61, 'mediane': 2.0, 'max': 3}      112/146                    0
+  suivant/20/5     14/18              1.64 {'moyenne': 1.92, 'mediane': 2.0, 'max': 5}      112/146                    0
+  suivant/50/1     13/18              0.91 {'moyenne': 0.94, 'mediane': 1.0, 'max': 1}      137/146                    0
+  suivant/50/2     15/18              1.77 {'moyenne': 1.78, 'mediane': 2.0, 'max': 2}      137/146                    0
+  suivant/50/3     15/18              2.52 {'moyenne': 2.55, 'mediane': 3.0, 'max': 3}      137/146                    0
+  suivant/50/5     15/18               3.5 {'moyenne': 3.66, 'mediane': 4.0, 'max': 5}      137/146                    0
+ suivant/100/1     14/18                 1 {'moyenne': 1, 'mediane': 1.0, 'max': 1}      146/146                    0
+ suivant/100/2     16/18              1.98 {'moyenne': 1.98, 'mediane': 2.0, 'max': 2}      146/146                    1
+ suivant/100/3     16/18              2.93 {'moyenne': 2.95, 'mediane': 3.0, 'max': 3}      146/146                    1
+ suivant/100/5     16/18               4.7 {'moyenne': 4.79, 'mediane': 5.0, 'max': 5}      146/146                    1
 Rapport : bench\results\oubli\rattachement_selection_carte.json

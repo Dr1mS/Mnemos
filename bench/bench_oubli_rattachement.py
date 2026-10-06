@@ -5,12 +5,17 @@ quand `/search` ne la rend pas fait passer les questions concernées de 1 à 10 
 réponses sur 18. Ce test-là trouvait la consigne grâce à l'étiquette du jeu. Ici, le
 mécanisme qu'on pourrait livrer, sans étiquette :
 
-  * à l'écriture, chaque consigne (`detect_forget`) est LIÉE aux épisodes antérieurs
-    les plus proches de sa cible : 50 voisins, cosinus ≥ 0,65, 5 au plus, les réglages
-    déjà mesurés pour les échos (`FORGET_ECHO_*`) ;
+  * à l'écriture, chaque consigne (`detect_forget`) est LIÉE soit aux épisodes antérieurs
+    les plus proches de sa cible (50 voisins, cosinus ≥ 0,65, 5 au plus, les réglages
+    des échos `FORGET_ECHO_*`), soit au message qui la suit (`suivant`, l'accusé) ;
   * à la recherche, si un épisode lié figure dans les `fenetre` premiers résultats et
-    que la consigne n'y est pas, elle rejoint la liste en fin, à la place des derniers,
-    `plafond` consignes au plus, dans l'ordre du premier épisode déclencheur.
+    que la consigne n'y est pas, elle rejoint la liste, `plafond` consignes au plus :
+    en fin (similarité) ou juste avant l'épisode lié (`suivant`).
+
+Premier essai, similarité seule (06/10) : la bonne consigne ne revient que pour 1 à 2
+questions sur 18. La préférence n'est pas dite par l'utilisateur, alors que l'accusé est
+déjà rendu pour les 18 ; et `bench_oubli_placement.py` montre que la consigne insérée
+juste avant son accusé aide autant qu'en fin de liste. D'où la variante `suivant`.
 
 `rattacher_consignes` est la fonction qu'on collerait dans Mnemos. Phase `selection` :
 sans modèle de langage, sur toutes les questions, combien de consignes entrent, si la
@@ -68,14 +73,20 @@ from mnemos.stores.episodic import FORGET_ECHO_KNN, FORGET_ECHO_MAX, FORGET_ECHO
 TOP_K = 100
 FENETRES = (10, 20, 50, 100)
 PLAFONDS = (1, 2, 3, 5)
-ROLES = ("user", "tous")
+# Liens d'une consigne : par similarité à sa cible (`user`, `tous` : rôles retenus), ou
+# vers le message qui la suit dans la conversation (`suivant`, en pratique l'accusé de
+# l'assistant ; voir bench_oubli_placement.py).
+LIENS = ("user", "tous", "suivant")
+PLACEMENT = {"user": "fin", "tous": "fin", "suivant": "voisin"}
 
 
 def rattacher_consignes(ids: list[str], liens: dict[str, list[str]], top_k: int,
-                        fenetre: int, plafond: int) -> list[str]:
+                        fenetre: int, plafond: int, placement: str = "fin") -> list[str]:
     """Liste finale : les consignes d'oubli dont un épisode lié figure dans les `fenetre`
-    premiers résultats la rejoignent, en fin, à la place des derniers. `plafond` au plus,
-    dans l'ordre du premier épisode déclencheur. Sans effet si rien n'est lié."""
+    premiers résultats la rejoignent, `plafond` au plus, dans l'ordre du premier épisode
+    déclencheur. `fin` : en fin de liste, à la place des derniers ; `voisin` : chacune
+    juste avant son épisode déclencheur, la liste coupée à `top_k`. Sans effet si rien
+    n'est lié."""
     presents = set(ids)
     rang = {eid: i for i, eid in enumerate(ids[:fenetre])}
     candidates: list[tuple[int, str]] = []
@@ -85,10 +96,19 @@ def rattacher_consignes(ids: list[str], liens: dict[str, list[str]], top_k: int,
         r = min((rang[v] for v in vises if v in rang), default=None)
         if r is not None:
             candidates.append((r, c))
-    ajouts = [c for _, c in sorted(candidates)[:plafond]]
-    if not ajouts:
+    choisies = sorted(candidates)[:plafond]
+    if not choisies:
         return ids[:top_k]
-    return ids[:min(len(ids), top_k - len(ajouts))] + ajouts
+    if placement == "fin":
+        return ids[:min(len(ids), top_k - len(choisies))] + [c for _, c in choisies]
+    avant: dict[int, list[str]] = {}
+    for r, c in choisies:
+        avant.setdefault(r, []).append(c)
+    out: list[str] = []
+    for i, eid in enumerate(ids):
+        out.extend(avant.get(i, []))
+        out.append(eid)
+    return out[:top_k]
 
 
 def _p(perdues: int, gagnees: int) -> float:
@@ -105,19 +125,27 @@ def echantillon(lignes: dict[str, list[dict[str, Any]]], graine: int, n: int, fr
     return random.Random(graine).sample(pool, min(n, len(pool)))
 
 
-async def liens_du_tenant(store: Any, tenant: str, ordre: dict[str, int]) -> dict[str, dict[str, list[str]]]:
-    """Pour chaque consigne stockée : ses épisodes liés, par variante de rôle.
+async def liens_du_tenant(store: Any, tenant: str, conversation: list[str]) -> dict[str, dict[str, list[str]]]:
+    """Pour chaque consigne stockée : ses épisodes liés, par variante de lien.
 
-    Ce que ferait `/add` : voisins de la cible antérieurs à la consigne (l'ordre vient
-    de l'historique), cosinus ≥ 0,65, 5 au plus, les autres consignes exclues."""
+    Ce que ferait `/add`. Similarité : voisins de la cible antérieurs à la consigne,
+    cosinus ≥ 0,65, 5 au plus, les autres consignes exclues. `suivant` : le message
+    qui suit la consigne dans la conversation (`conversation` : contenus dans l'ordre)."""
+    ordre: dict[str, int] = {}
+    for i, c in enumerate(conversation):
+        ordre.setdefault(c, i)
     async with store._sessions() as s:
         eps = (await s.execute(select(Episode.id, Episode.role, Episode.content).where(
             Episode.tenant == tenant, Episode.archived == 0))).all()
     info = {eid: (role, content) for eid, role, content in eps}
+    par_contenu = {content: eid for eid, (_, content) in info.items()}
     consignes = {eid: d.target for eid, (role, content) in info.items()
                  if (d := detect_forget(content, role)) is not None}
-    out: dict[str, dict[str, list[str]]] = {r: {} for r in ROLES}
+    out: dict[str, dict[str, list[str]]] = {r: {} for r in LIENS}
     for cid, cible in consignes.items():
+        pos = ordre.get(info[cid][1])
+        suivant = par_contenu.get(conversation[pos + 1]) if pos is not None and pos + 1 < len(conversation) else None
+        out["suivant"][f"ep_{cid}"] = [f"ep_{suivant}"] if suivant and suivant not in consignes else []
         emb = await store._embedder.embed(cible)
         async with store._sessions() as s:
             knn = (await s.execute(
@@ -128,7 +156,7 @@ async def liens_du_tenant(store: Any, tenant: str, ordre: dict[str, int]) -> dic
         voisins = sorted(((1.0 - float(d), eid) for eid, d in knn
                           if eid in info and eid != cid and eid not in consignes
                           and ordre.get(info[eid][1], 10**9) < pos_c), reverse=True)
-        for r in ROLES:
+        for r in ("user", "tous"):
             garde = [eid for cos, eid in voisins
                      if cos >= FORGET_ECHO_MIN_COSINE and (r == "tous" or info[eid][0] == "user")]
             out[r][f"ep_{cid}"] = [f"ep_{e}" for e in garde[:FORGET_ECHO_MAX]]
@@ -178,10 +206,7 @@ async def run(args: argparse.Namespace) -> None:
                              ).raise_for_status()
                         ingeres.add(tenant)
                         marque.write_text(json.dumps(sorted(ingeres)), encoding="utf-8")
-                    ordre: dict[str, int] = {}
-                    for i, m in enumerate(chat):
-                        ordre.setdefault(str(m["content"]), i)
-                    liens = await liens_du_tenant(store, tenant, ordre)
+                    liens = await liens_du_tenant(store, tenant, [str(m["content"]) for m in chat])
                     for k, row in enumerate(rows):
                         cle = f"{pid}#{k}"
                         if args.phase == "reponse" and (cle in faits or row.get("pref_type") not in args.types):
@@ -203,10 +228,10 @@ async def run(args: argparse.Namespace) -> None:
                                                  "bonne_presente": bool(bonnes & set(ids)),
                                                  "bonne_existe": bool(bonnes),
                                                  "preuve_avant": present(items, preuves) if preuves else None}
-                            for r in ROLES:
+                            for r in LIENS:
                                 for f in FENETRES:
                                     for p in PLAFONDS:
-                                        final = rattacher_consignes(ids, liens[r], TOP_K, f, p)
+                                        final = rattacher_consignes(ids, liens[r], TOP_K, f, p, PLACEMENT[r])
                                         ajouts = [i for i in final if i not in par_id]
                                         gardes = [par_id[i] for i in final if i in par_id]
                                         st[f"{r}/{f}/{p}"] = {
@@ -217,7 +242,8 @@ async def run(args: argparse.Namespace) -> None:
                             continue
                         # phase « reponse » : la configuration choisie, A contre A+
                         assert officiel is not None and repondeur is not None
-                        final = rattacher_consignes(ids, liens[args.roles], TOP_K, args.fenetre, args.plafond)
+                        final = rattacher_consignes(ids, liens[args.liens], TOP_K, args.fenetre, args.plafond,
+                                                    PLACEMENT[args.liens])
                         options = [str(row["correct_answer"]), *(str(o) for o in json.loads(row["incorrect_answers"]))]
                         random.Random(f"{pid}:{k}:{args.graine}").shuffle(options)
                         bonne = chr(65 + options.index(str(row["correct_answer"])))
@@ -259,7 +285,11 @@ async def run(args: argparse.Namespace) -> None:
         rapport["details"] = stats
     else:
         rapport = synthese_reponse(list(faits.values()))
-    args.output.write_text(json.dumps(rapport, indent=2, ensure_ascii=False), encoding="utf-8")
+    # Synthèse lisible, détails une question par ligne (le rapport de sélection dépasserait 1 Mo)
+    details = rapport.pop("details")
+    tete = json.dumps(rapport, indent=2, ensure_ascii=False)
+    lignes_json = ",\n    ".join(json.dumps(x, ensure_ascii=False, separators=(",", ":")) for x in details)
+    args.output.write_text(f'{tete[:-2]},\n  "details": [\n    {lignes_json}\n  ]\n}}\n', encoding="utf-8")
     print(f"Rapport : {args.output}")
 
 
@@ -289,7 +319,7 @@ def synthese_selection(stats: list[dict[str, Any]]) -> dict[str, Any]:
     print(f"{'config':>14s} {'bonne/manque':>13s} {'ajouts oubli':>13s} {'ajouts autres':>22s}"
           f" {'autres touchées':>16s} {'preuves perdues':>16s}")
     configs: dict[str, Any] = {}
-    for r in ROLES:
+    for r in LIENS:
         for f in FENETRES:
             for p in PLAFONDS:
                 c = f"{r}/{f}/{p}"
@@ -338,7 +368,7 @@ def main() -> None:
     parser.add_argument("--graine", type=int, default=7)
     parser.add_argument("--frais", action="store_true", help="personas hors de la carte (validation)")
     parser.add_argument("--base", type=Path, default=None, help="base ingérée à garder et relire")
-    parser.add_argument("--roles", choices=ROLES, default="user")
+    parser.add_argument("--liens", choices=LIENS, default="suivant")
     parser.add_argument("--fenetre", type=int, default=100)
     parser.add_argument("--plafond", type=int, default=3)
     parser.add_argument("--types", nargs="+", default=None,
