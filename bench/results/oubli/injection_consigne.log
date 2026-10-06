@@ -1,0 +1,42 @@
+  persona 154 : 1 questions
+  persona 164 : 3 questions
+  persona 736 : 4 questions
+  persona 194 : 6 questions
+  ingestion pm:638 interrompue (essai 1) : Ollama injoignable (connectex)
+  ingestion pm:638 interrompue (essai 2) : Ollama injoignable (connectex)
+  persona 638 : 7 questions
+  ingestion pm:618 interrompue (essai 1) : Ollama injoignable (connectex)
+  persona 618 : 9 questions
+  persona 178 : 10 questions
+  persona 4 : 11 questions
+  persona 2 : 12 questions
+  persona 38 : 13 questions
+  ingestion pm:82 interrompue (essai 1) : Ollama injoignable (connectex)
+  persona 82 : 14 questions
+  persona 832 : 15 questions
+  persona 587 : 17 questions
+  persona 155 : 18 questions
+  persona 151 : 19 questions
+  persona 794 : 22 questions
+  persona 455 : 25 questions
+  persona 271 : 28 questions
+  persona 81 : 29 questions
+  persona 475 : 31 questions
+  persona 954 : 32 questions
+  persona 33 : 33 questions
+  persona 338 : 34 questions
+  persona 557 : 36 questions
+  persona 205 : 37 questions
+  persona 782 : 38 questions
+  persona 80 : 39 questions
+  persona 873 : 40 questions
+  ingestion pm:358 interrompue (essai 1) : Ollama injoignable (connectex)
+  ingestion pm:358 interrompue (essai 2) : Ollama injoignable (connectex)
+  ingestion pm:358 interrompue (essai 3) : Ollama injoignable (connectex)
+  persona 358 : 41 questions
+  persona 724 : 42 questions
+  persona 766 : 45 questions
+  persona 628 : 46 questions
+  persona 467 : 47 questions
+47 questions ask_to_forget, consigne manquante pour 18 ; A 12 -> A+ 21 (perdues 1, gagnées 10, p = 0.0117)
+Rapport : bench\results\oubli\injection_consigne.json

@@ -1,0 +1,434 @@
+{
+  "questions": 47,
+  "consigne_manquait": 18,
+  "A": 12,
+  "A+": 21,
+  "perdues": 1,
+  "gagnees": 10,
+  "p": 0.0117,
+  "details": [
+    {
+      "cle": "154#0",
+      "consigne_manquait": false,
+      "bonne": "C",
+      "lettre_A": "D",
+      "lettre_A+": "D",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "164#0",
+      "consigne_manquait": false,
+      "bonne": "A",
+      "lettre_A": "B",
+      "lettre_A+": "B",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "164#1",
+      "consigne_manquait": true,
+      "bonne": "A",
+      "lettre_A": "A",
+      "lettre_A+": "B",
+      "A": true,
+      "A+": false
+    },
+    {
+      "cle": "736#0",
+      "consigne_manquait": false,
+      "bonne": "D",
+      "lettre_A": "D",
+      "lettre_A+": "D",
+      "A": true,
+      "A+": true
+    },
+    {
+      "cle": "194#0",
+      "consigne_manquait": true,
+      "bonne": "D",
+      "lettre_A": "A",
+      "lettre_A+": "D",
+      "A": false,
+      "A+": true
+    },
+    {
+      "cle": "194#3",
+      "consigne_manquait": false,
+      "bonne": "D",
+      "lettre_A": "",
+      "lettre_A+": "",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "638#0",
+      "consigne_manquait": false,
+      "bonne": "C",
+      "lettre_A": "A",
+      "lettre_A+": "A",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "618#2",
+      "consigne_manquait": false,
+      "bonne": "C",
+      "lettre_A": "",
+      "lettre_A+": "",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "618#3",
+      "consigne_manquait": true,
+      "bonne": "D",
+      "lettre_A": "",
+      "lettre_A+": "",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "178#2",
+      "consigne_manquait": false,
+      "bonne": "C",
+      "lettre_A": "C",
+      "lettre_A+": "C",
+      "A": true,
+      "A+": true
+    },
+    {
+      "cle": "4#1",
+      "consigne_manquait": false,
+      "bonne": "B",
+      "lettre_A": "",
+      "lettre_A+": "",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "2#0",
+      "consigne_manquait": false,
+      "bonne": "A",
+      "lettre_A": "",
+      "lettre_A+": "",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "38#1",
+      "consigne_manquait": true,
+      "bonne": "B",
+      "lettre_A": "",
+      "lettre_A+": "B",
+      "A": false,
+      "A+": true
+    },
+    {
+      "cle": "82#1",
+      "consigne_manquait": true,
+      "bonne": "D",
+      "lettre_A": "",
+      "lettre_A+": "D",
+      "A": false,
+      "A+": true
+    },
+    {
+      "cle": "832#1",
+      "consigne_manquait": true,
+      "bonne": "A",
+      "lettre_A": "C",
+      "lettre_A+": "A",
+      "A": false,
+      "A+": true
+    },
+    {
+      "cle": "587#0",
+      "consigne_manquait": false,
+      "bonne": "A",
+      "lettre_A": "D",
+      "lettre_A+": "D",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "587#2",
+      "consigne_manquait": false,
+      "bonne": "D",
+      "lettre_A": "",
+      "lettre_A+": "",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "155#1",
+      "consigne_manquait": true,
+      "bonne": "C",
+      "lettre_A": "",
+      "lettre_A+": "",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "151#1",
+      "consigne_manquait": false,
+      "bonne": "B",
+      "lettre_A": "B",
+      "lettre_A+": "B",
+      "A": true,
+      "A+": true
+    },
+    {
+      "cle": "794#0",
+      "consigne_manquait": false,
+      "bonne": "C",
+      "lettre_A": "C",
+      "lettre_A+": "C",
+      "A": true,
+      "A+": true
+    },
+    {
+      "cle": "794#1",
+      "consigne_manquait": true,
+      "bonne": "B",
+      "lettre_A": "C",
+      "lettre_A+": "B",
+      "A": false,
+      "A+": true
+    },
+    {
+      "cle": "794#2",
+      "consigne_manquait": false,
+      "bonne": "D",
+      "lettre_A": "B",
+      "lettre_A+": "B",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "455#1",
+      "consigne_manquait": true,
+      "bonne": "B",
+      "lettre_A": "C",
+      "lettre_A+": "",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "455#3",
+      "consigne_manquait": false,
+      "bonne": "B",
+      "lettre_A": "",
+      "lettre_A+": "",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "455#4",
+      "consigne_manquait": false,
+      "bonne": "C",
+      "lettre_A": "C",
+      "lettre_A+": "C",
+      "A": true,
+      "A+": true
+    },
+    {
+      "cle": "271#0",
+      "consigne_manquait": true,
+      "bonne": "D",
+      "lettre_A": "",
+      "lettre_A+": "B",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "271#2",
+      "consigne_manquait": true,
+      "bonne": "A",
+      "lettre_A": "C",
+      "lettre_A+": "A",
+      "A": false,
+      "A+": true
+    },
+    {
+      "cle": "271#3",
+      "consigne_manquait": true,
+      "bonne": "A",
+      "lettre_A": "B",
+      "lettre_A+": "B",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "81#0",
+      "consigne_manquait": false,
+      "bonne": "B",
+      "lettre_A": "",
+      "lettre_A+": "",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "475#1",
+      "consigne_manquait": false,
+      "bonne": "A",
+      "lettre_A": "B",
+      "lettre_A+": "B",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "475#3",
+      "consigne_manquait": false,
+      "bonne": "D",
+      "lettre_A": "",
+      "lettre_A+": "",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "954#0",
+      "consigne_manquait": true,
+      "bonne": "D",
+      "lettre_A": "C",
+      "lettre_A+": "D",
+      "A": false,
+      "A+": true
+    },
+    {
+      "cle": "33#0",
+      "consigne_manquait": false,
+      "bonne": "D",
+      "lettre_A": "",
+      "lettre_A+": "",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "338#0",
+      "consigne_manquait": false,
+      "bonne": "D",
+      "lettre_A": "D",
+      "lettre_A+": "D",
+      "A": true,
+      "A+": true
+    },
+    {
+      "cle": "557#0",
+      "consigne_manquait": true,
+      "bonne": "D",
+      "lettre_A": "A",
+      "lettre_A+": "D",
+      "A": false,
+      "A+": true
+    },
+    {
+      "cle": "557#2",
+      "consigne_manquait": true,
+      "bonne": "C",
+      "lettre_A": "A",
+      "lettre_A+": "C",
+      "A": false,
+      "A+": true
+    },
+    {
+      "cle": "205#0",
+      "consigne_manquait": false,
+      "bonne": "B",
+      "lettre_A": "C",
+      "lettre_A+": "C",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "782#1",
+      "consigne_manquait": true,
+      "bonne": "A",
+      "lettre_A": "",
+      "lettre_A+": "",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "80#5",
+      "consigne_manquait": false,
+      "bonne": "A",
+      "lettre_A": "A",
+      "lettre_A+": "A",
+      "A": true,
+      "A+": true
+    },
+    {
+      "cle": "873#0",
+      "consigne_manquait": false,
+      "bonne": "A",
+      "lettre_A": "A",
+      "lettre_A+": "A",
+      "A": true,
+      "A+": true
+    },
+    {
+      "cle": "358#4",
+      "consigne_manquait": false,
+      "bonne": "A",
+      "lettre_A": "C",
+      "lettre_A+": "C",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "724#1",
+      "consigne_manquait": false,
+      "bonne": "A",
+      "lettre_A": "A",
+      "lettre_A+": "A",
+      "A": true,
+      "A+": true
+    },
+    {
+      "cle": "766#0",
+      "consigne_manquait": false,
+      "bonne": "A",
+      "lettre_A": "A",
+      "lettre_A+": "A",
+      "A": true,
+      "A+": true
+    },
+    {
+      "cle": "766#1",
+      "consigne_manquait": false,
+      "bonne": "A",
+      "lettre_A": "A",
+      "lettre_A+": "A",
+      "A": true,
+      "A+": true
+    },
+    {
+      "cle": "766#2",
+      "consigne_manquait": true,
+      "bonne": "C",
+      "lettre_A": "D",
+      "lettre_A+": "C",
+      "A": false,
+      "A+": true
+    },
+    {
+      "cle": "628#1",
+      "consigne_manquait": false,
+      "bonne": "A",
+      "lettre_A": "C",
+      "lettre_A+": "C",
+      "A": false,
+      "A+": false
+    },
+    {
+      "cle": "467#1",
+      "consigne_manquait": true,
+      "bonne": "D",
+      "lettre_A": "A",
+      "lettre_A+": "A",
+      "A": false,
+      "A+": false
+    }
+  ]
+}
