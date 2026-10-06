@@ -142,15 +142,20 @@ async def setup_bench_app(
         print(f"  Backend d'embeddings : {backend}"
               f"{' (' + settings.LLAMACPP_HOST + ')' if backend == 'llamacpp' else ''}")
     clock = Clock()
+    # Une base déjà ingérée (`--base` de certains benchs) se rouvre telle quelle.
+    epi_neuve = not settings.EPISODIC_DB.exists()
+    sem_neuve = not settings.SEMANTIC_DB.exists()
     epi_engine = make_async_engine(settings.EPISODIC_DB)
     sem_engine = make_async_engine(settings.SEMANTIC_DB)
 
-    async with epi_engine.begin() as conn:
-        for stmt in EPISODIC_SCHEMA_SQL:
-            await conn.execute(text(stmt))
-    async with sem_engine.begin() as conn:
-        for stmt in SEMANTIC_SCHEMA_SQL:
-            await conn.execute(text(stmt))
+    if epi_neuve:
+        async with epi_engine.begin() as conn:
+            for stmt in EPISODIC_SCHEMA_SQL:
+                await conn.execute(text(stmt))
+    if sem_neuve:
+        async with sem_engine.begin() as conn:
+            for stmt in SEMANTIC_SCHEMA_SQL:
+                await conn.execute(text(stmt))
 
     app = create_app(settings)
 

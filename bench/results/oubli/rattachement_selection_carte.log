@@ -1,0 +1,107 @@
+  Backend d'embeddings : llamacpp (http://127.0.0.1:8899)
+  [1/70] persona 495
+  [2/70] persona 282
+  [3/70] persona 585
+  [4/70] persona 916
+  [5/70] persona 154
+  [6/70] persona 180
+  [7/70] persona 770
+  [8/70] persona 202
+  [9/70] persona 547
+  [10/70] persona 83
+  [11/70] persona 164
+  [12/70] persona 736
+  [13/70] persona 369
+  [14/70] persona 143
+  [15/70] persona 194
+  [16/70] persona 638
+  [17/70] persona 618
+  [18/70] persona 178
+  [19/70] persona 4
+  [20/70] persona 2
+  [21/70] persona 786
+  [22/70] persona 624
+  [23/70] persona 165
+  [24/70] persona 803
+  [25/70] persona 240
+  [26/70] persona 38
+  [27/70] persona 888
+  [28/70] persona 885
+  [29/70] persona 169
+  [30/70] persona 82
+  [31/70] persona 832
+  [32/70] persona 587
+  [33/70] persona 155
+  [34/70] persona 378
+  [35/70] persona 151
+  [36/70] persona 794
+  [37/70] persona 252
+  [38/70] persona 455
+  [39/70] persona 619
+  [40/70] persona 271
+  [41/70] persona 775
+  [42/70] persona 233
+  [43/70] persona 81
+  [44/70] persona 475
+  [45/70] persona 797
+  [46/70] persona 954
+  [47/70] persona 33
+  [48/70] persona 214
+  [49/70] persona 828
+  [50/70] persona 9
+  [51/70] persona 338
+  [52/70] persona 557
+  [53/70] persona 205
+  [54/70] persona 782
+  [55/70] persona 992
+  [56/70] persona 17
+  [57/70] persona 80
+  [58/70] persona 166
+  [59/70] persona 873
+  [60/70] persona 358
+  [61/70] persona 724
+  [62/70] persona 952
+  [63/70] persona 766
+  [64/70] persona 628
+  [65/70] persona 482
+  [66/70] persona 683
+  [67/70] persona 666
+  [68/70] persona 541
+  [69/70] persona 467
+  [70/70] persona 406
+
+193 questions ; oubli avec consigne : 44, dont consigne absente du top 100 : 18 ; preuve au top 100 avant : 167
+        config  bonne/manque  ajouts oubli          ajouts autres  autres touchées  preuves perdues
+     user/10/1      1/18              0.23 {'moyenne': 0.29, 'mediane': 0.0, 'max': 1}       43/146                    0
+     user/10/2      1/18               0.3 {'moyenne': 0.36, 'mediane': 0.0, 'max': 2}       43/146                    0
+     user/10/3      2/18              0.32 {'moyenne': 0.36, 'mediane': 0.0, 'max': 2}       43/146                    0
+     user/10/5      2/18              0.32 {'moyenne': 0.36, 'mediane': 0.0, 'max': 2}       43/146                    0
+     user/20/1      1/18              0.45 {'moyenne': 0.47, 'mediane': 0.0, 'max': 1}       68/146                    0
+     user/20/2      1/18              0.64 {'moyenne': 0.62, 'mediane': 0.0, 'max': 2}       68/146                    0
+     user/20/3      2/18               0.7 {'moyenne': 0.65, 'mediane': 0.0, 'max': 3}       68/146                    0
+     user/20/5      2/18              0.73 {'moyenne': 0.66, 'mediane': 0.0, 'max': 4}       68/146                    0
+     user/50/1      1/18               0.7 {'moyenne': 0.69, 'mediane': 1.0, 'max': 1}      101/146                    0
+     user/50/2      1/18              1.11 {'moyenne': 1.08, 'mediane': 1.0, 'max': 2}      101/146                    0
+     user/50/3      2/18              1.36 {'moyenne': 1.19, 'mediane': 1.0, 'max': 3}      101/146                    0
+     user/50/5      2/18              1.52 {'moyenne': 1.23, 'mediane': 1.0, 'max': 5}      101/146                    0
+    user/100/1      1/18              0.86 {'moyenne': 0.85, 'mediane': 1.0, 'max': 1}      124/146                    0
+    user/100/2      1/18              1.48 {'moyenne': 1.48, 'mediane': 2.0, 'max': 2}      124/146                    0
+    user/100/3      2/18              1.91 {'moyenne': 1.83, 'mediane': 2.0, 'max': 3}      124/146                    0
+    user/100/5      2/18              2.32 {'moyenne': 2.05, 'mediane': 2.0, 'max': 5}      124/146                    0
+     tous/10/1      1/18              0.23 {'moyenne': 0.29, 'mediane': 0.0, 'max': 1}       43/146                    0
+     tous/10/2      1/18               0.3 {'moyenne': 0.36, 'mediane': 0.0, 'max': 2}       43/146                    0
+     tous/10/3      2/18              0.32 {'moyenne': 0.36, 'mediane': 0.0, 'max': 2}       43/146                    0
+     tous/10/5      2/18              0.32 {'moyenne': 0.36, 'mediane': 0.0, 'max': 2}       43/146                    0
+     tous/20/1      1/18              0.45 {'moyenne': 0.47, 'mediane': 0.0, 'max': 1}       68/146                    0
+     tous/20/2      1/18              0.64 {'moyenne': 0.62, 'mediane': 0.0, 'max': 2}       68/146                    0
+     tous/20/3      2/18               0.7 {'moyenne': 0.65, 'mediane': 0.0, 'max': 3}       68/146                    0
+     tous/20/5      2/18              0.73 {'moyenne': 0.66, 'mediane': 0.0, 'max': 4}       68/146                    0
+     tous/50/1      1/18               0.7 {'moyenne': 0.69, 'mediane': 1.0, 'max': 1}      101/146                    0
+     tous/50/2      1/18              1.11 {'moyenne': 1.08, 'mediane': 1.0, 'max': 2}      101/146                    0
+     tous/50/3      2/18              1.36 {'moyenne': 1.19, 'mediane': 1.0, 'max': 3}      101/146                    0
+     tous/50/5      2/18              1.52 {'moyenne': 1.23, 'mediane': 1.0, 'max': 5}      101/146                    0
+    tous/100/1      1/18              0.86 {'moyenne': 0.85, 'mediane': 1.0, 'max': 1}      124/146                    0
+    tous/100/2      1/18              1.48 {'moyenne': 1.48, 'mediane': 2.0, 'max': 2}      124/146                    0
+    tous/100/3      2/18              1.91 {'moyenne': 1.83, 'mediane': 2.0, 'max': 3}      124/146                    0
+    tous/100/5      2/18              2.32 {'moyenne': 2.05, 'mediane': 2.0, 'max': 5}      124/146                    0
+Rapport : bench\results\oubli\rattachement_selection_carte.json
