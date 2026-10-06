@@ -116,12 +116,17 @@ def _p(perdues: int, gagnees: int) -> float:
     return min(1.0, 2 * sum(comb(n, i) for i in range(min(perdues, gagnees) + 1)) / 2 ** n) if n else 1.0
 
 
-def echantillon(lignes: dict[str, list[dict[str, Any]]], graine: int, n: int, frais: bool) -> list[str]:
-    """`frais` : personas hors de l'échantillon de la carte (graine 7, 70), jamais regardés."""
+def echantillon(lignes: dict[str, list[dict[str, Any]]], graine: int, n: int, frais: bool,
+                exclure: tuple[int, ...] = ()) -> list[str]:
+    """`frais` : personas hors de l'échantillon de la carte (graine 7, 70), jamais regardés.
+    `exclure` : graines d'échantillons frais déjà tirés (même taille `n`), à écarter aussi."""
     dispo = sorted(p for p, rs in lignes.items()
                    if (DATA_DIR / "chats" / Path(rs[0]["chat_history_32k_link"]).name).exists())
     vus = set(random.Random(7).sample(dispo, min(70, len(dispo))))
     pool = [p for p in dispo if p not in vus] if frais else dispo
+    for g in exclure:
+        deja = set(random.Random(g).sample(pool, min(n, len(pool))))
+        pool = [p for p in pool if p not in deja]
     return random.Random(graine).sample(pool, min(n, len(pool)))
 
 
@@ -171,7 +176,7 @@ def _resume(valeurs: Iterable[float]) -> dict[str, float]:
 async def run(args: argparse.Namespace) -> None:
     garder_la_boucle(asyncio.get_running_loop())
     lignes = load_personas(DATA_DIR / "val.csv")
-    personas = echantillon(lignes, args.graine, args.personas, args.frais)
+    personas = echantillon(lignes, args.graine, args.personas, args.frais, tuple(args.exclure_graines))
     base = args.base or Path(tempfile.mkdtemp(prefix="mnemos_oubli_rat_"))
     base.mkdir(parents=True, exist_ok=True)
     marque = base / "ingeres.json"
@@ -367,6 +372,8 @@ def main() -> None:
     parser.add_argument("--personas", type=int, default=70)
     parser.add_argument("--graine", type=int, default=7)
     parser.add_argument("--frais", action="store_true", help="personas hors de la carte (validation)")
+    parser.add_argument("--exclure-graines", type=int, nargs="*", default=[],
+                        help="graines d'échantillons frais déjà utilisés, à écarter")
     parser.add_argument("--base", type=Path, default=None, help="base ingérée à garder et relire")
     parser.add_argument("--liens", choices=LIENS, default="suivant")
     parser.add_argument("--fenetre", type=int, default=100)
