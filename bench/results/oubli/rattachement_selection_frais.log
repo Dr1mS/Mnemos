@@ -1,0 +1,173 @@
+  Backend d'embeddings : llamacpp (http://127.0.0.1:8899)
+  [1/120] persona 414
+  [2/120] persona 605
+  [3/120] persona 61
+  [4/120] persona 274
+  [5/120] persona 373
+  [6/120] persona 15
+  [7/120] persona 21
+  [8/120] persona 29
+  [9/120] persona 438
+  [10/120] persona 796
+  [11/120] persona 394
+  [12/120] persona 651
+  [13/120] persona 133
+  [14/120] persona 734
+  [15/120] persona 771
+  [16/120] persona 728
+  [17/120] persona 634
+  [18/120] persona 78
+  [19/120] persona 896
+  [20/120] persona 372
+  [21/120] persona 654
+  [22/120] persona 217
+  [23/120] persona 768
+  [24/120] persona 420
+  [25/120] persona 122
+  [26/120] persona 463
+  [27/120] persona 821
+  [28/120] persona 663
+  [29/120] persona 752
+  [30/120] persona 615
+  [31/120] persona 250
+  [32/120] persona 452
+  [33/120] persona 227
+  [34/120] persona 181
+  [35/120] persona 629
+  [36/120] persona 612
+  [37/120] persona 242
+  [38/120] persona 173
+  [39/120] persona 560
+  [40/120] persona 421
+  [41/120] persona 211
+  [42/120] persona 783
+  [43/120] persona 815
+  [44/120] persona 392
+  [45/120] persona 91
+  [46/120] persona 300
+  [47/120] persona 182
+  [48/120] persona 851
+  [49/120] persona 144
+  [50/120] persona 772
+  [51/120] persona 374
+  [52/120] persona 308
+  [53/120] persona 907
+  [54/120] persona 730
+  [55/120] persona 913
+  [56/120] persona 711
+  [57/120] persona 488
+  [58/120] persona 872
+  [59/120] persona 581
+  [60/120] persona 690
+  [61/120] persona 287
+  [62/120] persona 326
+  [63/120] persona 957
+  [64/120] persona 840
+  [65/120] persona 519
+  [66/120] persona 923
+  [67/120] persona 975
+  [68/120] persona 792
+  [69/120] persona 380
+  [70/120] persona 514
+  [71/120] persona 311
+  [72/120] persona 580
+  [73/120] persona 836
+  [74/120] persona 485
+  [75/120] persona 801
+  [76/120] persona 190
+  [77/120] persona 798
+  [78/120] persona 857
+  [79/120] persona 405
+  [80/120] persona 567
+  [81/120] persona 431
+  [82/120] persona 113
+  [83/120] persona 50
+  [84/120] persona 566
+  [85/120] persona 972
+  [86/120] persona 966
+  [87/120] persona 14
+  [88/120] persona 686
+  [89/120] persona 447
+  [90/120] persona 610
+  [91/120] persona 502
+  [92/120] persona 675
+  [93/120] persona 349
+  [94/120] persona 645
+  [95/120] persona 255
+  [96/120] persona 339
+  [97/120] persona 129
+  [98/120] persona 385
+  [99/120] persona 330
+  [100/120] persona 505
+  [101/120] persona 925
+  [102/120] persona 114
+  [103/120] persona 62
+  [104/120] persona 565
+  [105/120] persona 343
+  [106/120] persona 702
+  [107/120] persona 419
+  [108/120] persona 291
+  [109/120] persona 665
+  [110/120] persona 715
+  [111/120] persona 661
+  [112/120] persona 676
+  [113/120] persona 201
+  [114/120] persona 189
+  [115/120] persona 490
+  [116/120] persona 224
+  [117/120] persona 882
+  [118/120] persona 990
+  [119/120] persona 241
+  [120/120] persona 824
+
+341 questions ; oubli avec consigne : 61, dont consigne absente du top 100 : 19 ; preuve au top 100 avant : 293
+        config  bonne/manque  ajouts oubli          ajouts autres  autres touchées  preuves perdues
+     user/10/1      0/19              0.38 {'moyenne': 0.32, 'mediane': 0, 'max': 1}       90/279                    1
+     user/10/2      1/19              0.49 {'moyenne': 0.41, 'mediane': 0, 'max': 2}       90/279                    1
+     user/10/3      1/19              0.51 {'moyenne': 0.43, 'mediane': 0, 'max': 3}       90/279                    1
+     user/10/5      1/19              0.51 {'moyenne': 0.44, 'mediane': 0, 'max': 4}       90/279                    1
+     user/20/1      0/19              0.51 {'moyenne': 0.42, 'mediane': 0, 'max': 1}      116/279                    1
+     user/20/2      1/19              0.66 {'moyenne': 0.56, 'mediane': 0, 'max': 2}      116/279                    1
+     user/20/3      1/19              0.69 {'moyenne': 0.61, 'mediane': 0, 'max': 3}      116/279                    1
+     user/20/5      1/19               0.7 {'moyenne': 0.64, 'mediane': 0, 'max': 5}      116/279                    1
+     user/50/1      0/19              0.67 {'moyenne': 0.59, 'mediane': 1, 'max': 1}      164/279                    1
+     user/50/2      1/19              1.07 {'moyenne': 0.91, 'mediane': 1, 'max': 2}      164/279                    1
+     user/50/3      1/19              1.23 {'moyenne': 1.06, 'mediane': 1, 'max': 3}      164/279                    1
+     user/50/5      1/19              1.36 {'moyenne': 1.14, 'mediane': 1, 'max': 5}      164/279                    1
+    user/100/1      0/19              0.84 {'moyenne': 0.76, 'mediane': 1, 'max': 1}      211/279                    1
+    user/100/2      1/19              1.46 {'moyenne': 1.27, 'mediane': 2, 'max': 2}      211/279                    1
+    user/100/3      1/19              1.79 {'moyenne': 1.61, 'mediane': 2, 'max': 3}      211/279                    1
+    user/100/5      1/19              2.07 {'moyenne': 1.89, 'mediane': 2, 'max': 5}      211/279                    1
+     tous/10/1      0/19              0.38 {'moyenne': 0.32, 'mediane': 0, 'max': 1}       90/279                    1
+     tous/10/2      1/19              0.49 {'moyenne': 0.41, 'mediane': 0, 'max': 2}       90/279                    1
+     tous/10/3      1/19              0.51 {'moyenne': 0.43, 'mediane': 0, 'max': 3}       90/279                    1
+     tous/10/5      1/19              0.51 {'moyenne': 0.44, 'mediane': 0, 'max': 4}       90/279                    1
+     tous/20/1      0/19              0.51 {'moyenne': 0.42, 'mediane': 0, 'max': 1}      116/279                    1
+     tous/20/2      1/19              0.66 {'moyenne': 0.56, 'mediane': 0, 'max': 2}      116/279                    1
+     tous/20/3      1/19              0.69 {'moyenne': 0.61, 'mediane': 0, 'max': 3}      116/279                    1
+     tous/20/5      1/19               0.7 {'moyenne': 0.64, 'mediane': 0, 'max': 5}      116/279                    1
+     tous/50/1      0/19              0.67 {'moyenne': 0.59, 'mediane': 1, 'max': 1}      164/279                    1
+     tous/50/2      1/19              1.07 {'moyenne': 0.91, 'mediane': 1, 'max': 2}      164/279                    1
+     tous/50/3      1/19              1.23 {'moyenne': 1.06, 'mediane': 1, 'max': 3}      164/279                    1
+     tous/50/5      1/19              1.36 {'moyenne': 1.14, 'mediane': 1, 'max': 5}      164/279                    1
+    tous/100/1      0/19              0.84 {'moyenne': 0.76, 'mediane': 1, 'max': 1}      211/279                    1
+    tous/100/2      1/19              1.46 {'moyenne': 1.27, 'mediane': 2, 'max': 2}      211/279                    1
+    tous/100/3      1/19              1.79 {'moyenne': 1.61, 'mediane': 2, 'max': 3}      211/279                    1
+    tous/100/5      1/19              2.07 {'moyenne': 1.89, 'mediane': 2, 'max': 5}      211/279                    1
+  suivant/10/1      9/19              0.64 {'moyenne': 0.61, 'mediane': 1, 'max': 1}      171/279                    1
+  suivant/10/2     12/19              0.89 {'moyenne': 0.89, 'mediane': 1, 'max': 2}      171/279                    1
+  suivant/10/3     12/19              0.93 {'moyenne': 0.98, 'mediane': 1, 'max': 3}      171/279                    1
+  suivant/10/5     12/19              0.95 {'moyenne': 1.01, 'mediane': 1, 'max': 5}      171/279                    1
+  suivant/20/1     11/19              0.82 {'moyenne': 0.8, 'mediane': 1, 'max': 1}      224/279                    1
+  suivant/20/2     16/19              1.33 {'moyenne': 1.38, 'mediane': 2, 'max': 2}      224/279                    1
+  suivant/20/3     16/19              1.56 {'moyenne': 1.72, 'mediane': 2, 'max': 3}      224/279                    1
+  suivant/20/5     16/19               1.7 {'moyenne': 1.95, 'mediane': 2, 'max': 5}      224/279                    1
+  suivant/50/1     11/19              0.98 {'moyenne': 0.96, 'mediane': 1, 'max': 1}      267/279                    1
+  suivant/50/2     16/19              1.92 {'moyenne': 1.82, 'mediane': 2, 'max': 2}      267/279                    1
+  suivant/50/3     16/19              2.72 {'moyenne': 2.57, 'mediane': 3, 'max': 3}      267/279                    1
+  suivant/50/5     17/19              3.69 {'moyenne': 3.62, 'mediane': 4, 'max': 5}      267/279                    1
+ suivant/100/1     11/19                 1 {'moyenne': 1.0, 'mediane': 1, 'max': 1}      278/279                    1
+ suivant/100/2     16/19                 2 {'moyenne': 1.97, 'mediane': 2, 'max': 2}      278/279                    1
+ suivant/100/3     17/19              2.98 {'moyenne': 2.9, 'mediane': 3, 'max': 3}      278/279                    1
+ suivant/100/5     19/19               4.8 {'moyenne': 4.58, 'mediane': 5, 'max': 5}      278/279                    1
+Rapport : bench\results\oubli\rattachement_selection_frais.json
