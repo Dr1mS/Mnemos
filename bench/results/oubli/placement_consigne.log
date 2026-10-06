@@ -1,0 +1,26 @@
+  Backend d'embeddings : llamacpp (http://127.0.0.1:8899)
+  164#1 : A=. fin=V tete=V voisin=V accuse_fin=.
+  194#0 : A=. fin=V tete=. voisin=. accuse_fin=.
+  618#3 : A=. fin=V tete=V voisin=V accuse_fin=V
+  38#1 : A=. fin=. tete=. voisin=. accuse_fin=.
+  82#1 : A=V fin=V tete=V voisin=V accuse_fin=V
+  832#1 : A=. fin=. tete=. voisin=V accuse_fin=.
+  155#1 : A=. fin=V tete=V voisin=V accuse_fin=V
+  794#1 : A=. fin=V tete=V voisin=V accuse_fin=V
+  455#1 : A=. fin=. tete=V voisin=. accuse_fin=.
+  271#0 : A=. fin=V tete=V voisin=V accuse_fin=.
+  271#2 : A=. fin=. tete=. voisin=. accuse_fin=.
+  271#3 : A=. fin=. tete=. voisin=. accuse_fin=.
+  954#0 : A=. fin=V tete=V voisin=V accuse_fin=.
+  557#0 : A=. fin=V tete=. voisin=. accuse_fin=.
+  557#2 : A=. fin=V tete=. voisin=. accuse_fin=.
+  782#1 : A=. fin=. tete=. voisin=. accuse_fin=.
+  766#2 : A=. fin=V tete=V voisin=V accuse_fin=.
+  467#1 : A=. fin=. tete=. voisin=. accuse_fin=.
+
+18 questions où la consigne manque ; A = 1
+         fin : 11 bonnes (gagnées 10, perdues 0, p = 0.002)
+        tete :  9 bonnes (gagnées 8, perdues 0, p = 0.0078)
+      voisin :  9 bonnes (gagnées 8, perdues 0, p = 0.0078)
+  accuse_fin :  4 bonnes (gagnées 3, perdues 0, p = 0.25)
+Rapport : bench\results\oubli\placement_consigne.json
