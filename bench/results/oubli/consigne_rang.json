@@ -1,0 +1,291 @@
+{
+  "questions": 47,
+  "consigne_detectee": 44,
+  "consigne_au_top100": 26,
+  "rang_median": 25,
+  "consigne_au_top10": 9,
+  "details": [
+    {
+      "persona": "154",
+      "question": "I'm considering renting a car for a week-long driving trip through winding mountain roads—what types of vehicles would y",
+      "consignes": 1,
+      "rang_consigne": 65
+    },
+    {
+      "persona": "164",
+      "question": "How can I start writing music again when it feels like all my song ideas have dried up after years of composing effortle",
+      "consignes": 0,
+      "rang_consigne": null
+    },
+    {
+      "persona": "164",
+      "question": "I’m planning a long weekend road trip with some friends, and I want to put together a playlist that’s filled with energe",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "736",
+      "question": "I’m organizing a big family reunion later this summer, and I know there will be some group TV nights. Since a few of my ",
+      "consignes": 1,
+      "rang_consigne": 6
+    },
+    {
+      "persona": "194",
+      "question": "What’s an easy and enjoyable way to break the ice and show appreciation for a colleague’s culture when we’ll be collabor",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "194",
+      "question": "How can I regain a sense of normalcy and motivation after coming back from an all-consuming months-long project in an un",
+      "consignes": 1,
+      "rang_consigne": 55
+    },
+    {
+      "persona": "638",
+      "question": "How do I cope when friends and acquaintances keep questioning whether my decision to leave my corporate job to volunteer",
+      "consignes": 1,
+      "rang_consigne": 10
+    },
+    {
+      "persona": "618",
+      "question": "How can I keep inspiring my community as a leader while also allowing myself quiet moments to acknowledge and work throu",
+      "consignes": 0,
+      "rang_consigne": null
+    },
+    {
+      "persona": "618",
+      "question": "I’m relocating abroad for a year-long work assignment—what kinds of community gatherings or traditions should I make sur",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "178",
+      "question": "How can I catch up on weeks of unanswered work emails without feeling paralyzed by how far behind I’ve fallen?",
+      "consignes": 1,
+      "rang_consigne": 25
+    },
+    {
+      "persona": "4",
+      "question": "What are some active and cooling ways to unwind outdoors after work during hot summer evenings?",
+      "consignes": 1,
+      "rang_consigne": 100
+    },
+    {
+      "persona": "2",
+      "question": "I’m looking to spend a few weeks in Bali while working remotely—can you recommend neighborhoods or accommodations where ",
+      "consignes": 1,
+      "rang_consigne": 86
+    },
+    {
+      "persona": "38",
+      "question": "What are some thoughtful and visually appealing touches I can add when hosting friends at home to help create a warm and",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "82",
+      "question": "What kinds of snacks or meals are best for keeping my stamina up while I’m traveling and walking a lot each day?",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "832",
+      "question": "What are some adventurous ways to enjoy the natural surroundings during a week-long stay at a remote lakeside cabin in e",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "587",
+      "question": "What are some cozy, hands‑on cooking activities I could do on a rainy afternoon that make the house smell amazing but do",
+      "consignes": 1,
+      "rang_consigne": 35
+    },
+    {
+      "persona": "587",
+      "question": "What older American performance cars have the best potential to increase in value over the next decade for a collector l",
+      "consignes": 1,
+      "rang_consigne": 4
+    },
+    {
+      "persona": "155",
+      "question": "I’m visiting a new city for the weekend and want to find an intimate event where I can experience the voices and stories",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "151",
+      "question": "How can I respectfully express a different viewpoint when discussing family traditions with older relatives who feel str",
+      "consignes": 1,
+      "rang_consigne": 5
+    },
+    {
+      "persona": "794",
+      "question": "What are some fun and challenging activities I can do on a rainy afternoon at home to keep my mind engaged?",
+      "consignes": 1,
+      "rang_consigne": 94
+    },
+    {
+      "persona": "794",
+      "question": "What are some good ways to ease back into cooking for myself after not doing it for a while?",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "794",
+      "question": "How do I stay focused and keep my composure as a team captain when every decision I make during a game gets picked apart",
+      "consignes": 1,
+      "rang_consigne": 16
+    },
+    {
+      "persona": "455",
+      "question": "Would it be okay to spend a couple of hours swimming in an indoor pool with a strong chlorine smell?",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "455",
+      "question": "What are some eco-friendly tips for packing and transporting food for outdoor picnics?",
+      "consignes": 1,
+      "rang_consigne": 92
+    },
+    {
+      "persona": "455",
+      "question": "What are some refreshing yet energizing drinks to enjoy while spending an afternoon working in a café during a warm summ",
+      "consignes": 1,
+      "rang_consigne": 45
+    },
+    {
+      "persona": "271",
+      "question": "What are some unique ideas for organizing and displaying photos to chronicle the progress of a home renovation project f",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "271",
+      "question": "While visiting a new city, what kinds of interactive cultural experiences could I join that are both entertaining and gi",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "271",
+      "question": "What helps you adjust when retiring from a bustling, social job suddenly leaves your days feeling unusually still and qu",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "81",
+      "question": "How can I process the hurt of losing a trusted mentor after sharing something deeply personal about my mental health, an",
+      "consignes": 0,
+      "rang_consigne": null
+    },
+    {
+      "persona": "475",
+      "question": "What are some addictive TV series I can load up on to keep me entertained while I’m stuck in bed recovering for a few da",
+      "consignes": 1,
+      "rang_consigne": 9
+    },
+    {
+      "persona": "475",
+      "question": "What are some peaceful destinations for a quick weekend getaway that can help me recharge after a busy week?",
+      "consignes": 1,
+      "rang_consigne": 40
+    },
+    {
+      "persona": "954",
+      "question": "I’m going on a cross-country road trip and will be passing through several lakeside towns—what unique indoor attractions",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "33",
+      "question": "Whenever the anniversaries of certain military events are marked with ceremonies or news coverage, I feel a surge of une",
+      "consignes": 1,
+      "rang_consigne": 8
+    },
+    {
+      "persona": "338",
+      "question": "How can I help a colleague who’s struggling to adjust to the social dynamics in a new workplace?",
+      "consignes": 1,
+      "rang_consigne": 88
+    },
+    {
+      "persona": "557",
+      "question": "What are some interactive training exercises that a corporate team could use to improve quick thinking and creative comm",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "557",
+      "question": "What are some thoughtful ways to decorate a guest bedroom for an Airbnb using affordable, pre-loved pieces so it feels i",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "205",
+      "question": "How can I calm down and actually get some real rest after coming home from a stretch of back-to-back late-night events a",
+      "consignes": 1,
+      "rang_consigne": 86
+    },
+    {
+      "persona": "782",
+      "question": "My partner and I are planning our honeymoon and want a romantic destination with stunning seaside views, fascinating his",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "80",
+      "question": "What are some iconic underground music festivals in Northern Europe that focus on avant-garde or experimental electronic",
+      "consignes": 1,
+      "rang_consigne": 10
+    },
+    {
+      "persona": "873",
+      "question": "What are some fun and low-maintenance ways to turn an unused kitchen wall into a productive indoor vertical garden?",
+      "consignes": 1,
+      "rang_consigne": 10
+    },
+    {
+      "persona": "358",
+      "question": "What can I do to keep my motivation high and stay in a positive mood while doing a long cleaning session at home?",
+      "consignes": 1,
+      "rang_consigne": 51
+    },
+    {
+      "persona": "724",
+      "question": "What are some reputable international volunteer programs where I can spend a few weeks working hands-on with injured or ",
+      "consignes": 1,
+      "rang_consigne": 12
+    },
+    {
+      "persona": "766",
+      "question": "How can I turn the digital photos I’ve taken on my camera into an engaging slideshow or multimedia presentation for a sp",
+      "consignes": 1,
+      "rang_consigne": 4
+    },
+    {
+      "persona": "766",
+      "question": "How can I bounce back and trust my abilities again after a panel’s harsh critique of my photography portfolio left me qu",
+      "consignes": 1,
+      "rang_consigne": 15
+    },
+    {
+      "persona": "766",
+      "question": ":  \nI’m trying to build a personal knowledge hub to organize research notes, learning resources, and inspiration for sev",
+      "consignes": 1,
+      "rang_consigne": null
+    },
+    {
+      "persona": "628",
+      "question": "I’m putting together a care package for a friend who loves relaxing after long beach days—could you recommend some candl",
+      "consignes": 1,
+      "rang_consigne": 24
+    },
+    {
+      "persona": "467",
+      "question": "What are some scenic vacation spots in late spring where I can comfortably spend time outdoors?",
+      "consignes": 1,
+      "rang_consigne": null
+    }
+  ]
+}
