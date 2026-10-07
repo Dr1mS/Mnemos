@@ -140,6 +140,8 @@ listes de réponses acceptables.
 | **Annoter les dates au moment de la recherche** | trop proche de la règle « Search must not disguise answers as memory records » ; remplacé par l'annotation à l'écriture |
 | **Multi-sauts par reclassement** (vivier élargi, noms propres, voisinage, diversité) | au mieux +2 points, payés par des reculs ailleurs. Les preuves ratées sont indirectes (« I can't have dairy » pour une allergie) : il faudrait un modèle de langage dans le chemin critique |
 | **Rendre la consigne d'oubli avec son accusé** (lien « consigne ↔ message suivant ») | quand `/search` omet « Please forget that I… », les réponses s'effondrent ; la remettre en répare 10 sur 18, et l'ajouter quand c'est la bonne fait 12 gagnées, 0 perdue. Mais sans étiquette, la règle ajoute aussi des consignes sans rapport à ~60 % des autres questions : sur 240 personas neufs, total −3 sur 664 questions. Une variante plus précise ferait ~+0,5 point, sous la résolution des mesures (le répondeur change 22 % de ses verdicts à contexte identique). Non livré pour l'instant |
+| **Épingler les consignes durables** (« Always … when I ask about … ») | sur BEAM, `/search` ne rend toutes les preuves que pour 13 questions de consignes sur 40, et un détecteur strict les trouve toutes sans se déclencher ailleurs (LoCoMo 0, PersonaMem 0). Mais le répondeur les respecte déjà sans les voir : épinglées, la note baisse légèrement (−0,04), et même la seule bonne consigne n'apporte que +0,075 |
+| **Exploiter CL-bench (catégorie G)** | `/search` y rend déjà 100 % de l'historique, quelle que soit la façon dont la plateforme découpe les tâches ; seul l'ordre resterait, et le contrat l'impose (par pertinence). G dépend du répondeur, pas de la mémoire |
 
 ---
 

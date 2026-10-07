@@ -14,5 +14,6 @@ en local et ne sont jamais commités. Le contexte et les conclusions de chaque m
 | `multisauts/` | preuves multi-sauts manquées et leviers de sélection (conclusion : aucun levier simple) | `bench_multisauts_diag.py`, `bench_multisauts_leviers.py` |
 | `carte/` | carte des faiblesses : preuve dans le top 100, réponse A et plafond O, consignes officielles | `bench_carte_personamem.py`, `bench_carte_longmemeval.py`, `bench_clbench_couverture.py` (CL-bench, sans modèle) |
 | `charge/` | tests de charge sur l'API publique | `scripts/aml_loadtest.py` |
+| `consignes/` | consignes durables (« Always … when I ask about … ») : détecteur, sélection et réponses sur BEAM 100K (conclusion : arrêt) | `bench_consignes_durables.py`, `bench_consignes_beam.py`, `bench_beam_preuves.py` (carte BEAM) |
 | `categories/` | catégories G (règles) et H (abstention) | `bench_rules.py`, `bench_abstention.py` |
 | `cycle1/` | résultats du premier cycle (septembre), dont le banc « superiority » invalidé (`invalid/`) | anciens scripts de `bench/` |
