@@ -12,7 +12,7 @@ en local et ne sont jamais commités. Le contexte et les conclusions de chaque m
 | `consolidation/` | faits extraits par un modèle de langage : débit et effet sur les réponses (conclusion : éteinte) | `bench_update_hard.py`, `bench_locomo_qa.py`, `bench_knowledge_update.py` |
 | `dates/` | rappel des preuves temporelles, consignes officielles, normaliseur de dates (LoCoMo brut et Refined) | `bench_temporal_recall.py`, `bench_locomo_qa.py --consignes officielles`, `bench_dates_reponse.py`, `bench_dates_precision.py` |
 | `multisauts/` | preuves multi-sauts manquées et leviers de sélection (conclusion : aucun levier simple) | `bench_multisauts_diag.py`, `bench_multisauts_leviers.py` |
-| `carte/` | carte des faiblesses : preuve dans le top 100, réponse A et plafond O, consignes officielles | `bench_carte_personamem.py`, `bench_carte_longmemeval.py` |
+| `carte/` | carte des faiblesses : preuve dans le top 100, réponse A et plafond O, consignes officielles | `bench_carte_personamem.py`, `bench_carte_longmemeval.py`, `bench_clbench_couverture.py` (CL-bench, sans modèle) |
 | `charge/` | tests de charge sur l'API publique | `scripts/aml_loadtest.py` |
 | `categories/` | catégories G (règles) et H (abstention) | `bench_rules.py`, `bench_abstention.py` |
 | `cycle1/` | résultats du premier cycle (septembre), dont le banc « superiority » invalidé (`invalid/`) | anciens scripts de `bench/` |
