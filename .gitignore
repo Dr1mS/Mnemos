@@ -30,6 +30,8 @@ bench/data/locomo10.json
 bench/data/locomo_refined.json
 bench/data/longmemeval/
 bench/data/aml_pipeline/
+# CL-bench (Tencent) : licence d'évaluation seulement, téléchargé à la demande
+bench/data/clbench/
 # Bases Mnemos ingérées par les benchs, gardées pour être relues (--base)
 bench/data/bases/
 
