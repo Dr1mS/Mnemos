@@ -1,0 +1,3269 @@
+{
+  "par_type": {
+    "contradiction_resolution": {
+      "n": 40,
+      "toutes_avant": 34,
+      "toutes_apres": 34,
+      "preuves_perdues": 0,
+      "ajouts_moyens": 3.62
+    },
+    "event_ordering": {
+      "n": 40,
+      "toutes_avant": 5,
+      "toutes_apres": 5,
+      "preuves_perdues": 3,
+      "ajouts_moyens": 4.33
+    },
+    "information_extraction": {
+      "n": 40,
+      "toutes_avant": 35,
+      "toutes_apres": 35,
+      "preuves_perdues": 0,
+      "ajouts_moyens": 4.17
+    },
+    "instruction_following": {
+      "n": 40,
+      "toutes_avant": 13,
+      "toutes_apres": 35,
+      "preuves_perdues": 2,
+      "ajouts_moyens": 4.08
+    },
+    "knowledge_update": {
+      "n": 40,
+      "toutes_avant": 37,
+      "toutes_apres": 37,
+      "preuves_perdues": 0,
+      "ajouts_moyens": 4.28
+    },
+    "multi_session_reasoning": {
+      "n": 40,
+      "toutes_avant": 24,
+      "toutes_apres": 23,
+      "preuves_perdues": 2,
+      "ajouts_moyens": 4.05
+    },
+    "preference_following": {
+      "n": 39,
+      "toutes_avant": 34,
+      "toutes_apres": 33,
+      "preuves_perdues": 1,
+      "ajouts_moyens": 4.46
+    },
+    "summarization": {
+      "n": 36,
+      "toutes_avant": 4,
+      "toutes_apres": 3,
+      "preuves_perdues": 5,
+      "ajouts_moyens": 4.36
+    },
+    "temporal_reasoning": {
+      "n": 40,
+      "toutes_avant": 39,
+      "toutes_apres": 39,
+      "preuves_perdues": 0,
+      "ajouts_moyens": 4.4
+    }
+  },
+  "details": [
+    {
+      "cle": "1:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 3,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 4,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 2,
+      "avant": 1,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 2
+    },
+    {
+      "cle": "1:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 3,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 3,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 2
+    },
+    {
+      "cle": "1:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:preference_following:1",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:summarization:0",
+      "type": "summarization",
+      "preuves": 10,
+      "avant": 8,
+      "apres": 8,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:summarization:1",
+      "type": "summarization",
+      "preuves": 11,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "1:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 4,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 5,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 3,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 2
+    },
+    {
+      "cle": "2:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 2
+    },
+    {
+      "cle": "2:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 5,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:preference_following:1",
+      "type": "preference_following",
+      "preuves": 2,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 2
+    },
+    {
+      "cle": "2:summarization:0",
+      "type": "summarization",
+      "preuves": 8,
+      "avant": 7,
+      "apres": 7,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:summarization:1",
+      "type": "summarization",
+      "preuves": 10,
+      "avant": 8,
+      "apres": 7,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "2:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 3,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 3,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 10,
+      "avant": 10,
+      "apres": 10,
+      "ajouts": 2
+    },
+    {
+      "cle": "3:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:preference_following:1",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:summarization:0",
+      "type": "summarization",
+      "preuves": 16,
+      "avant": 11,
+      "apres": 11,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:summarization:1",
+      "type": "summarization",
+      "preuves": 14,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "3:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "4:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 1
+    },
+    {
+      "cle": "4:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 3
+    },
+    {
+      "cle": "4:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 0
+    },
+    {
+      "cle": "4:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 1
+    },
+    {
+      "cle": "4:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 9,
+      "avant": 6,
+      "apres": 6,
+      "ajouts": 3
+    },
+    {
+      "cle": "4:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 10,
+      "avant": 4,
+      "apres": 5,
+      "ajouts": 2
+    },
+    {
+      "cle": "4:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "4:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 2
+    },
+    {
+      "cle": "4:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 4,
+      "avant": 2,
+      "apres": 3,
+      "ajouts": 3
+    },
+    {
+      "cle": "4:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 4,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 2
+    },
+    {
+      "cle": "4:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 2
+    },
+    {
+      "cle": "4:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 0
+    },
+    {
+      "cle": "4:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 0
+    },
+    {
+      "cle": "4:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 2
+    },
+    {
+      "cle": "4:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "4:preference_following:1",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "4:summarization:0",
+      "type": "summarization",
+      "preuves": 5,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "4:summarization:1",
+      "type": "summarization",
+      "preuves": 11,
+      "avant": 7,
+      "apres": 7,
+      "ajouts": 3
+    },
+    {
+      "cle": "4:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 2
+    },
+    {
+      "cle": "4:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 2
+    },
+    {
+      "cle": "5:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 3
+    },
+    {
+      "cle": "5:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 2
+    },
+    {
+      "cle": "5:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "5:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 5,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 1
+    },
+    {
+      "cle": "5:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 12,
+      "avant": 7,
+      "apres": 7,
+      "ajouts": 2
+    },
+    {
+      "cle": "5:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 2,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "5:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "5:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "5:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "5:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "5:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 2
+    },
+    {
+      "cle": "5:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 4,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 3
+    },
+    {
+      "cle": "5:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 3,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 3
+    },
+    {
+      "cle": "5:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 3,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "5:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "5:preference_following:1",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "5:summarization:0",
+      "type": "summarization",
+      "preuves": 9,
+      "avant": 5,
+      "apres": 4,
+      "ajouts": 3
+    },
+    {
+      "cle": "5:summarization:1",
+      "type": "summarization",
+      "preuves": 10,
+      "avant": 5,
+      "apres": 5,
+      "ajouts": 2
+    },
+    {
+      "cle": "5:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "5:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "6:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "6:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "6:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 4
+    },
+    {
+      "cle": "6:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 4
+    },
+    {
+      "cle": "6:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 6,
+      "avant": 4,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "6:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 5,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "6:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "6:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "6:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "6:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "6:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "6:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "6:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 4,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 4
+    },
+    {
+      "cle": "6:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 6,
+      "avant": 6,
+      "apres": 6,
+      "ajouts": 5
+    },
+    {
+      "cle": "6:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "6:preference_following:1",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "6:summarization:0",
+      "type": "summarization",
+      "preuves": 5,
+      "avant": 5,
+      "apres": 4,
+      "ajouts": 5
+    },
+    {
+      "cle": "6:summarization:1",
+      "type": "summarization",
+      "preuves": 6,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 5
+    },
+    {
+      "cle": "6:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "6:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 2
+    },
+    {
+      "cle": "7:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 5,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 5,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 2,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "7:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 5,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:preference_following:1",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:summarization:0",
+      "type": "summarization",
+      "preuves": 5,
+      "avant": 5,
+      "apres": 5,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:summarization:1",
+      "type": "summarization",
+      "preuves": 6,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "7:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 3,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 5,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "8:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 5,
+      "avant": 1,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "8:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 0,
+      "ajouts": 4
+    },
+    {
+      "cle": "8:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 3,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 3,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 4,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:preference_following:1",
+      "type": "preference_following",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:summarization:0",
+      "type": "summarization",
+      "preuves": 5,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:summarization:1",
+      "type": "summarization",
+      "preuves": 10,
+      "avant": 3,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "8:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "9:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "9:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "9:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 4
+    },
+    {
+      "cle": "9:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 4
+    },
+    {
+      "cle": "9:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 6,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "9:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 5,
+      "avant": 5,
+      "apres": 5,
+      "ajouts": 5
+    },
+    {
+      "cle": "9:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "9:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "9:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "9:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "9:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "9:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "9:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 3,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "9:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 4,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 5
+    },
+    {
+      "cle": "9:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "9:preference_following:1",
+      "type": "preference_following",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "9:summarization:0",
+      "type": "summarization",
+      "preuves": 5,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "9:summarization:1",
+      "type": "summarization",
+      "preuves": 5,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 5
+    },
+    {
+      "cle": "9:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "9:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 3,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 4
+    },
+    {
+      "cle": "10:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 5,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 6,
+      "avant": 5,
+      "apres": 5,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 2
+    },
+    {
+      "cle": "10:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "10:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 3,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 11,
+      "avant": 11,
+      "apres": 11,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:preference_following:1",
+      "type": "preference_following",
+      "preuves": 3,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:summarization:0",
+      "type": "summarization",
+      "preuves": 6,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:summarization:1",
+      "type": "summarization",
+      "preuves": 14,
+      "avant": 6,
+      "apres": 6,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "10:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "11:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "11:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "11:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 4
+    },
+    {
+      "cle": "11:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 3,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 4
+    },
+    {
+      "cle": "11:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 6,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "11:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 5,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "11:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "11:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "11:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "11:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "11:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "11:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 6,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "11:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 3,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "11:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 5,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 5
+    },
+    {
+      "cle": "11:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "11:preference_following:1",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "11:summarization:0",
+      "type": "summarization",
+      "preuves": 8,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "11:summarization:1",
+      "type": "summarization",
+      "preuves": 5,
+      "avant": 5,
+      "apres": 5,
+      "ajouts": 5
+    },
+    {
+      "cle": "11:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "11:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "12:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 14,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 6,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 3,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 3,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "12:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 10,
+      "avant": 9,
+      "apres": 9,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 4,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:preference_following:1",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:summarization:0",
+      "type": "summarization",
+      "preuves": 16,
+      "avant": 12,
+      "apres": 12,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:summarization:1",
+      "type": "summarization",
+      "preuves": 16,
+      "avant": 5,
+      "apres": 5,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "12:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "13:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 5,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 4
+    },
+    {
+      "cle": "13:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 9,
+      "avant": 7,
+      "apres": 6,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 3,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "13:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 9,
+      "avant": 3,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:preference_following:1",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:summarization:0",
+      "type": "summarization",
+      "preuves": 5,
+      "avant": 4,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:summarization:1",
+      "type": "summarization",
+      "preuves": 5,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "13:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "14:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 6,
+      "avant": 5,
+      "apres": 5,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 6,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 2,
+      "avant": 1,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "14:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 11,
+      "avant": 6,
+      "apres": 6,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 4,
+      "avant": 4,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:preference_following:1",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:summarization:0",
+      "type": "summarization",
+      "preuves": 11,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:summarization:1",
+      "type": "summarization",
+      "preuves": 3,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "14:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "15:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 4
+    },
+    {
+      "cle": "15:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 4
+    },
+    {
+      "cle": "15:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 2
+    },
+    {
+      "cle": "15:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "15:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 4,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 2
+    },
+    {
+      "cle": "15:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 5,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "15:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "15:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "15:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "15:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "15:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "15:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "15:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 2,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 0
+    },
+    {
+      "cle": "15:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "15:preference_following:0",
+      "type": "preference_following",
+      "preuves": 2,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "15:preference_following:1",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "15:summarization:0",
+      "type": "summarization",
+      "preuves": 5,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "15:summarization:1",
+      "type": "summarization",
+      "preuves": 8,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "15:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "15:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "16:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "16:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "16:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 4
+    },
+    {
+      "cle": "16:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 4
+    },
+    {
+      "cle": "16:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 4,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "16:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 8,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 5
+    },
+    {
+      "cle": "16:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "16:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "16:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "16:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "16:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 3,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "16:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 4
+    },
+    {
+      "cle": "16:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "16:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 10,
+      "avant": 8,
+      "apres": 8,
+      "ajouts": 5
+    },
+    {
+      "cle": "16:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "16:preference_following:1",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "16:summarization:0",
+      "type": "summarization",
+      "preuves": 6,
+      "avant": 5,
+      "apres": 5,
+      "ajouts": 5
+    },
+    {
+      "cle": "16:summarization:1",
+      "type": "summarization",
+      "preuves": 5,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "16:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 4
+    },
+    {
+      "cle": "16:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "17:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "17:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "17:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "17:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "17:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 5,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "17:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 6,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 5
+    },
+    {
+      "cle": "17:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "17:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 6,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 5
+    },
+    {
+      "cle": "17:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "17:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "17:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "17:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "17:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "17:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 3,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "17:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "17:preference_following:1",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "17:summarization:0",
+      "type": "summarization",
+      "preuves": 4,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "17:summarization:1",
+      "type": "summarization",
+      "preuves": 6,
+      "avant": 6,
+      "apres": 6,
+      "ajouts": 5
+    },
+    {
+      "cle": "17:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "17:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 5,
+      "avant": 5,
+      "apres": 5,
+      "ajouts": 4
+    },
+    {
+      "cle": "18:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 6,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 7,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 6,
+      "avant": 5,
+      "apres": 5,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 1,
+      "ajouts": 3
+    },
+    {
+      "cle": "18:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:preference_following:0",
+      "type": "preference_following",
+      "preuves": 3,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:preference_following:1",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:summarization:0",
+      "type": "summarization",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:summarization:1",
+      "type": "summarization",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 4
+    },
+    {
+      "cle": "18:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "18:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 4,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 7,
+      "avant": 4,
+      "apres": 4,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 4
+    },
+    {
+      "cle": "19:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 1
+    },
+    {
+      "cle": "19:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 3,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:preference_following:1",
+      "type": "preference_following",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:summarization:0",
+      "type": "summarization",
+      "preuves": 5,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:summarization:1",
+      "type": "summarization",
+      "preuves": 4,
+      "avant": 3,
+      "apres": 3,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "19:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:abstention:0",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:abstention:1",
+      "type": "abstention",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:contradiction_resolution:0",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 3
+    },
+    {
+      "cle": "20:contradiction_resolution:1",
+      "type": "contradiction_resolution",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:event_ordering:0",
+      "type": "event_ordering",
+      "preuves": 6,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:event_ordering:1",
+      "type": "event_ordering",
+      "preuves": 5,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:information_extraction:0",
+      "type": "information_extraction",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 2
+    },
+    {
+      "cle": "20:information_extraction:1",
+      "type": "information_extraction",
+      "preuves": 6,
+      "avant": 6,
+      "apres": 6,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:instruction_following:0",
+      "type": "instruction_following",
+      "preuves": 1,
+      "avant": 0,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:instruction_following:1",
+      "type": "instruction_following",
+      "preuves": 2,
+      "avant": 1,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:knowledge_update:0",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:knowledge_update:1",
+      "type": "knowledge_update",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:multi_session_reasoning:0",
+      "type": "multi_session_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:multi_session_reasoning:1",
+      "type": "multi_session_reasoning",
+      "preuves": 5,
+      "avant": 5,
+      "apres": 5,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:preference_following:0",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:preference_following:1",
+      "type": "preference_following",
+      "preuves": 1,
+      "avant": 1,
+      "apres": 1,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:summarization:0",
+      "type": "summarization",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 3
+    },
+    {
+      "cle": "20:summarization:1",
+      "type": "summarization",
+      "preuves": 0,
+      "avant": 0,
+      "apres": 0,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:temporal_reasoning:0",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    },
+    {
+      "cle": "20:temporal_reasoning:1",
+      "type": "temporal_reasoning",
+      "preuves": 2,
+      "avant": 2,
+      "apres": 2,
+      "ajouts": 5
+    }
+  ]
+}

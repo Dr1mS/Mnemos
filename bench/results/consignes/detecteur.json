@@ -1,0 +1,57 @@
+{
+  "beam_100k": {
+    "consignes_testees": 35,
+    "detectees_parmi_testees": 35,
+    "detections_totales": 90,
+    "detections_hors_testees": 55,
+    "detections_par_conversation": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5
+    ],
+    "manquees": []
+  },
+  "ailleurs": {
+    "locomo": {
+      "messages": 5882,
+      "detections": 0
+    },
+    "longmemeval_s": {
+      "messages_user_uniques": 93931,
+      "detections": 4
+    },
+    "personamem": {
+      "messages_user": 8158,
+      "detections": 0,
+      "personas_touches": 0,
+      "max_par_persona": 0
+    },
+    "exemples": {
+      "locomo": [],
+      "longmemeval_s": [
+        "going forward please be more decisive and concise in your responses. be sure to word your responses like you were conversational",
+        "From now on, answer everything in British English OK",
+        "From now on answer in British eglish",
+        "From now on tell me if my HP needs to decrease during a quest."
+      ],
+      "personamem": []
+    }
+  }
+}
