@@ -1,0 +1,4726 @@
+{
+  "conversations": 20,
+  "par_type": {
+    "contradiction_resolution": {
+      "n": 40,
+      "toutes_au_top100": 34,
+      "preuves": 88,
+      "preuves_au_top100": 81,
+      "rang_median": 2
+    },
+    "event_ordering": {
+      "n": 40,
+      "toutes_au_top100": 5,
+      "preuves": 230,
+      "preuves_au_top100": 113,
+      "rang_median": 32
+    },
+    "information_extraction": {
+      "n": 40,
+      "toutes_au_top100": 35,
+      "preuves": 68,
+      "preuves_au_top100": 62,
+      "rang_median": 7.0
+    },
+    "instruction_following": {
+      "n": 40,
+      "toutes_au_top100": 13,
+      "preuves": 52,
+      "preuves_au_top100": 22,
+      "rang_median": 53.5
+    },
+    "knowledge_update": {
+      "n": 40,
+      "toutes_au_top100": 37,
+      "preuves": 87,
+      "preuves_au_top100": 80,
+      "rang_median": 2.0
+    },
+    "multi_session_reasoning": {
+      "n": 40,
+      "toutes_au_top100": 24,
+      "preuves": 165,
+      "preuves_au_top100": 136,
+      "rang_median": 11.0
+    },
+    "preference_following": {
+      "n": 39,
+      "toutes_au_top100": 34,
+      "preuves": 47,
+      "preuves_au_top100": 42,
+      "rang_median": 9.5
+    },
+    "summarization": {
+      "n": 36,
+      "toutes_au_top100": 4,
+      "preuves": 283,
+      "preuves_au_top100": 158,
+      "rang_median": 36.0
+    },
+    "temporal_reasoning": {
+      "n": 40,
+      "toutes_au_top100": 39,
+      "preuves": 74,
+      "preuves_au_top100": 73,
+      "rang_median": 2
+    }
+  },
+  "ensemble": {
+    "n": 355,
+    "toutes_au_top100": 225,
+    "preuves": 1094,
+    "preuves_au_top100": 767
+  },
+  "messages_par_conversation": 271.0,
+  "details": [
+    {
+      "conv": 1,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        15
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 3,
+      "rangs": [
+        1,
+        8,
+        64
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 4,
+      "rangs": [
+        61,
+        76,
+        31,
+        null
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        3
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        6,
+        2
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        null,
+        47
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        52
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        88,
+        3
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        2,
+        1
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 3,
+      "rangs": [
+        4,
+        1,
+        10
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 3,
+      "rangs": [
+        15,
+        16,
+        69
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        2
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        2
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 10,
+      "rangs": [
+        6,
+        18,
+        8,
+        12,
+        49,
+        38,
+        null,
+        null,
+        36,
+        56
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 11,
+      "rangs": [
+        27,
+        64,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        null
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 1,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        6,
+        1
+      ],
+      "messages": 188
+    },
+    {
+      "conv": 2,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 4,
+      "rangs": [
+        34,
+        null,
+        null,
+        1
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        41,
+        1
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        21,
+        null,
+        null,
+        2,
+        14
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        6,
+        8
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 3,
+      "rangs": [
+        12,
+        20,
+        7
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        16
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        97
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        2,
+        1
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        1,
+        5
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        1,
+        null,
+        null,
+        4,
+        null
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        8,
+        1
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        null,
+        2
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 8,
+      "rangs": [
+        2,
+        34,
+        null,
+        24,
+        97,
+        56,
+        43,
+        5
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 10,
+      "rangs": [
+        37,
+        14,
+        100,
+        null,
+        12,
+        65,
+        16,
+        null,
+        57,
+        42
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        8,
+        1
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 2,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        6,
+        2
+      ],
+      "messages": 200
+    },
+    {
+      "conv": 3,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        9,
+        2
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        53,
+        1
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 3,
+      "rangs": [
+        33,
+        null,
+        27
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 3,
+      "rangs": [
+        10,
+        4,
+        55
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        4,
+        1
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        7
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        3,
+        1
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        28,
+        1
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 10,
+      "rangs": [
+        41,
+        12,
+        81,
+        22,
+        1,
+        4,
+        17,
+        6,
+        38,
+        30
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        2
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        3
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 16,
+      "rangs": [
+        26,
+        null,
+        1,
+        40,
+        24,
+        42,
+        30,
+        70,
+        62,
+        null,
+        null,
+        null,
+        22,
+        null,
+        10,
+        59
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 14,
+      "rangs": [
+        null,
+        null,
+        null,
+        null,
+        72,
+        68,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        83,
+        null
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        3,
+        1
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 3,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        5,
+        3
+      ],
+      "messages": 194
+    },
+    {
+      "conv": 4,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        2
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 9,
+      "rangs": [
+        20,
+        null,
+        43,
+        null,
+        10,
+        87,
+        null,
+        1,
+        38
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 10,
+      "rangs": [
+        null,
+        84,
+        54,
+        null,
+        55,
+        null,
+        null,
+        14,
+        null,
+        null
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        5
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        50,
+        40
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 4,
+      "rangs": [
+        null,
+        3,
+        null,
+        55
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 4,
+      "rangs": [
+        86,
+        4,
+        null,
+        79
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        5
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        2,
+        1
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        6,
+        3
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        2,
+        1
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        null,
+        null,
+        86,
+        null,
+        63
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 11,
+      "rangs": [
+        15,
+        null,
+        49,
+        67,
+        93,
+        21,
+        81,
+        null,
+        null,
+        89,
+        null
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        2
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 4,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        9,
+        1
+      ],
+      "messages": 212
+    },
+    {
+      "conv": 5,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        11,
+        1
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 5,
+      "rangs": [
+        17,
+        null,
+        25,
+        1,
+        20
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 12,
+      "rangs": [
+        61,
+        3,
+        70,
+        18,
+        52,
+        null,
+        null,
+        null,
+        81,
+        null,
+        36,
+        null
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        88,
+        null
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        64
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        7
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        3
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 4,
+      "rangs": [
+        1,
+        65,
+        24,
+        2
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 3,
+      "rangs": [
+        4,
+        1,
+        9
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 3,
+      "rangs": [
+        null,
+        16,
+        54
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        83
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        34
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 9,
+      "rangs": [
+        17,
+        30,
+        15,
+        null,
+        96,
+        null,
+        null,
+        98,
+        null
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 10,
+      "rangs": [
+        73,
+        null,
+        null,
+        null,
+        null,
+        61,
+        null,
+        52,
+        16,
+        80
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 5,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        3,
+        1
+      ],
+      "messages": 238
+    },
+    {
+      "conv": 6,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        9,
+        1
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        21,
+        1
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 6,
+      "rangs": [
+        null,
+        7,
+        null,
+        86,
+        85,
+        98
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 5,
+      "rangs": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        66,
+        15
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        60
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        16
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        1,
+        2
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 4,
+      "rangs": [
+        2,
+        null,
+        33,
+        70
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 6,
+      "rangs": [
+        88,
+        5,
+        43,
+        11,
+        17,
+        71
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        3
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        7
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        3,
+        25,
+        88,
+        50,
+        99
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 6,
+      "rangs": [
+        8,
+        null,
+        null,
+        84,
+        47,
+        91
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        2,
+        6
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 6,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        3,
+        2
+      ],
+      "messages": 258
+    },
+    {
+      "conv": 7,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        8,
+        1
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        5,
+        1
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        null,
+        67,
+        91,
+        null,
+        87
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 5,
+      "rangs": [
+        null,
+        null,
+        75,
+        26,
+        null
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        null,
+        85
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        5
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        2
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        2,
+        1
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        31,
+        8,
+        5,
+        1,
+        null
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        4,
+        1
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        2
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        6
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        8,
+        15,
+        52,
+        21,
+        89
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 6,
+      "rangs": [
+        1,
+        66,
+        null,
+        null,
+        7,
+        4
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        9
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 7,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        15,
+        1
+      ],
+      "messages": 260
+    },
+    {
+      "conv": 8,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 3,
+      "rangs": [
+        2,
+        15,
+        1
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        1,
+        2
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        null,
+        32,
+        null,
+        null,
+        null
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 5,
+      "rangs": [
+        null,
+        null,
+        null,
+        null,
+        98
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        28,
+        23
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        100
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 3,
+      "rangs": [
+        3,
+        2,
+        10
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 3,
+      "rangs": [
+        null,
+        15,
+        1
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 4,
+      "rangs": [
+        76,
+        6,
+        null,
+        null
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        4
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        3,
+        18
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        null,
+        null,
+        30,
+        53,
+        4
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 10,
+      "rangs": [
+        null,
+        100,
+        null,
+        null,
+        77,
+        null,
+        null,
+        null,
+        null,
+        92
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        31,
+        6
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 8,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 9,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        3,
+        1
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        2,
+        1
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 6,
+      "rangs": [
+        null,
+        null,
+        null,
+        95,
+        null,
+        null
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 5,
+      "rangs": [
+        13,
+        4,
+        6,
+        2,
+        12
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        2
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        88,
+        10
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        87
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        3
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        9
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 3,
+      "rangs": [
+        1,
+        null,
+        37
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 4,
+      "rangs": [
+        3,
+        4,
+        1,
+        2
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        5
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        null,
+        44,
+        8,
+        22,
+        null
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 5,
+      "rangs": [
+        23,
+        95,
+        null,
+        11,
+        18
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        12,
+        1
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 9,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        1,
+        5
+      ],
+      "messages": 270
+    },
+    {
+      "conv": 10,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 3,
+      "rangs": [
+        3,
+        25,
+        2
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        7,
+        1
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        14,
+        null,
+        null,
+        null,
+        null
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 6,
+      "rangs": [
+        30,
+        33,
+        10,
+        58,
+        null,
+        21
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        9
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        87
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        13,
+        10
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 3,
+      "rangs": [
+        1,
+        26,
+        39
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        16,
+        2
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 11,
+      "rangs": [
+        10,
+        20,
+        46,
+        4,
+        5,
+        3,
+        15,
+        1,
+        2,
+        11,
+        16
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        30
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 3,
+      "rangs": [
+        null,
+        49,
+        67
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 6,
+      "rangs": [
+        10,
+        null,
+        null,
+        null,
+        null,
+        9
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 14,
+      "rangs": [
+        15,
+        25,
+        94,
+        17,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        62,
+        33,
+        null
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        13,
+        2
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 10,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        2,
+        1
+      ],
+      "messages": 344
+    },
+    {
+      "conv": 11,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        2,
+        52
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 3,
+      "rangs": [
+        6,
+        11,
+        null
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 6,
+      "rangs": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 5,
+      "rangs": [
+        78,
+        null,
+        59,
+        null,
+        null
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        3
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        23
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        21
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        70
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        18,
+        4
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 6,
+      "rangs": [
+        5,
+        null,
+        null,
+        1,
+        null,
+        null
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 3,
+      "rangs": [
+        null,
+        2,
+        12
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 5,
+      "rangs": [
+        1,
+        null,
+        36,
+        69,
+        24
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        6
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 8,
+      "rangs": [
+        2,
+        4,
+        null,
+        33,
+        null,
+        null,
+        null,
+        null
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 5,
+      "rangs": [
+        10,
+        2,
+        4,
+        32,
+        34
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        2,
+        79
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 11,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        10,
+        26
+      ],
+      "messages": 388
+    },
+    {
+      "conv": 12,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        2,
+        1
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        9,
+        1
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 14,
+      "rangs": [
+        null,
+        null,
+        null,
+        52,
+        null,
+        null,
+        48,
+        null,
+        85,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 6,
+      "rangs": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        37,
+        1
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 3,
+      "rangs": [
+        null,
+        null,
+        null
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        3
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 3,
+      "rangs": [
+        null,
+        null,
+        1
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 10,
+      "rangs": [
+        11,
+        19,
+        13,
+        3,
+        10,
+        15,
+        5,
+        12,
+        null,
+        8
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 4,
+      "rangs": [
+        6,
+        1,
+        2,
+        63
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        21
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        43
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 16,
+      "rangs": [
+        47,
+        73,
+        37,
+        58,
+        32,
+        92,
+        1,
+        16,
+        10,
+        3,
+        null,
+        null,
+        67,
+        null,
+        88,
+        null
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 16,
+      "rangs": [
+        33,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        45,
+        44,
+        null,
+        62,
+        null,
+        9
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        5,
+        4
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 12,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        5,
+        1
+      ],
+      "messages": 392
+    },
+    {
+      "conv": 13,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        2,
+        1
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        4,
+        1
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        13,
+        27,
+        null,
+        22,
+        31
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 9,
+      "rangs": [
+        8,
+        null,
+        2,
+        44,
+        98,
+        28,
+        null,
+        57,
+        10
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        2
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        48,
+        28
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        2,
+        1
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        1,
+        19
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 3,
+      "rangs": [
+        91,
+        null,
+        52
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 9,
+      "rangs": [
+        48,
+        null,
+        null,
+        null,
+        null,
+        null,
+        100,
+        null,
+        18
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        28
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        81
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        99,
+        13,
+        8,
+        1,
+        null
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 5,
+      "rangs": [
+        3,
+        null,
+        14,
+        null,
+        null
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        4
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 13,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 310
+    },
+    {
+      "conv": 14,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        null
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        1,
+        null
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 6,
+      "rangs": [
+        11,
+        81,
+        92,
+        66,
+        null,
+        18
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 6,
+      "rangs": [
+        30,
+        null,
+        null,
+        43,
+        null,
+        21
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        2,
+        29
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        null,
+        50
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        12,
+        1
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        null,
+        54
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 11,
+      "rangs": [
+        6,
+        1,
+        87,
+        null,
+        42,
+        16,
+        null,
+        null,
+        85,
+        null,
+        null
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 4,
+      "rangs": [
+        97,
+        35,
+        4,
+        12
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        96
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        14
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 11,
+      "rangs": [
+        70,
+        null,
+        null,
+        null,
+        null,
+        31,
+        29,
+        null,
+        null,
+        null,
+        56
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 3,
+      "rangs": [
+        74,
+        null,
+        null
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        3
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 14,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        2
+      ],
+      "messages": 268
+    },
+    {
+      "conv": 15,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        3,
+        1
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        null,
+        2
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 4,
+      "rangs": [
+        73,
+        null,
+        null,
+        null
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 5,
+      "rangs": [
+        92,
+        null,
+        null,
+        null,
+        null
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        50
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        4,
+        2
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        1,
+        4
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        null,
+        34
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        8,
+        3
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        75,
+        null
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        51
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        86,
+        null,
+        null,
+        null,
+        null
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 8,
+      "rangs": [
+        7,
+        null,
+        null,
+        90,
+        null,
+        null,
+        46,
+        null
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 15,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        1,
+        2
+      ],
+      "messages": 272
+    },
+    {
+      "conv": 16,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        23
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        5,
+        1
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 4,
+      "rangs": [
+        65,
+        null,
+        22,
+        null
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 8,
+      "rangs": [
+        null,
+        null,
+        18,
+        null,
+        59,
+        94,
+        null,
+        38
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        43,
+        51
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        27
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 3,
+      "rangs": [
+        1,
+        27,
+        59
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        1,
+        13
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        9,
+        1
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 10,
+      "rangs": [
+        83,
+        null,
+        null,
+        67,
+        91,
+        73,
+        15,
+        28,
+        7,
+        1
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        6
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 6,
+      "rangs": [
+        2,
+        7,
+        null,
+        3,
+        28,
+        6
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 5,
+      "rangs": [
+        null,
+        null,
+        null,
+        81,
+        56
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        5,
+        2
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 16,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        1,
+        8
+      ],
+      "messages": 322
+    },
+    {
+      "conv": 17,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        6,
+        1
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        3,
+        1
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        null,
+        null,
+        null,
+        null,
+        88
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 6,
+      "rangs": [
+        92,
+        null,
+        27,
+        10,
+        52,
+        null
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 6,
+      "rangs": [
+        2,
+        17,
+        null,
+        4,
+        null,
+        39
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        3,
+        1
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        5,
+        2
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        2
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 3,
+      "rangs": [
+        19,
+        1,
+        44
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        12
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        20
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 4,
+      "rangs": [
+        36,
+        54,
+        null,
+        null
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 6,
+      "rangs": [
+        7,
+        45,
+        16,
+        5,
+        21,
+        56
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        3,
+        1
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 17,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        6,
+        1
+      ],
+      "messages": 286
+    },
+    {
+      "conv": 18,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        1,
+        3,
+        19,
+        36,
+        74
+      ],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        2,
+        3
+      ],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 6,
+      "rangs": [
+        null,
+        26,
+        19,
+        8,
+        13,
+        null
+      ],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 7,
+      "rangs": [
+        null,
+        34,
+        54,
+        null,
+        null,
+        92,
+        null
+      ],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 6,
+      "rangs": [
+        19,
+        38,
+        27,
+        49,
+        50,
+        null
+      ],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        58,
+        99
+      ],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        3
+      ],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        1,
+        7
+      ],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        6,
+        3
+      ],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        28,
+        9
+      ],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 3,
+      "rangs": [
+        27,
+        65,
+        null
+      ],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        3
+      ],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        2,
+        1
+      ],
+      "messages": 362
+    },
+    {
+      "conv": 18,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        11,
+        1
+      ],
+      "messages": 362
+    },
+    {
+      "conv": 19,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        5,
+        1
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        2,
+        4
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 4,
+      "rangs": [
+        12,
+        5,
+        1,
+        16
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 7,
+      "rangs": [
+        null,
+        2,
+        4,
+        73,
+        13,
+        null,
+        null
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        1,
+        23
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        3,
+        1
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        49,
+        22
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 3,
+      "rangs": [
+        7,
+        91,
+        null
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        6
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        21,
+        15
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 5,
+      "rangs": [
+        50,
+        null,
+        59,
+        null,
+        51
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 4,
+      "rangs": [
+        71,
+        44,
+        null,
+        46
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 19,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        1,
+        4
+      ],
+      "messages": 328
+    },
+    {
+      "conv": 20,
+      "type": "abstention",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "abstention",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "contradiction_resolution",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        4,
+        1
+      ],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "contradiction_resolution",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        41,
+        1
+      ],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "event_ordering",
+      "k": 0,
+      "preuves": 6,
+      "rangs": [
+        32,
+        92,
+        null,
+        null,
+        null,
+        null
+      ],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "event_ordering",
+      "k": 1,
+      "preuves": 5,
+      "rangs": [
+        53,
+        56,
+        null,
+        null,
+        null
+      ],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "information_extraction",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "information_extraction",
+      "k": 1,
+      "preuves": 6,
+      "rangs": [
+        10,
+        5,
+        4,
+        7,
+        12,
+        1
+      ],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "instruction_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        null
+      ],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "instruction_following",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        null,
+        6
+      ],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "knowledge_update",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        3,
+        1
+      ],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "knowledge_update",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        1,
+        4
+      ],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "multi_session_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        60,
+        19
+      ],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "multi_session_reasoning",
+      "k": 1,
+      "preuves": 5,
+      "rangs": [
+        44,
+        7,
+        1,
+        53,
+        38
+      ],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "preference_following",
+      "k": 0,
+      "preuves": 1,
+      "rangs": [
+        1
+      ],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "preference_following",
+      "k": 1,
+      "preuves": 1,
+      "rangs": [
+        58
+      ],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "summarization",
+      "k": 0,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "summarization",
+      "k": 1,
+      "preuves": 0,
+      "rangs": [],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "temporal_reasoning",
+      "k": 0,
+      "preuves": 2,
+      "rangs": [
+        3,
+        1
+      ],
+      "messages": 372
+    },
+    {
+      "conv": 20,
+      "type": "temporal_reasoning",
+      "k": 1,
+      "preuves": 2,
+      "rangs": [
+        1,
+        21
+      ],
+      "messages": 372
+    }
+  ]
+}

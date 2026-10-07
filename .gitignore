@@ -32,6 +32,8 @@ bench/data/longmemeval/
 bench/data/aml_pipeline/
 # CL-bench (Tencent) : licence d'évaluation seulement, téléchargé à la demande
 bench/data/clbench/
+# BEAM (CC BY-SA 4.0), conversations 100K téléchargées à la demande
+bench/data/beam/
 # Bases Mnemos ingérées par les benchs, gardées pour être relues (--base)
 bench/data/bases/
 

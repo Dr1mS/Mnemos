@@ -1,0 +1,34 @@
+  Backend d'embeddings : llamacpp (http://127.0.0.1:8899)
+  conversation 1 : 188 messages, 20 questions
+  conversation 2 : 200 messages, 40 questions
+  conversation 3 : 194 messages, 60 questions
+  conversation 4 : 212 messages, 80 questions
+  conversation 5 : 238 messages, 100 questions
+  conversation 6 : 258 messages, 120 questions
+  conversation 7 : 260 messages, 140 questions
+  conversation 8 : 268 messages, 160 questions
+  conversation 9 : 270 messages, 180 questions
+  conversation 10 : 344 messages, 200 questions
+  conversation 11 : 388 messages, 220 questions
+  conversation 12 : 392 messages, 240 questions
+  conversation 13 : 310 messages, 260 questions
+  conversation 14 : 268 messages, 280 questions
+  conversation 15 : 272 messages, 300 questions
+  conversation 16 : 322 messages, 320 questions
+  conversation 17 : 286 messages, 340 questions
+  conversation 18 : 362 messages, 360 questions
+  conversation 19 : 328 messages, 380 questions
+  conversation 20 : 372 messages, 400 questions
+
+type                            n  toutes@100  preuves@100  rang médian
+contradiction_resolution       40    34 ( 85 %)    81/88               2
+event_ordering                 40     5 ( 12 %)   113/230             32
+information_extraction         40    35 ( 88 %)    62/68             7.0
+instruction_following          40    13 ( 32 %)    22/52            53.5
+knowledge_update               40    37 ( 92 %)    80/87             2.0
+multi_session_reasoning        40    24 ( 60 %)   136/165           11.0
+preference_following           39    34 ( 87 %)    42/47             9.5
+summarization                  36     4 ( 11 %)   158/283           36.0
+temporal_reasoning             40    39 ( 98 %)    73/74               2
+ensemble : {'n': 355, 'toutes_au_top100': 225, 'preuves': 1094, 'preuves_au_top100': 767}
+Rapport : bench\results\carte\beam_preuves.json
