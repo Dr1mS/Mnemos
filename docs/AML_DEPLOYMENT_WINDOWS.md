@@ -167,13 +167,27 @@ Start-ScheduledTask -TaskName "Mnemos AML"
 ```
 Suivre les logs : `Get-Content data\aml\serve.log -Wait -Tail 20`.
 
-Redémarrer (après une mise à jour du code, par exemple). `Stop-ScheduledTask` ne tue que
-`cmd.exe` : le processus Python garde le port 8765 et le redémarrage échouerait, il faut
-donc l'arrêter explicitement :
+**Relance.** La tâche exécute `scripts\serve_loop.cmd`, qui relance `mnemos serve` 15 s
+après sa mort. Si tout l'arbre de processus a été tué, un déclencheur répété toutes les
+5 min relance la boucle elle-même ; il reste sans effet tant que la boucle tourne
+(`IgnoreNew`). `RestartCount` ne suffisait pas : il ne couvre que l'échec au démarrage de la
+tâche. Le 14/10, un `Stop-Process` sur le port 8765 a coupé la prod 30 min, et la tâche est
+restée « Prête ». Chaque relance laisse une ligne `[serve_loop]` dans `serve.log`. La boucle
+ne lance rien tant qu'un processus écoute déjà sur `API_HOST:API_PORT`.
+
+**Arrêter ou redémarrer** (mise à jour du code, suppression des bases…). Il faut
+**désactiver la tâche d'abord** : sinon le serveur revient en 15 s, ou au plus tard en
+5 min. `Stop-ScheduledTask` ne tue que la boucle (`cmd.exe`), donc arrêter Python
+explicitement. Viser l'adresse exacte, pas le port seul : un autre programme peut écouter
+sur 127.0.0.1:8765, et le tuer par erreur ne doit pas être possible, ni l'inverse.
 ```powershell
+Disable-ScheduledTask -TaskName "Mnemos AML"
 Stop-ScheduledTask -TaskName "Mnemos AML"
-Get-NetTCPConnection -LocalPort 8765 -State Listen -ErrorAction SilentlyContinue |
+$h = (Select-String -Path .env -Pattern '^API_HOST=(.+)').Matches[0].Groups[1].Value.Trim()
+Get-NetTCPConnection -LocalAddress $h -LocalPort 8765 -State Listen -ErrorAction SilentlyContinue |
   ForEach-Object { Stop-Process -Id $_.OwningProcess }
+# … intervention, serveur arrêté (réenregistrer ici la tâche si register_task.ps1 a changé) …
+Enable-ScheduledTask -TaskName "Mnemos AML"
 Start-ScheduledTask -TaskName "Mnemos AML"
 ```
 
