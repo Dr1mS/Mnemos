@@ -1,6 +1,6 @@
 [project]
 name = "mnemos"
-version = "0.1.0"
+version = "0.2.0"
 description = "Multi-system memory server for LLM agents (working/episodic/semantic/procedural)"
 readme = "README.md"
 license = "Apache-2.0"
