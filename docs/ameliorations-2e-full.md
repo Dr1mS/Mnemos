@@ -7,9 +7,10 @@ abandonné, pour ne pas le refaire.
 Tous les chiffres viennent de nos propres benchs (`bench/`), sur des données publiques ou
 fabriquées. Aucun score privé de la plateforme n'y figure.
 
-**État du déploiement** : rien de ce qui suit ne tourne encore en production. La prod sert le
-code du 1er Full. Le nouveau code sera déployé avec la remise à zéro de la base, avant le 2e
-Full.
+**État du déploiement** : du 14/10 à 02 h 07 au 22/10, la prod a servi le code de
+développement, relancé après une panne. Le 22/10, les données du 1er Full ont été effacées,
+la base est repartie à vide, et la prod sert la version 0.2.0, figée pour le 2e Full (voir
+`docs/dossier-version-2e-full.md`).
 
 ---
 
