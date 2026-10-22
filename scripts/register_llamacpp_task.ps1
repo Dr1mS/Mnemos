@@ -1,9 +1,18 @@
 # Enregistre "Mnemos llama.cpp" dans le Planificateur de tâches Windows : lance
-# `llama-server` (embeddings bge-m3) à l'ouverture de session, relance auto si
-# le process meurt. À exécuter une fois, sans droits admin.
+# `llama-server` (embeddings bge-m3) à l'ouverture de session et le relance s'il
+# meurt. À exécuter une fois, sans droits admin.
 #
 #   .\scripts\register_llamacpp_task.ps1
 #   Start-ScheduledTask -TaskName "Mnemos llama.cpp"
+#
+# Deux niveaux de relance, comme pour "Mnemos AML" (register_task.ps1) : avant le
+# 22/10/2026, la tâche lançait l'exe en direct, et RestartCount ne relance pas un
+# processus mort en cours de route. llama-server tombé, chaque /add et /search échoue.
+# - scripts\llamacpp_loop.cmd relance llama-server 15 s après sa mort ;
+# - un déclencheur répété toutes les $RelanceMinutes min relance la boucle
+#   elle-même si tout l'arbre a été tué (IgnoreNew : sans effet tant qu'elle tourne).
+# Conséquence : pour arrêter llama-server, Disable-ScheduledTask d'abord
+# (docs\AML_DEPLOYMENT_WINDOWS.md, étape 4.3).
 #
 # Pourquoi ce serveur plutôt qu'Ollama pour les embeddings (mesuré le 21/09) :
 # Ollama force -np 1 sur les modèles d'embedding et interpose un saut
@@ -25,7 +34,11 @@ param(
     # bloque a 90 %. A 8192, toute entree jusqu'au maximum de bge-m3 passe.
     [int]$BatchSize = 8192,
     [int]$Port = 8899,
-    [string]$LogFile = "data\aml\llamacpp.log"
+    # Chemins relatifs au dépôt, ou absolus. llama-server écrase LogFile à chaque
+    # démarrage ; la boucle garde le précédent dans <LogFile>.prev.
+    [string]$LogFile = "data\aml\llamacpp.log",
+    [string]$LoopLogFile = "data\aml\llamacpp_loop.log",
+    [int]$RelanceMinutes = 5
 )
 $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
@@ -49,38 +62,44 @@ if (-not $digest) { throw "Aucune couche de modèle dans le manifeste bge-m3." }
 $blob = Join-Path $env:USERPROFILE ".ollama\models\blobs\$($digest -replace ':','-')"
 if (-not (Test-Path $blob)) { throw "Blob du modèle introuvable : $blob" }
 
-# Appel direct de l'exe, sans cmd.exe : `cmd /c` ampute la première et la
-# dernière paire de guillemets quand la ligne commence par un guillemet, ce qui
-# casse le chemin du modèle. llama-server sait écrire son log lui-même
-# (--log-file), donc aucune redirection n'est nécessaire.
-$logPath = Join-Path $repoRoot $LogFile
-New-Item -ItemType Directory -Force -Path (Split-Path -Parent $logPath) | Out-Null
+function Resolve-RepoPath([string]$Path) {
+    if ([IO.Path]::IsPathRooted($Path)) { $Path } else { Join-Path $repoRoot $Path }
+}
+$logPath = Resolve-RepoPath $LogFile
+$loopLogPath = Resolve-RepoPath $LoopLogFile
+foreach ($p in $logPath, $loopLogPath) {
+    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $p) | Out-Null
+}
 
-$serverArgs = @(
-    "--model `"$blob`"",
-    "--host 127.0.0.1", "--port $Port",
-    "-c $ContextSize", "-np $Parallel",
-    "--embedding",              # sert /v1/embeddings, pas de génération
-    "-b $BatchSize", "-ub $BatchSize",
-    "--no-webui", "--offline",
-    "--log-file `"$logPath`"",
-    "--no-log-prefix", "--no-log-timestamps"
+# Les options de llama-server sont écrites dans llamacpp_loop.cmd ; seules les
+# valeurs passent ici. /s + paire de guillemets englobante : sans elle, `cmd /c`
+# ampute la première et la dernière paire quand la ligne commence par un
+# guillemet, ce qui cassait le chemin du modèle (AML_COMPETITION_PREP.md §12).
+$loop = Join-Path $repoRoot "scripts\llamacpp_loop.cmd"
+$loopArgs = @(
+    "`"$loop`"", "`"$loopLogPath`"", "`"$exe`"", "`"$blob`"",
+    $Parallel, $ContextSize, $BatchSize, $Port, "`"$logPath`""
 ) -join " "
+$action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/s /c `"$loopArgs`"" `
+    -WorkingDirectory $repoRoot
 
-$action = New-ScheduledTaskAction -Execute $exe -Argument $serverArgs -WorkingDirectory $repoRoot
-
-$trigger = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
+$atLogOn = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
+# Répétition sur un déclencheur -Once qui part maintenant : posée sur AtLogOn,
+# elle n'agirait qu'à la prochaine ouverture de session (cf. register_task.ps1).
+$filet = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) `
+    -RepetitionInterval (New-TimeSpan -Minutes $RelanceMinutes)
+$filet.Repetition.StopAtDurationEnd = $false  # ne jamais arrêter la boucle en cours
 
 $settings = New-ScheduledTaskSettingsSet `
-    -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
+    -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -MultipleInstances IgnoreNew `
     -StartWhenAvailable -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) `
     -ExecutionTimeLimit (New-TimeSpan -Days 0)  # illimité
 
 Register-ScheduledTask -TaskName $TaskName `
-    -Action $action -Trigger $trigger -Settings $settings `
+    -Action $action -Trigger @($atLogOn, $filet) -Settings $settings `
     -Description "llama-server : embeddings bge-m3 pour Mnemos ($Parallel slots, port $Port)" `
     -Force -ErrorAction Stop | Out-Null
 
-Write-Host "Tache '$TaskName' enregistree ($Parallel slots, $($ContextSize / $Parallel) de contexte par slot)."
+Write-Host "Tache '$TaskName' enregistree ($Parallel slots, $($ContextSize / $Parallel) de contexte par slot, filet toutes les $RelanceMinutes min)."
 Write-Host "Demarrage : Start-ScheduledTask -TaskName '$TaskName'"
 Write-Host "Verification : (Invoke-WebRequest http://127.0.0.1:$Port/health -UseBasicParsing).Content"

@@ -191,6 +191,22 @@ Enable-ScheduledTask -TaskName "Mnemos AML"
 Start-ScheduledTask -TaskName "Mnemos AML"
 ```
 
+**llama-server** (tâche « Mnemos llama.cpp », `scripts\register_llamacpp_task.ps1`) suit le
+même schéma depuis le 22/10 : `scripts\llamacpp_loop.cmd` le relance 15 s après sa mort, et
+un déclencheur toutes les 5 min relance la boucle. La boucle ne lance rien tant que
+`127.0.0.1:8899` est déjà en écoute. llama-server écrase `data\aml\llamacpp.log` à chaque
+démarrage : la boucle garde le précédent dans `llamacpp.log.prev`, et note ses relances
+dans `data\aml\llamacpp_loop.log`. Pour l'arrêter, même ordre, en visant `127.0.0.1:8899` :
+```powershell
+Disable-ScheduledTask -TaskName "Mnemos llama.cpp"
+Stop-ScheduledTask -TaskName "Mnemos llama.cpp"
+Get-NetTCPConnection -LocalAddress 127.0.0.1 -LocalPort 8899 -State Listen -ErrorAction SilentlyContinue |
+  ForEach-Object { Stop-Process -Id $_.OwningProcess }
+# … intervention (réenregistrer ici la tâche si register_llamacpp_task.ps1 a changé) …
+Enable-ScheduledTask -TaskName "Mnemos llama.cpp"
+Start-ScheduledTask -TaskName "Mnemos llama.cpp"
+```
+
 ---
 
 ## Étape 5 : Route Traefik dans Coolify
