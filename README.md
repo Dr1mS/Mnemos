@@ -4,19 +4,25 @@
 
 ---
 
-## 📋 For Agent Memory Leaderboard reviewers
+## 📋 Agent Memory Leaderboard (Cycle 2)
 
-> You are on branch `feat/aml-adapter`, which carries the code evaluated in the
-> **Agent Memory Challenge, Cycle 2**. Everything below in this section is written for
-> you; the rest of the README is the general project documentation.
+> Mnemos took part in the **Agent Memory Challenge, Cycle 2** (Textual track,
+> Industry board). The evaluated code lives on branch `feat/aml-adapter`, which stays
+> frozen at the last declared commit during the official review. `main` continues from
+> that commit.
 
-**Declared commit:** `2f6539cd478c3d42afc952765b89353bb7b81016` — the evaluated code.
-Any later commit on this branch touches documentation only; you can verify that the
-evaluated code has not moved with `git diff 2f6539c..HEAD -- src/`, which is empty.
+| Version | Fixed commit | Full task |
+|---|---|---|
+| `0.1.0-aml` | `2f6539cd478c3d42afc952765b89353bb7b81016` | `teval_a880b13143f5d169` (23 September 2026) |
+| `0.2.0-aml` | `3fed00c002aa07b035d2186959be9b431e896200` | `teval_f5766d6ba6ad2914` (28 October 2026) |
+
+`git checkout 3fed00c` gives exactly the code served during the second Full; `GET /health`
+reports `"version": "0.2.0"`. The official leaderboard is expected in mid-November 2026.
+
 **Track:** Industry · **Endpoints:** `POST /add`, `POST /search`, `GET /health` (unauthenticated)
 **Auth:** Bearer, Token or X-Api-Key, same key · **Declared concurrency:** Add 16, Search 16, top_k 100
 
-### What the evaluated configuration actually runs
+### What the evaluated configuration actually runs (0.2.0-aml)
 
 | | |
 |---|---|
@@ -24,8 +30,24 @@ evaluated code has not moved with `git diff 2f6539c..HEAD -- src/`, which is emp
 | **Embedding server** | `llama-server` (llama.cpp) in direct mode, 16 parallel slots, 8192 context and physical batch per slot. |
 | **Storage** | SQLite + `sqlite-vec`, one transaction per Add; HTTP 200 is returned only after commit, so a memory is searchable immediately. |
 | **Isolation** | `user_id` is the only boundary. `session_id` groups episodes but never filters Search. |
-| **Retrieval** | Hybrid: `0.7·dense + 0.3·sparse + 0.1·recency`, deduplicated, ranked, at most `top_k`. Search **never generates answers**; `options` are accepted and ignored. |
+| **Retrieval** | Hybrid: dense similarity, lexical token overlap and recency (weights 0.7 / 0.3 / 0.1, normalised), deduplicated, ranked, at most `top_k`. Search **never generates answers**; `options` are accepted and ignored. |
+| **Write-time rules** | Forget requests and relative dates, see below. Both are deterministic and rule-based. |
 | **Disabled for this evaluation** | The LLM consolidation layer (salience scoring, fact extraction). Measured as no gain in retrieval or answer accuracy while halving throughput. See `docs/AML_DEPLOYMENT_WINDOWS.md`. |
+
+### Changes since 0.1.0-aml
+
+- **Lexical ranking.** The 0.1.0 lexical term was a Hamming similarity on 256-bit hashed
+  codes: it favoured short messages, and 32 of its bits encoded the time of the query, so
+  the same query could rank differently depending on the hour. It now measures the share
+  of the query's tokens present in the memory.
+- **Forget requests.** The contract has no delete operation, so "please forget that I…"
+  arrives as an ordinary message. On Add, such a request (English or French) removes at
+  most 5 earlier **assistant** messages of the same `user_id` that match its target
+  (cosine ≥ 0.65). User messages, the request itself and the acknowledgement are kept.
+- **Relative dates resolved at write time.** When a message carries its timestamp,
+  relative days, months and years get the absolute date appended: "yesterday
+  (27 August 2023)". Indexing uses the raw message; nothing is added at Search time.
+  `RELATIVE_DATES_ANNOTATION=false` turns it off.
 
 ### Verify the contract yourself
 
@@ -50,8 +72,11 @@ and echoes `request_id`, `user_id` and `session_id` unchanged with `success: tru
 
 ### Measured capacity
 
-Through the public endpoint, at the declared concurrency: 400 Add and 800 Search
-requests, **zero errors**. Add 12.0 messages/s, Search 20.3 requests/s (top_k=100).
+Through the public endpoint, at the declared concurrency, on the fixed commit of 0.2.0-aml
+and an empty database (22 October 2026): 400 Add and 800 Search requests, **zero errors**.
+Add 11.5 messages/s (22.3 s p50 / 25.8 s p95 per request of ~16 messages), Search
+28.6 requests/s (543 ms p50 / 963 ms p95, top_k=100). For 0.1.0-aml: Add 12.0 messages/s,
+Search 20.3 requests/s.
 Both are bounded by the embedding model on the host GPU, not by our code: with
 embeddings stubbed out the storage path sustains 615 messages/s.
 
@@ -68,9 +93,11 @@ does not use.
 
 `bge-m3` (Chen et al., 2024, arXiv:2402.03216, MIT) · `llama.cpp` / `llama-server`
 (ggml-org, MIT, used unmodified — command-line options only) · `sqlite-vec` (Alex Garcia).
-Everything else is original work by a single author. Public datasets used for our own
-benchmarking (LoCoMo, PersonaMem) are cited in `bench/`; **no AML evaluation data was used
-for development or tuning**. Developed with AI coding assistants (Claude Code, Antigravity).
+Everything else is original work by a single author. Development used public data only:
+LoCoMo (including LoCoMo-Refined), PersonaMem (v1 and v2), LongMemEval, BEAM, CL-bench and
+MemoryAgentBench, cited in `bench/`, with the answer and judge prompts published in the AML
+public repository. **No AML evaluation data and no private result from the platform was
+used for development or tuning**. Developed with AI coding assistants (Claude Code, Antigravity).
 
 ---
 
