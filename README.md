@@ -125,7 +125,7 @@ Because the brain doesn't have just one. A single "RAG + vector DB" store blends
 |---|---|---|
 | **Working memory** (prefrontal cortex) | `WorkingMemory` | Last 5 conversation turns, volatile, per session |
 | **Hippocampus** (episodic memory) | `EpisodicStore` | Raw, timestamped, precise memories — "what happened on Tuesday" |
-| **Dentate gyrus** (pattern separation) | 256-bit sparse coding | Similar memories stay distinct — orthogonal codes with temporal bits (4h buckets) |
+| **Dentate gyrus** (pattern separation) | 256-bit sparse coding | A hashed lexical code per memory; search scores the share of the query's tokens it contains. Temporal bits (4h buckets) are still encoded but no longer scored |
 | **Amygdala** (emotional tagging) | `SalienceTagger` | An LLM scores every memory: surprise, intensity, self-revelation. Bland content never gets consolidated |
 | **Sleep / dreaming** (hippocampo-cortical consolidation) | `ConsolidationWorker` | Periodically, salient episodes are *replayed* and their facts extracted into semantic memory |
 | **Cortex** (semantic memory) | `SemanticStore` | Durable facts — versioned: a new job **replaces** the old one (`works_at` is functional), a new preference **coexists** (`prefers` is multi) |
@@ -134,11 +134,20 @@ Because the brain doesn't have just one. A single "RAG + vector DB" store blends
 
 The golden rule, borrowed from neuroscience: **memories are never overwritten, they are superseded**. "I don't like coffee anymore" doesn't destroy the fact — it invalidates it with a date, and the full history stays queryable (`--history`).
 
+> ⚠️ **Status of consolidation (October 2026).** The layers above the episodic store
+> (salience, sleep-time fact extraction, versioned facts) are the least proven part of
+> Mnemos. In our autumn 2026 measurements they brought no gain in answer accuracy:
+> on LoCoMo the facts were inert, and on a hard knowledge-update set the answer model
+> copied stale or misattributed facts (4/13 correct with facts, 13/13 with episodes
+> alone). Extraction also ran at under 1 episode/s, against ~5/s for plain ingestion.
+> They were therefore disabled for both AML evaluations and are being re-evaluated;
+> the episodic path (`/add`, `/search`) is the one validated at scale.
+
 ## ✨ Features
 
-- 🔒 **100% local** — Ollama (`bge-m3` + `qwen3:4b`) + SQLite/sqlite-vec. Validated on a CPU-only i7-6700 with 16 GB RAM
+- 🔒 **100% local** — Ollama (`bge-m3` + `qwen3:4b`) or llama.cpp's `llama-server` for embeddings + SQLite/sqlite-vec. Validated on a CPU-only i7-6700 with 16 GB RAM
 - ⚡ **Write path < 500 ms** — synchronous embedding, asynchronous LLM scoring (never blocking)
-- 🔍 **Hybrid search** — `0.7·dense + 0.3·sparse + 0.1·recency`, with time-window filters
+- 🔍 **Hybrid search** — dense similarity, lexical token overlap and recency (weights 0.7 / 0.3 / 0.1, normalised), with time-window filters
 - 🗂️ **Versioned facts** — supersession on functional predicates, coexistence on multi, explicit retraction, full audit chain
 - 🧭 **FR/EN router** — lexical classification ("yesterday" → episodic, "what do you know about" → semantic, "how did my preference change" → history)
 - 🔌 **Native MCP** — 5 tools (`memory_query`, `memory_write`, `memory_forget`, `memory_facts`, `memory_consolidate`) for Antigravity CLI (`agy`), Claude Code & Claude Desktop
@@ -164,6 +173,24 @@ mnemos write "I prefer maté over tea."
 mnemos search "maté"
 mnemos query "what do you know about me?"
 ```
+
+### Faster embeddings with llama.cpp
+
+With a GPU, `llama-server` serves `bge-m3` with parallel slots and is the backend that
+sustained both AML evaluations. Start it, then point Mnemos at it in `.env`:
+
+```sh
+llama-server --model <bge-m3 GGUF> --host 127.0.0.1 --port 8899 \
+  -c 131072 -np 16 --embedding -b 8192 -ub 8192 --no-webui
+```
+
+```ini
+EMBED_BACKEND=llamacpp
+LLAMACPP_HOST=http://127.0.0.1:8899
+```
+
+Ollama stays the default (`EMBED_BACKEND=ollama`). Supervision under Windows:
+`scripts/register_llamacpp_task.ps1`, details in [docs/AML_DEPLOYMENT_WINDOWS.md](docs/AML_DEPLOYMENT_WINDOWS.md).
 
 ### Connecting Antigravity CLI, Claude & AI Agents
 
@@ -233,7 +260,7 @@ Hover for tooltips, click for the inspector (including a fact's full version his
  every store scopes by tenant (default 'user') ──▶ strict isolation, no cross-tenant read/write
 ```
 
-Full specification: **[MNEMOS_SPEC.md](MNEMOS_SPEC.md)** (rev 1.2, French) · model benchmarks: **[poc/RESULTS.md](poc/RESULTS.md)**
+Full specification: **[MNEMOS_SPEC.md](MNEMOS_SPEC.md)** (rev 1.2, French) · model benchmarks: **[archive/poc/RESULTS.md](archive/poc/RESULTS.md)**
 
 > ⚠️ qwen3 family: `think=false` is **mandatory** — thinking mode breaks structured JSON under Ollama and multiplies CPU latency by 5-10×.
 
@@ -245,8 +272,14 @@ Full specification: **[MNEMOS_SPEC.md](MNEMOS_SPEC.md)** (rev 1.2, French) · mo
 | `mnemos facts --history` | `GET /v1/facts` · `GET /v1/facts/history` · `GET /v1/episodes/{id}` |
 | `mnemos consolidate / decay / worker` | `POST /v1/admin/consolidate` · `POST /v1/admin/decay` |
 | `mnemos stats / doctor / export / backup` | `GET /v1/health` · `POST /v1/sessions/{id}/reset` |
+| — | `POST /add` · `POST /search` · `GET /health` (AML contract) |
 
 Every endpoint takes an optional `tenant` (defaults to `user`). Optional auth via `X-API-Key` header. Atomic backups via `VACUUM INTO` (never raw-copy a WAL database). **Full HTTP contract: [docs/MNEMOS_API.md](docs/MNEMOS_API.md).**
+
+`POST /add` and `POST /search` follow the AML contract: `user_id` is the boundary, Add is
+idempotent on `request_id`, and Search returns stored memories, never generated answers.
+The forget-request rule and the resolution of relative dates apply **only on `/add`**,
+not on `/v1/episodes` nor on the MCP tools, which still use the earlier write path.
 
 ## ✅ Done criterion & tests
 
@@ -255,8 +288,8 @@ python scripts/demo.py            # the acid test: 50 simulated messages over
                                   # 5 days, real salience + extraction,
                                   # 10 checks (versioning, multi, time
                                   # windows, noise…) — 10/10 on the CPU profile
-pytest -m "not requires_ollama"   # ~175 fast tests without LLM (incl. tenant isolation)
-pytest                            # full suite with real Ollama (~3 min)
+pytest -m "not requires_ollama"   # 378 tests without LLM (incl. tenant isolation)
+pytest                            # full suite, 388 tests, with real Ollama (~3 min)
 ruff check src tests && mypy      # lint + strict typing
 ```
 
@@ -270,6 +303,11 @@ Importing an existing memory (JSONL episodes + distilled facts): `scripts/import
 - [x] Recovery of lost salience scorings on worker restart
 - [x] 3D visualizer — Memory Constellation (`/viz`)
 - [x] Multi-tenant — isolated parallel memories, canonical subject per tenant, tenant-scoped `/v1/health` (contract in `docs/MNEMOS_API.md`)
+- [x] AML contract (`/add`, `/search`), evaluated twice in the Agent Memory Challenge, Cycle 2
+- [ ] Partition the vector index by `tenant` (today every kNN scans all tenants' vectors)
+- [ ] Size the database connection pool to the declared concurrency (fixed at 5 + 10 today)
+- [ ] MCP tools on the validated path: `memory_add` / `memory_search` over `/add` and `/search`
+- [ ] Re-evaluate consolidation: keep, rework or drop (see the status note above)
 - [ ] Tenant-aware salience (the tagger is still user-centric — a non-personal tenant under-scores)
 - [ ] Episodic fallback when semantic scores are low
 - [ ] Extraction mode for non-conversational content (summaries)
@@ -305,7 +343,7 @@ Parce que le cerveau n'en a pas qu'une. Un store unique type "RAG + vector DB" m
 |---|---|---|
 | **Mémoire de travail** (cortex préfrontal) | `WorkingMemory` | Les 5 derniers tours de conversation, volatile, par session |
 | **Hippocampe** (mémoire épisodique) | `EpisodicStore` | Les souvenirs bruts, datés, précis — « ce qui s'est passé mardi » |
-| **Gyrus denté** (pattern separation) | Sparse coding 256-bit | Deux souvenirs similaires restent distincts — codes orthogonaux avec bits temporels (bucket 4h) |
+| **Gyrus denté** (pattern separation) | Sparse coding 256-bit | Un code lexical haché par souvenir ; la recherche note la part des mots de la requête qu'il contient. Les bits temporels (tranches de 4 h) sont encore encodés mais ne comptent plus dans le score |
 | **Amygdale** (marquage émotionnel) | `SalienceTagger` | Un LLM score chaque souvenir : surprise, intensité, révélation personnelle. Ce qui est fade ne sera jamais consolidé |
 | **Sommeil / rêve** (consolidation hippocampo-corticale) | `ConsolidationWorker` | Périodiquement, les épisodes saillants sont *rejoués* et leurs faits extraits vers la mémoire sémantique |
 | **Cortex** (mémoire sémantique) | `SemanticStore` | Les faits durables — versionnés : un nouveau job **remplace** l'ancien (`works_at` est functional), une nouvelle préférence **coexiste** (`prefers` est multi) |
@@ -314,11 +352,21 @@ Parce que le cerveau n'en a pas qu'une. Un store unique type "RAG + vector DB" m
 
 La règle d'or héritée de la neuro : **on n'écrase jamais un souvenir, on le supersède**. « Je n'aime plus le café » ne détruit pas le fait — il l'invalide avec la date, et l'historique complet reste interrogeable (`--history`).
 
+> ⚠️ **Statut de la consolidation (octobre 2026).** Les couches au-dessus de la mémoire
+> épisodique (salience, extraction de faits pendant le « sommeil », faits versionnés) sont
+> la partie la moins éprouvée de Mnemos. Nos mesures de l'automne 2026 n'y ont trouvé aucun
+> gain sur la justesse des réponses : sur LoCoMo, les faits étaient inertes, et sur un jeu
+> difficile de mises à jour, le modèle répondeur recopiait des faits périmés ou mal
+> attribués (4/13 justes avec les faits, 13/13 avec les seuls épisodes). L'extraction
+> tournait aussi à moins d'un épisode par seconde, contre ~5/s pour l'ingestion simple.
+> Elles ont donc été éteintes pour les deux évaluations AML et sont en cours de
+> réévaluation ; le chemin épisodique (`/add`, `/search`) est celui validé à l'échelle.
+
 ## ✨ Fonctionnalités
 
-- 🔒 **100 % local** — Ollama (`bge-m3` + `qwen3:4b`) + SQLite/sqlite-vec. Validé sur un i7-6700 CPU-only, 16 GB RAM
+- 🔒 **100 % local** — Ollama (`bge-m3` + `qwen3:4b`) ou `llama-server` (llama.cpp) pour les embeddings + SQLite/sqlite-vec. Validé sur un i7-6700 CPU-only, 16 GB RAM
 - ⚡ **Write path < 500 ms** — embedding synchrone, scoring LLM asynchrone (jamais bloquant)
-- 🔍 **Recherche hybride** — `0.7·dense + 0.3·sparse + 0.1·récence`, avec fenêtres temporelles
+- 🔍 **Recherche hybride** — similarité dense, recouvrement lexical des mots et récence (poids 0,7 / 0,3 / 0,1, normalisés), avec fenêtres temporelles
 - 🗂️ **Faits versionnés** — supersession sur les prédicats fonctionnels, coexistence sur les multi, rétractation explicite, chaîne d'audit complète
 - 🧭 **Router FR/EN** — classification lexicale (« hier » → épisodique, « qu'est-ce que tu sais sur » → sémantique, « comment ma préférence a évolué » → historique)
 - 🔌 **MCP natif** — 5 tools (`memory_query`, `memory_write`, `memory_forget`, `memory_facts`, `memory_consolidate`) pour Antigravity CLI (`agy`), Claude Code & Claude Desktop
@@ -344,6 +392,24 @@ mnemos write "Je préfère le maté au thé."
 mnemos search "maté"
 mnemos query "qu'est-ce que tu sais sur moi ?"
 ```
+
+### Des embeddings plus rapides avec llama.cpp
+
+Avec un GPU, `llama-server` sert `bge-m3` avec des slots parallèles : c'est le moteur qui a
+tenu les deux évaluations AML. Lancez-le, puis indiquez-le à Mnemos dans `.env` :
+
+```sh
+llama-server --model <GGUF de bge-m3> --host 127.0.0.1 --port 8899 \
+  -c 131072 -np 16 --embedding -b 8192 -ub 8192 --no-webui
+```
+
+```ini
+EMBED_BACKEND=llamacpp
+LLAMACPP_HOST=http://127.0.0.1:8899
+```
+
+Ollama reste le moteur par défaut (`EMBED_BACKEND=ollama`). Supervision sous Windows :
+`scripts/register_llamacpp_task.ps1`, détails dans [docs/AML_DEPLOYMENT_WINDOWS.md](docs/AML_DEPLOYMENT_WINDOWS.md).
 
 ### Brancher Antigravity CLI, Claude & les agents
 
@@ -376,7 +442,13 @@ Identiques à la section anglaise ci-dessus — `mnemos --help` pour le détail 
 
 **Multi-tenant** : chaque endpoint accepte un `tenant` optionnel (défaut `user`), avec isolation stricte. Contrat HTTP complet consommé par les intégrations : **[docs/MNEMOS_API.md](docs/MNEMOS_API.md)**. Smoke test end-to-end : `python scripts/smoke_tenant.py` (Ollama réel).
 
-Spécification complète : **[MNEMOS_SPEC.md](MNEMOS_SPEC.md)** (rev 1.2) · benchs des modèles : **[poc/RESULTS.md](poc/RESULTS.md)**
+**`POST /add` et `POST /search`** suivent le contrat AML : `user_id` est la frontière, l'Add
+est idempotent sur `request_id`, et le Search rend les souvenirs stockés, jamais une réponse
+générée. La règle d'oubli et la résolution des dates relatives ne s'appliquent **qu'à
+`/add`**, ni à `/v1/episodes` ni aux outils MCP, qui passent encore par l'ancien chemin
+d'écriture.
+
+Spécification complète : **[MNEMOS_SPEC.md](MNEMOS_SPEC.md)** (rev 1.2) · benchs des modèles : **[archive/poc/RESULTS.md](archive/poc/RESULTS.md)**
 
 
 ## License / Licence
