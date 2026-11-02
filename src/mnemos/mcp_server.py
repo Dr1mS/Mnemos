@@ -37,6 +37,7 @@ from mnemos.stores.procedural import ProceduralStore
 from mnemos.stores.semantic import SemanticStore
 from mnemos.stores.working import WorkingMemoryRegistry
 from mnemos.tagger.salience import SalienceTagger, ScoringJob, ScoringQueue
+from mnemos.tenancy import canonical_subject, resolve_tenant
 
 logger = get_logger(__name__)
 
@@ -57,8 +58,12 @@ class AppContext:
 
     @property
     def tenant(self) -> str:
-        """Tenant appliqué à tous les appels (mono-tenant côté MCP, §P1)."""
+        """Tenant de l'instance, appliqué quand un appel n'en précise pas (§P1)."""
         return self.settings.TENANT
+
+    def resolve(self, tenant: str | None) -> str:
+        """Tenant effectif d'un appel : celui de l'instance ou un tenant autorisé."""
+        return resolve_tenant(tenant, self.settings.TENANT, self.settings.TENANT_PREFIX)
 
 
 @asynccontextmanager
@@ -138,32 +143,37 @@ def _fmt_fact(fact: Fact) -> str:
 
 @mcp.tool()
 async def memory_write(
-    content: str, ctx: Context, session_id: str = DEFAULT_SESSION  # type: ignore[type-arg]
+    content: str,
+    ctx: Context,  # type: ignore[type-arg]
+    session_id: str = DEFAULT_SESSION,
+    tenant: str | None = None,
 ) -> str:
     """Store a new episode in the user's persistent memory.
 
     Write meaningful statements from the user (identity, preferences, life or
     project facts, decisions). The salience scoring and fact extraction happen
-    asynchronously — the episode is searchable immediately.
+    asynchronously — the episode is searchable immediately. `tenant` selects
+    another allowed memory (omit it to use this server's default memory).
     """
     app = _app(ctx)
+    tenant_ = app.resolve(tenant)
     history = [
         e.content
-        for e in await app.episodic.list_recent(session_id, n=5, tenant=app.tenant)
+        for e in await app.episodic.list_recent(session_id, n=5, tenant=tenant_)
     ]
     episode = await app.episodic.write(
-        content, role="user", session_id=session_id, tenant=app.tenant
+        content, role="user", session_id=session_id, tenant=tenant_
     )
     app.queue.enqueue(
         ScoringJob(
             episode_id=episode.id,
             content=episode.content,
             recent_history=history,
-            tenant=app.tenant,
+            tenant=tenant_,
         )
     )
     if session_id:
-        app.working.get_or_create(session_id, tenant=app.tenant).push(
+        app.working.get_or_create(session_id, tenant=tenant_).push(
             episode.content, episode.role, episode.created_at
         )
     return f"mémorisé ({episode.id}) — salience et consolidation en arrière-plan"
@@ -171,7 +181,10 @@ async def memory_write(
 
 @mcp.tool()
 async def memory_query(
-    q: str, ctx: Context, k: int = 8  # type: ignore[type-arg]
+    q: str,
+    ctx: Context,  # type: ignore[type-arg]
+    k: int = 8,
+    tenant: str | None = None,
 ) -> str:
     """Query the user's memory (French or English natural language).
 
@@ -181,7 +194,7 @@ async def memory_query(
     """
     app = _app(ctx)
     result = await app.orchestrator.query(
-        q, session_id=DEFAULT_SESSION, k=k, tenant=app.tenant
+        q, session_id=DEFAULT_SESSION, k=k, tenant=app.resolve(tenant)
     )
     lines = [f"[route : {result.type.value}]"]
     if result.facts:
@@ -212,6 +225,7 @@ async def memory_facts(
     subject: str | None = None,
     predicate: str | None = None,
     history: bool = False,
+    tenant: str | None = None,
 ) -> str:
     """List current facts about a subject (default: everything known).
 
@@ -219,12 +233,13 @@ async def memory_facts(
     versioned chain of a fact (e.g. how works_at changed over time).
     """
     app = _app(ctx)
+    tenant_ = app.resolve(tenant)
     if history:
         if not subject or not predicate:
             return "erreur : history=true exige subject ET predicate"
-        facts = await app.semantic.get_history(subject, predicate, tenant=app.tenant)
+        facts = await app.semantic.get_history(subject, predicate, tenant=tenant_)
     else:
-        facts = await app.semantic.get_current_facts(subject, predicate, tenant=app.tenant)
+        facts = await app.semantic.get_current_facts(subject, predicate, tenant=tenant_)
     if not facts:
         return "(aucun fait)"
     return "\n".join(f"• {_fmt_fact(f)}" for f in facts)
@@ -235,23 +250,28 @@ async def memory_forget(
     ctx: Context,  # type: ignore[type-arg]
     predicate: str,
     object: str,
-    subject: str = "user",
+    subject: str | None = None,
+    tenant: str | None = None,
 ) -> str:
     """Retract a fact that is no longer true or was wrong.
 
     Use when the user corrects the memory ("je n'aime plus X", "c'était pas
     moi", "ce n'est plus vrai"). The fact is invalidated (kept in history),
     not deleted. The object must match an existing current fact exactly —
-    if unsure, the tool lists the candidates so you can retry.
+    if unsure, the tool lists the candidates so you can retry. `subject`
+    defaults to the memory's own subject ("user" for the personal memory).
     """
     app = _app(ctx)
+    tenant_ = app.resolve(tenant)
+    if subject is None:
+        subject = canonical_subject(tenant_)
     retracted = await app.semantic.retract_fact(
-        subject, predicate, object, tenant=app.tenant
+        subject, predicate, object, tenant=tenant_
     )
     if retracted is not None:
         return f"rétracté : {_fmt_fact(retracted)}"
     candidates = await app.semantic.get_current_facts(
-        subject, predicate, tenant=app.tenant
+        subject, predicate, tenant=tenant_
     )
     if not candidates:
         return f"aucun fait courant {subject}/{predicate}"

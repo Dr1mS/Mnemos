@@ -45,3 +45,23 @@ def canonical_subject(tenant: str) -> str:
     applicatif produise des faits `subject=<tenant>` sans configuration.
     """
     return _CANONICAL_SUBJECT.get(tenant, tenant)
+
+
+def resolve_tenant(requested: str | None, default: str, prefix: str = "") -> str:
+    """Tenant effectif d'un appel venu d'une surface mono-tenant (MCP).
+
+    Sans tenant demandé, on reste sur le tenant de l'instance (`default`).
+    Un tenant explicite n'est accepté que s'il est le tenant de l'instance ou
+    s'il commence par `prefix` (réglage TENANT_PREFIX). Sans préfixe configuré,
+    seul le tenant de l'instance passe : une instance personnelle ne peut pas
+    être détournée vers un autre tenant, et une instance applicative (ex.
+    Zygos, préfixe `zygos-`) ne peut jamais atteindre le tenant personnel.
+    """
+    if requested is None or requested == "" or requested == default:
+        return default
+    if prefix and requested.startswith(prefix) and len(requested) > len(prefix):
+        if len(requested) > 128:
+            raise ValueError("tenant trop long (128 caractères max)")
+        return requested
+    allowed = f"'{default}'" + (f" ou '{prefix}<nom>'" if prefix else "")
+    raise ValueError(f"tenant '{requested}' refusé : autorisés {allowed}")

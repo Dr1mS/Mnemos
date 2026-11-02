@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     # mémoire personnelle. Une instance MCP par tenant (ex. un NPC Tomodochi)
     # se configure via TENANT dans son .mcp.json.
     TENANT: str = DEFAULT_TENANT
+    # Préfixe des tenants qu'un appel MCP peut viser en plus de TENANT (argument
+    # `tenant` des outils). Vide = seul TENANT est accessible. Ex. Zygos :
+    # TENANT=zygos, TENANT_PREFIX=zygos- → `zygos` et `zygos-<projet>`.
+    TENANT_PREFIX: str = ""
 
     # Ollama
     OLLAMA_HOST: str = "http://localhost:11434"
