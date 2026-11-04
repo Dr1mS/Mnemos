@@ -72,9 +72,13 @@ class RouterOrchestrator:
         # Marge pour compenser les épisodes périmés écartés après la recherche.
         episodes_k = k * 2 if drop_stale else k
 
+        # La recherche d'épisodes ne filtre jamais par session (README, §14.2) :
+        # session_id ne sert qu'au contexte de travail (route WORKING) plus bas.
+        # Le filtrer ici rendait invisibles les épisodes écrits sous une autre
+        # session que celle de l'appelant (ex. archiviste-j1 lu depuis « claude »).
         episodes_task = (
             asyncio.create_task(
-                self._episodic.search(q, k=episodes_k, session_id=session_id, tenant=tenant)
+                self._episodic.search(q, k=episodes_k, tenant=tenant)
             )
             if qtype in _EPISODIC_TYPES
             else None
